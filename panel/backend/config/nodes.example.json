@@ -1,0 +1,26 @@
+[
+  {
+    "name": "pve",
+    "host": "192.168.1.4",
+    "port": 8006,
+    "tokenId": "panel@pve!panel",
+    "tokenSecret": "PEGA-AQUI-EL-UUID-DEL-TOKEN",
+    "storage": "local-lvm",
+    "templateVmid": 9000,
+    "vmidRange": [200, 299],
+    "subnetPrefix": "192.168.6.",
+    "verifyTls": false
+  },
+  {
+    "name": "pvececyte",
+    "host": "192.168.1.254",
+    "port": 8006,
+    "tokenId": "panel@pve!panel",
+    "tokenSecret": "PEGA-AQUI-EL-UUID-DEL-TOKEN",
+    "storage": "local-lvm",
+    "templateVmid": 9000,
+    "vmidRange": [300, 399],
+    "subnetPrefix": "192.168.7.",
+    "verifyTls": false
+  }
+]
