@@ -39,6 +39,7 @@ function NodeCard({ node, cpuHistory }: { node: NodeInfo; cpuHistory: number[] }
           <span className="rounded-full bg-red-500/20 px-2 py-0.5 text-xs text-red-400">sin conexión</span>
         </div>
         <p className="mt-2 text-sm text-slate-500">{node.host} · {node.subnet}</p>
+        {node.error && <p className="mt-1.5 text-xs text-red-400/80 truncate" title={node.error}>{node.error}</p>}
       </div>
     );
   }

@@ -22,5 +22,14 @@
     "vmidRange": [300, 399],
     "subnetPrefix": "192.168.7.",
     "verifyTls": false
+  },
+  {
+    "name": "aulamedios",
+    "type": "hyperv",
+    "host": "192.168.1.3",
+    "agentPort": 3002,
+    "agentToken": "CAMBIAR-ESTA-CLAVE-SEGURA",
+    "subnetPrefix": "192.168.1.",
+    "vmidRange": [500, 599]
   }
 ]

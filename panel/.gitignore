@@ -3,4 +3,6 @@ dist/
 .env
 backend/config/nodes.json
 backend/data/
+hyperv-agent/data/
+hyperv-agent/config.json
 *.log
