@@ -26,7 +26,7 @@
   {
     "name": "aulamedios",
     "type": "hyperv",
-    "host": "192.168.1.3",
+    "host": "192.168.1.229",
     "agentPort": 3002,
     "agentToken": "CAMBIAR-ESTA-CLAVE-SEGURA",
     "subnetPrefix": "192.168.1.",
