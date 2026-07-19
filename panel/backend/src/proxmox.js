@@ -44,12 +44,13 @@ class ProxmoxClient {
     return err?.message ?? String(err);
   }
 
-  // Ejecuta comando en el guest vía qemu-agent, devuelve pid
+  // Ejecuta comando en el guest vía qemu-agent, devuelve pid.
+  // Proxmox espera el parámetro 'command' repetido (array), no 'command[N]'.
   async agentExec(nodeName, vmid, cmd) {
     const p = new URLSearchParams();
-    p.append('command[0]', 'bash');
-    p.append('command[1]', '-c');
-    p.append('command[2]', cmd);
+    p.append('command', 'bash');
+    p.append('command', '-c');
+    p.append('command', cmd);
     return (await this.http.post(`/nodes/${nodeName}/qemu/${vmid}/agent/exec`, p)).data.data;
   }
 
