@@ -5,7 +5,7 @@ import { execFile } from 'child_process';
 import { promisify } from 'util';
 import { config } from '../config.js';
 import { getNode, allNodes } from '../proxmox.js';
-import { provisionVm, checkCapacity } from './provision.js';
+import { provisionVm, checkCapacity, stopAndDestroy } from './provision.js';
 import { HttpError } from '../errors.js';
 import { sendAdminAlert } from './mailer.js';
 
@@ -231,7 +231,8 @@ async function pipeline(deployId, resources, nodeName) {
   // 1. provision
   let vmResult;
   await runStep(deployId, 'provision', async () => {
-    vmResult = await provisionVm({ node: nodeName, hostname: dep.hostname, ...resources, tags: dep.clientId ? [`client:${dep.clientId}`] : [] });
+    // Proxmox no permite ':' en tags — usar guion
+    vmResult = await provisionVm({ node: nodeName, hostname: dep.hostname, ...resources, tags: dep.clientId ? [`client-${dep.clientId}`] : [] });
     vmid = vmResult.vmid;
     patchDeploy(deployId, { vmid, updatedAt: new Date().toISOString() });
     return { detail: `VMID ${vmid} en ${nodeName}` };
@@ -489,9 +490,8 @@ export async function retryDeploy(deployId) {
   // Limpiar VM anterior si se llegó a crear
   if (dep.vmid && dep.node) {
     const { client, cfg } = getNode(dep.node);
-    try { await client.post(`/nodes/${dep.node}/qemu/${dep.vmid}/status/stop`, {}); } catch { /* ya parada */ }
-    await new Promise((r) => setTimeout(r, 3000));
-    try { const u = await client.del(`/nodes/${dep.node}/qemu/${dep.vmid}`, { purge: 1 }); await client.waitTask(u); } catch { /* continuar */ }
+    try { await stopAndDestroy(client, dep.node, dep.vmid); }
+    catch (e) { console.error(`[retry:${deployId}] No se pudo limpiar VMID ${dep.vmid}: ${e.message}`); }
     if (dep.wanPort) {
       try { await sshNode(cfg.host, `iptables -t nat -D PREROUTING -p tcp --dport ${dep.wanPort} -j DNAT --to-destination ${dep.guestIP}:80 2>/dev/null || true`); } catch { /* continuar */ }
     }
@@ -541,13 +541,8 @@ export async function deleteDeploy(deployId) {
           );
         } catch (e) { errors.push(`DNAT: ${e.message}`); }
       }
-      // Detener y eliminar VM
-      try {
-        await client.post(`/nodes/${dep.node}/qemu/${dep.vmid}/status/stop`, {});
-        await new Promise((r) => setTimeout(r, 5000));
-      } catch { /* ya estaba parada */ }
-      const upid = await client.del(`/nodes/${dep.node}/qemu/${dep.vmid}`, { purge: 1 });
-      await client.waitTask(upid);
+      // Detener y eliminar VM (espera stop real antes de destroy)
+      await stopAndDestroy(client, dep.node, dep.vmid);
     } catch (e) { errors.push(`VM: ${e.message}`); }
   }
 

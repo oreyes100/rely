@@ -4,177 +4,270 @@ const PLANS = [
   {
     id: 'basico',
     nombre: 'Básico',
+    desc: 'Ideal para tu primer sitio web o app personal.',
+    precioAntes: '$199',
     precio: '$99',
-    periodo: '/mes',
+    descuento: '-50%',
+    periodo: 'MXN/mes',
     destacado: false,
-    recursos: ['1 vCPU', '1 GB RAM', '20 GB SSD NVMe', 'Base de datos MySQL/PostgreSQL', 'Subdominio gratuito (*.capuvps.duckdns.org)', 'SSL incluido', '1 proyecto activo'],
+    recursos: [
+      '1 vCPU · 1 GB RAM',
+      '20 GB SSD NVMe',
+      '1 proyecto activo',
+      'Base de datos MySQL o PostgreSQL',
+      'Subdominio gratis (tuapp.capuvps.duckdns.org)',
+      'Certificado SSL gratis',
+      'Deploy automático desde GitHub',
+    ],
   },
   {
     id: 'estandar',
     nombre: 'Estándar',
+    desc: 'Para negocios y proyectos en crecimiento.',
+    precioAntes: '$499',
     precio: '$199',
-    periodo: '/mes',
+    descuento: '-60%',
+    periodo: 'MXN/mes',
     destacado: true,
-    recursos: ['2 vCPU', '2 GB RAM', '25 GB SSD NVMe', 'MySQL, PostgreSQL o MongoDB', 'Subdominio gratuito o dominio propio', 'SSL incluido', '2 proyectos activos', 'Soporte prioritario'],
+    recursos: [
+      '2 vCPU · 2 GB RAM',
+      '25 GB SSD NVMe',
+      '2 proyectos activos',
+      'MySQL, PostgreSQL o MongoDB',
+      'Dominio propio o subdominio gratis',
+      'Certificado SSL gratis',
+      'Deploy automático desde GitHub',
+      'Soporte prioritario',
+    ],
   },
   {
     id: 'empresarial',
     nombre: 'Empresarial',
+    desc: 'Recursos dedicados y soporte a la medida.',
+    precioAntes: null,
     precio: 'A la medida',
+    descuento: null,
     periodo: '',
     destacado: false,
-    recursos: ['vCPU y RAM configurables', 'Almacenamiento a la medida', 'Multi-DB y Redis', 'Dominio propio + DNS administrado', 'SLA dedicado', 'Soporte 24/7'],
+    recursos: [
+      'vCPU y RAM configurables',
+      'Almacenamiento a la medida',
+      'Proyectos ilimitados',
+      'Multi-base de datos + Redis',
+      'Dominio propio + DNS administrado',
+      'SLA dedicado',
+      'Soporte 24/7',
+    ],
   },
 ];
 
-const PASOS = [
-  { num: '01', titulo: 'Crea tu cuenta', desc: 'Regístrate en minutos. Solo necesitas tu correo electrónico.' },
-  { num: '02', titulo: 'Elige tu plan', desc: 'Selecciona el plan que mejor se adapte a tu proyecto o negocio.' },
-  { num: '03', titulo: 'Despliega tu app', desc: 'Sube tu código o usa una plantilla y nosotros nos encargamos del resto.' },
+const FEATURES = [
+  { titulo: 'Deploy en minutos', desc: 'De cero a producción en menos de 5 minutos. Sube tu código o conecta GitHub y listo.' },
+  { titulo: 'HTTPS automático', desc: 'Certificados SSL gratuitos que se renuevan solos. Tu sitio siempre seguro.' },
+  { titulo: 'Base de datos incluida', desc: 'MySQL, PostgreSQL o MongoDB listos en un clic, sin instalar nada.' },
+  { titulo: 'Servidores propios', desc: 'Infraestructura Proxmox con redundancia, snapshots y monitoreo 24/7.' },
+  { titulo: 'Docker nativo', desc: 'Tus apps corren aisladas en contenedores. Cualquier stack: Node, PHP, Python, estático.' },
+  { titulo: 'Dominio flexible', desc: 'Subdominio gratis, tu dominio DuckDNS o tu dominio propio con DNS.' },
 ];
 
-const FEATURES = [
-  { icono: '⚡', titulo: 'Deploy en minutos', desc: 'Desde cero a producción en menos de 5 minutos. Sin configurar servidores.' },
-  { icono: '🔒', titulo: 'HTTPS automático', desc: 'Certificados SSL/TLS gratuitos, renovados automáticamente.' },
-  { icono: '🗄️', titulo: 'Base de datos incluida', desc: 'MySQL, PostgreSQL o MongoDB listos en un clic, sin instalación.' },
-  { icono: '🔄', titulo: 'Alta disponibilidad', desc: 'Infraestructura Proxmox con redundancia y snapshots automáticos.' },
-  { icono: '📦', titulo: 'Docker nativo', desc: 'Tus apps corren en contenedores aislados con Docker Compose.' },
-  { icono: '🌐', titulo: 'Dominio flexible', desc: 'Usa nuestro subdominio gratuito o conecta tu propio dominio.' },
+const PASOS = [
+  { num: '1', titulo: 'Crea tu cuenta', desc: 'Contrata tu plan y recibe por correo tu código de acceso al panel.' },
+  { num: '2', titulo: 'Sube tu proyecto', desc: 'Conecta tu repositorio de GitHub, sube un ZIP o usa una plantilla.' },
+  { num: '3', titulo: 'Tu app está en línea', desc: 'Nosotros creamos el servidor, la base de datos, el dominio y el SSL.' },
 ];
+
+const Check = () => (
+  <svg className="mt-0.5 h-5 w-5 shrink-0 text-[#673de6]" viewBox="0 0 20 20" fill="currentColor">
+    <path fillRule="evenodd" d="M16.7 5.3a1 1 0 010 1.4l-7 7a1 1 0 01-1.4 0l-3-3a1 1 0 111.4-1.4l2.3 2.29 6.3-6.3a1 1 0 011.4 0z" clipRule="evenodd" />
+  </svg>
+);
 
 export default function Landing({ onLogin }: { onLogin: () => void }) {
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 font-sans">
+    <div className="min-h-screen bg-white font-sans text-[#1d1e20]">
+      {/* Barra de oferta */}
+      <div className="bg-[#2f1c6a] px-4 py-2.5 text-center text-sm text-white">
+        <span className="font-semibold">Oferta de lanzamiento:</span>{' '}
+        hasta <span className="font-bold text-[#ffcd35]">60% de descuento</span> en todos los planes
+        <a href="#planes" className="ml-3 rounded-full bg-white/15 px-3 py-0.5 text-xs font-semibold hover:bg-white/25 transition-colors">
+          Ver ofertas →
+        </a>
+      </div>
+
       {/* Navbar */}
-      <header className="sticky top-0 z-50 border-b border-slate-800 bg-slate-950/90 backdrop-blur-sm">
+      <header className="sticky top-0 z-50 border-b border-gray-100 bg-white/95 backdrop-blur-sm">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
           <div className="flex items-center gap-2">
-            <span className="text-2xl font-bold text-indigo-400">▦</span>
-            <span className="text-lg font-semibold text-white">CapuVPS</span>
+            <span className="text-2xl font-bold text-[#673de6]">▦</span>
+            <span className="text-xl font-bold tracking-tight text-[#2f1c6a]">CapuVPS</span>
           </div>
-          <nav className="hidden items-center gap-8 md:flex">
-            <a href="#planes" className="text-sm text-slate-400 hover:text-white transition-colors">Planes</a>
-            <a href="#caracteristicas" className="text-sm text-slate-400 hover:text-white transition-colors">Características</a>
-            <a href="#como-funciona" className="text-sm text-slate-400 hover:text-white transition-colors">Cómo funciona</a>
+          <nav className="hidden items-center gap-8 lg:flex">
+            <a href="#planes" className="text-sm font-medium text-gray-600 hover:text-[#673de6] transition-colors">Planes y precios</a>
+            <a href="#caracteristicas" className="text-sm font-medium text-gray-600 hover:text-[#673de6] transition-colors">Características</a>
+            <a href="#como-funciona" className="text-sm font-medium text-gray-600 hover:text-[#673de6] transition-colors">Cómo funciona</a>
           </nav>
           <div className="flex items-center gap-3">
             <button onClick={onLogin}
-              className="text-sm text-slate-300 hover:text-white transition-colors px-3 py-2 rounded-lg hover:bg-slate-800">
+              className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-semibold text-[#1d1e20] hover:border-[#673de6] hover:text-[#673de6] transition-colors">
               Iniciar sesión
             </button>
             <a href={FOSSBILLING_URL}
-              className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-500 transition-colors">
-              Contratar
+              className="rounded-lg bg-[#673de6] px-5 py-2 text-sm font-semibold text-white hover:bg-[#5025d1] transition-colors">
+              Empieza ahora
             </a>
           </div>
         </div>
       </header>
 
       {/* Hero */}
-      <section className="relative overflow-hidden bg-gradient-to-b from-indigo-950/40 to-slate-950 px-6 py-24 text-center">
-        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,_rgba(99,102,241,0.15)_0%,_transparent_70%)]" />
-        <div className="relative mx-auto max-w-3xl">
-          <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-indigo-800/60 bg-indigo-900/30 px-4 py-1.5 text-xs font-medium text-indigo-300">
-            <span className="h-1.5 w-1.5 rounded-full bg-indigo-400 animate-pulse" />
-            Infraestructura Proxmox — Alta disponibilidad
+      <section className="bg-gradient-to-b from-[#f4f0ff] to-white px-6 pb-20 pt-16">
+        <div className="mx-auto grid max-w-6xl items-center gap-12 lg:grid-cols-2">
+          <div>
+            <h1 className="text-4xl font-extrabold leading-tight tracking-tight text-[#1d1e20] md:text-5xl">
+              Hosting para tu app<br />sin complicaciones
+            </h1>
+            <ul className="mt-8 space-y-3">
+              {['Servidor, base de datos, dominio y SSL en un solo clic',
+                'Deploy desde GitHub, ZIP o plantilla en menos de 5 minutos',
+                'Soporte en español y garantía de 30 días'].map((t) => (
+                <li key={t} className="flex items-start gap-3 text-gray-700"><Check />{t}</li>
+              ))}
+            </ul>
+            <div className="mt-8 flex items-baseline gap-3">
+              <span className="text-lg text-gray-400 line-through">$199</span>
+              <span className="text-5xl font-extrabold text-[#2f1c6a]">$99</span>
+              <span className="text-gray-500">MXN/mes</span>
+              <span className="rounded-md bg-[#fc5185]/10 px-2 py-1 text-sm font-bold text-[#fc5185]">-50%</span>
+            </div>
+            <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center">
+              <a href={FOSSBILLING_URL}
+                className="rounded-lg bg-[#673de6] px-10 py-4 text-center text-base font-bold text-white hover:bg-[#5025d1] transition-colors">
+                Empieza ahora
+              </a>
+              <span className="text-sm text-gray-500">✓ Garantía de reembolso de 30 días</span>
+            </div>
           </div>
-          <h1 className="mt-6 text-5xl font-bold leading-tight text-white md:text-6xl">
-            Hosting gestionado<br />
-            <span className="text-indigo-400">para tu aplicación</span>
-          </h1>
-          <p className="mx-auto mt-6 max-w-xl text-lg leading-relaxed text-slate-400">
-            Despliega cualquier app web, API o sitio estático en segundos. Sin configurar servidores. Con base de datos, HTTPS y dominio incluidos.
-          </p>
-          <div className="mt-10 flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
-            <a href={FOSSBILLING_URL}
-              className="rounded-lg bg-indigo-600 px-8 py-3.5 text-base font-semibold text-white hover:bg-indigo-500 transition-colors shadow-lg shadow-indigo-900/40">
-              Empezar gratis — desde $99 MXN/mes
-            </a>
-            <a href="#planes"
-              className="rounded-lg border border-slate-700 px-8 py-3.5 text-base font-medium text-slate-300 hover:bg-slate-800 hover:text-white transition-colors">
-              Ver todos los planes
-            </a>
+
+          {/* Mockup panel */}
+          <div className="hidden lg:block">
+            <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-xl shadow-[#673de6]/10">
+              <div className="flex items-center justify-between border-b border-gray-100 pb-4">
+                <div className="flex items-center gap-2">
+                  <span className="h-3 w-3 rounded-full bg-[#fc5185]" />
+                  <span className="h-3 w-3 rounded-full bg-[#ffcd35]" />
+                  <span className="h-3 w-3 rounded-full bg-[#00b090]" />
+                </div>
+                <span className="text-xs text-gray-400">panel.capuvps</span>
+              </div>
+              <div className="mt-4 space-y-3">
+                <div className="flex items-center justify-between rounded-lg bg-[#f4f0ff] p-4">
+                  <div>
+                    <p className="font-semibold text-[#2f1c6a]">mi-tienda</p>
+                    <p className="text-xs text-gray-500">mi-tienda.capuvps.duckdns.org</p>
+                  </div>
+                  <span className="rounded-full bg-[#00b090]/10 px-3 py-1 text-xs font-semibold text-[#00b090]">● En línea</span>
+                </div>
+                <div className="flex items-center justify-between rounded-lg border border-gray-100 p-4">
+                  <div>
+                    <p className="font-semibold text-[#1d1e20]">api-clientes</p>
+                    <p className="text-xs text-gray-500">Desplegando desde GitHub…</p>
+                  </div>
+                  <span className="rounded-full bg-[#673de6]/10 px-3 py-1 text-xs font-semibold text-[#673de6]">◌ 74%</span>
+                </div>
+                <div className="rounded-lg border border-gray-100 p-4">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-gray-400">Base de datos</p>
+                  <p className="mt-1 font-mono text-sm text-[#1d1e20]">mysql://app:•••@db:3306/app</p>
+                </div>
+              </div>
+            </div>
           </div>
-          <p className="mt-4 text-xs text-slate-600">Sin tarjeta de crédito requerida para comenzar</p>
         </div>
       </section>
 
-      {/* Stats strip */}
-      <section className="border-y border-slate-800/60 bg-slate-900/40 px-6 py-8">
-        <div className="mx-auto grid max-w-4xl grid-cols-2 gap-6 md:grid-cols-4">
+      {/* Stats */}
+      <section className="border-y border-gray-100 bg-white px-6 py-10">
+        <div className="mx-auto grid max-w-4xl grid-cols-2 gap-8 md:grid-cols-4">
           {[
             { val: '99.9%', label: 'Uptime garantizado' },
-            { val: '< 5 min', label: 'Tiempo de deploy' },
+            { val: '<5 min', label: 'De cero a producción' },
             { val: '24/7', label: 'Monitoreo activo' },
-            { val: '100%', label: 'Gestionado por nosotros' },
+            { val: '30 días', label: 'Garantía de reembolso' },
           ].map((s) => (
             <div key={s.label} className="text-center">
-              <div className="text-2xl font-bold text-indigo-400">{s.val}</div>
-              <div className="mt-1 text-xs text-slate-500">{s.label}</div>
+              <div className="text-3xl font-extrabold text-[#673de6]">{s.val}</div>
+              <div className="mt-1 text-sm text-gray-500">{s.label}</div>
             </div>
           ))}
         </div>
       </section>
 
       {/* Planes */}
-      <section id="planes" className="px-6 py-20">
+      <section id="planes" className="bg-[#fafbff] px-6 py-20">
         <div className="mx-auto max-w-6xl">
           <div className="mb-12 text-center">
-            <h2 className="text-3xl font-bold text-white">Planes y precios</h2>
-            <p className="mt-3 text-slate-400">Precios en MXN por mes, sin costos ocultos</p>
+            <h2 className="text-3xl font-extrabold tracking-tight text-[#1d1e20] md:text-4xl">Elige tu plan</h2>
+            <p className="mt-3 text-gray-500">Todos incluyen servidor, base de datos, dominio y SSL. Precios en MXN.</p>
           </div>
-          <div className="grid gap-6 md:grid-cols-3">
+          <div className="grid items-start gap-6 md:grid-cols-3">
             {PLANS.map((plan) => (
-              <div key={plan.id} className={`relative rounded-2xl border p-8 transition-all ${
+              <div key={plan.id} className={`relative rounded-2xl bg-white p-8 ${
                 plan.destacado
-                  ? 'border-indigo-500 bg-indigo-950/50 shadow-xl shadow-indigo-900/30'
-                  : 'border-slate-800 bg-slate-900/50 hover:border-slate-700'
+                  ? 'border-2 border-[#673de6] shadow-xl shadow-[#673de6]/10'
+                  : 'border border-gray-200'
               }`}>
                 {plan.destacado && (
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-indigo-600 px-4 py-1 text-xs font-semibold text-white">
+                  <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 rounded-full bg-[#673de6] px-4 py-1 text-xs font-bold uppercase tracking-wide text-white">
                     Más popular
                   </div>
                 )}
-                <h3 className="text-lg font-semibold text-white">{plan.nombre}</h3>
-                <div className="mt-4 flex items-baseline gap-1">
-                  <span className="text-4xl font-bold text-white">{plan.precio}</span>
-                  <span className="text-slate-400 text-sm">{plan.periodo}</span>
+                <h3 className="text-xl font-bold text-[#1d1e20]">{plan.nombre}</h3>
+                <p className="mt-1 text-sm text-gray-500">{plan.desc}</p>
+                <div className="mt-6 flex items-baseline gap-2">
+                  {plan.precioAntes && <span className="text-gray-400 line-through">{plan.precioAntes}</span>}
+                  <span className="text-4xl font-extrabold text-[#2f1c6a]">{plan.precio}</span>
+                  {plan.periodo && <span className="text-sm text-gray-500">{plan.periodo}</span>}
+                  {plan.descuento && (
+                    <span className="rounded-md bg-[#fc5185]/10 px-2 py-0.5 text-xs font-bold text-[#fc5185]">{plan.descuento}</span>
+                  )}
                 </div>
                 <a href={FOSSBILLING_URL}
-                  className={`mt-6 block rounded-lg py-2.5 text-center text-sm font-semibold transition-colors ${
+                  className={`mt-6 block rounded-lg py-3 text-center text-sm font-bold transition-colors ${
                     plan.destacado
-                      ? 'bg-indigo-600 text-white hover:bg-indigo-500'
-                      : 'border border-slate-700 text-slate-300 hover:bg-slate-800 hover:text-white'
+                      ? 'bg-[#673de6] text-white hover:bg-[#5025d1]'
+                      : 'border-2 border-[#673de6] text-[#673de6] hover:bg-[#673de6] hover:text-white'
                   }`}>
-                  {plan.id === 'empresarial' ? 'Contactar ventas' : 'Contratar ahora'}
+                  {plan.id === 'empresarial' ? 'Contactar ventas' : 'Contratar plan'}
                 </a>
-                <ul className="mt-6 space-y-3">
+                <ul className="mt-6 space-y-3 border-t border-gray-100 pt-6">
                   {plan.recursos.map((r) => (
-                    <li key={r} className="flex items-start gap-2.5 text-sm text-slate-300">
-                      <span className="mt-0.5 text-emerald-400 shrink-0">✓</span>
-                      {r}
-                    </li>
+                    <li key={r} className="flex items-start gap-2.5 text-sm text-gray-700"><Check />{r}</li>
                   ))}
                 </ul>
               </div>
             ))}
           </div>
+          <p className="mt-8 text-center text-sm text-gray-400">
+            ¿Ya tienes cuenta?{' '}
+            <button onClick={onLogin} className="font-semibold text-[#673de6] hover:underline">Administra tus proyectos aquí</button>
+          </p>
         </div>
       </section>
 
       {/* Características */}
-      <section id="caracteristicas" className="border-t border-slate-800/60 bg-slate-900/30 px-6 py-20">
+      <section id="caracteristicas" className="bg-white px-6 py-20">
         <div className="mx-auto max-w-6xl">
           <div className="mb-12 text-center">
-            <h2 className="text-3xl font-bold text-white">Todo lo que necesitas, incluido</h2>
-            <p className="mt-3 text-slate-400">Sin configuraciones complicadas ni extras escondidos</p>
+            <h2 className="text-3xl font-extrabold tracking-tight text-[#1d1e20] md:text-4xl">Todo incluido, sin extras escondidos</h2>
+            <p className="mt-3 text-gray-500">Lo que otros cobran aparte, aquí viene con tu plan.</p>
           </div>
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {FEATURES.map((f) => (
-              <div key={f.titulo} className="rounded-xl border border-slate-800 bg-slate-900 p-6 hover:border-slate-700 transition-colors">
-                <div className="mb-3 text-2xl">{f.icono}</div>
-                <h3 className="font-semibold text-white">{f.titulo}</h3>
-                <p className="mt-2 text-sm leading-relaxed text-slate-400">{f.desc}</p>
+              <div key={f.titulo} className="rounded-2xl border border-gray-200 bg-white p-6 hover:border-[#673de6]/40 hover:shadow-lg hover:shadow-[#673de6]/5 transition-all">
+                <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-xl bg-[#f4f0ff]">
+                  <Check />
+                </div>
+                <h3 className="font-bold text-[#1d1e20]">{f.titulo}</h3>
+                <p className="mt-2 text-sm leading-relaxed text-gray-500">{f.desc}</p>
               </div>
             ))}
           </div>
@@ -182,64 +275,69 @@ export default function Landing({ onLogin }: { onLogin: () => void }) {
       </section>
 
       {/* Cómo funciona */}
-      <section id="como-funciona" className="px-6 py-20">
-        <div className="mx-auto max-w-4xl">
+      <section id="como-funciona" className="bg-[#fafbff] px-6 py-20">
+        <div className="mx-auto max-w-5xl">
           <div className="mb-12 text-center">
-            <h2 className="text-3xl font-bold text-white">Cómo funciona</h2>
-            <p className="mt-3 text-slate-400">De cero a producción en tres pasos</p>
+            <h2 className="text-3xl font-extrabold tracking-tight text-[#1d1e20] md:text-4xl">En línea en 3 pasos</h2>
           </div>
-          <div className="relative grid gap-8 md:grid-cols-3">
-            {PASOS.map((paso, i) => (
-              <div key={paso.num} className="relative text-center">
-                <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-indigo-950 border border-indigo-800/60">
-                  <span className="text-2xl font-bold text-indigo-400">{paso.num}</span>
+          <div className="grid gap-8 md:grid-cols-3">
+            {PASOS.map((paso) => (
+              <div key={paso.num} className="rounded-2xl bg-white border border-gray-200 p-8 text-center">
+                <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-[#673de6] text-xl font-extrabold text-white">
+                  {paso.num}
                 </div>
-                {i < PASOS.length - 1 && (
-                  <div className="absolute top-8 left-[calc(50%+2rem)] hidden h-0.5 w-[calc(100%-4rem)] bg-gradient-to-r from-indigo-800/60 to-transparent md:block" />
-                )}
-                <h3 className="font-semibold text-white">{paso.titulo}</h3>
-                <p className="mt-2 text-sm leading-relaxed text-slate-400">{paso.desc}</p>
+                <h3 className="font-bold text-[#1d1e20]">{paso.titulo}</h3>
+                <p className="mt-2 text-sm leading-relaxed text-gray-500">{paso.desc}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* CTA Banner */}
-      <section className="border-t border-slate-800/60 bg-indigo-950/30 px-6 py-16">
+      {/* Garantía */}
+      <section className="bg-white px-6 py-14">
+        <div className="mx-auto flex max-w-3xl flex-col items-center gap-4 rounded-2xl border border-[#00b090]/30 bg-[#00b090]/5 px-8 py-10 text-center">
+          <span className="flex h-14 w-14 items-center justify-center rounded-full bg-[#00b090]/10 text-2xl font-extrabold text-[#00b090]">30</span>
+          <h3 className="text-xl font-bold text-[#1d1e20]">Garantía de reembolso de 30 días</h3>
+          <p className="max-w-md text-sm text-gray-500">
+            Prueba cualquier plan sin riesgo. Si no te convence, te devolvemos tu dinero durante los primeros 30 días. Sin preguntas.
+          </p>
+        </div>
+      </section>
+
+      {/* CTA final */}
+      <section className="bg-[#2f1c6a] px-6 py-16">
         <div className="mx-auto max-w-2xl text-center">
-          <h2 className="text-3xl font-bold text-white">¿Listo para empezar?</h2>
-          <p className="mt-4 text-slate-400">
-            Crea tu cuenta, elige un plan y despliega tu primera app en menos de 10 minutos.
+          <h2 className="text-3xl font-extrabold text-white md:text-4xl">Lanza tu proyecto hoy</h2>
+          <p className="mt-4 text-[#b8a8f0]">
+            Desde <span className="font-bold text-[#ffcd35]">$99 MXN/mes</span> con todo incluido. Tu app en línea en menos de 10 minutos.
           </p>
           <div className="mt-8 flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
             <a href={FOSSBILLING_URL}
-              className="rounded-lg bg-indigo-600 px-8 py-3.5 text-base font-semibold text-white hover:bg-indigo-500 transition-colors">
+              className="rounded-lg bg-[#ffcd35] px-10 py-4 text-base font-bold text-[#2f1c6a] hover:bg-[#ffd85c] transition-colors">
               Crear mi cuenta
             </a>
-            <button onClick={onLogin}
-              className="text-sm text-slate-400 hover:text-white transition-colors">
-              Ya tengo cuenta — Iniciar sesión
+            <button onClick={onLogin} className="text-sm font-semibold text-white/80 hover:text-white transition-colors">
+              Ya tengo cuenta → Administrar
             </button>
           </div>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-slate-800/60 bg-slate-950 px-6 py-10">
-        <div className="mx-auto max-w-6xl">
-          <div className="flex flex-col items-center gap-4 md:flex-row md:justify-between">
-            <div className="flex items-center gap-2">
-              <span className="text-xl font-bold text-indigo-400">▦</span>
-              <span className="font-semibold text-white">CapuVPS</span>
-              <span className="ml-2 text-xs text-slate-600">Hosting gestionado</span>
-            </div>
-            <div className="flex gap-6 text-xs text-slate-600">
-              <a href={FOSSBILLING_URL} className="hover:text-slate-400 transition-colors">Portal de cliente</a>
-              <button onClick={onLogin} className="hover:text-slate-400 transition-colors">Panel de control</button>
-            </div>
-            <p className="text-xs text-slate-700">&copy; 2026 CapuVPS. Todos los derechos reservados.</p>
+      <footer className="border-t border-gray-100 bg-white px-6 py-10">
+        <div className="mx-auto flex max-w-6xl flex-col items-center gap-4 md:flex-row md:justify-between">
+          <div className="flex items-center gap-2">
+            <span className="text-xl font-bold text-[#673de6]">▦</span>
+            <span className="font-bold text-[#2f1c6a]">CapuVPS</span>
+            <span className="ml-2 text-xs text-gray-400">Hosting gestionado</span>
           </div>
+          <div className="flex gap-6 text-sm text-gray-500">
+            <a href={FOSSBILLING_URL} className="hover:text-[#673de6] transition-colors">Crear cuenta</a>
+            <a href={FOSSBILLING_URL} className="hover:text-[#673de6] transition-colors">Facturación</a>
+            <button onClick={onLogin} className="hover:text-[#673de6] transition-colors">Administrar proyectos</button>
+          </div>
+          <p className="text-xs text-gray-400">&copy; 2026 CapuVPS. Todos los derechos reservados.</p>
         </div>
       </footer>
     </div>
