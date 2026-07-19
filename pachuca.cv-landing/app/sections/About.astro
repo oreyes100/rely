@@ -1,0 +1,52 @@
+---
+interface Props {
+  lang?: 'es' | 'en'
+}
+
+const { lang = 'en' } = Astro.props
+---
+
+<section id='about' class='flex flex-col gap-12 py-16 bg-gray-900'>
+  <div class='container mx-auto px-6'>
+    <div class='flex flex-col gap-6 items-center justify-center text-center'>
+      <h3
+        class='text-4xl md:text-6xl text-amber-500 font-special font-bold leading-tight'
+      >
+        {lang === 'es' ? 'Nuestro Legado, Tu Futuro' : 'Our Legacy, Your Future'}
+      </h3>
+      <p class='text-white/80 text-lg max-w-2xl'>
+        {lang === 'es'
+          ? 'Construido sobre una base de herencia futbolística, estamos formando la próxima generación de talento.'
+          : 'Built on a foundation of soccer heritage, we are shaping the next generation of talent.'}
+      </p>
+    </div>
+    <div class='flex flex-col md:flex-row items-start mt-12 gap-8'>
+      <div class='p-6 flex flex-col gap-6 md:w-1/2'>
+        <h4 class='text-2xl font-semibold'>
+          {lang === 'es'
+            ? 'El Espíritu de Pachuca Central Valley'
+            : 'The Spirit of Pachuca Central Valley'}
+        </h4>
+        <p class='text-white/80 text-base leading-relaxed'>
+          {lang === 'es'
+            ? 'La Academia de Fútbol Pachuca Central Valley extiende con orgullo la reconocida filosofía de Pachuca para desarrollar jóvenes atletas excepcionales. Nuestra metodología integra técnicas de entrenamiento comprobadas con una comprensión profunda del desarrollo del jugador, asegurando que cada individuo alcance su máximo potencial.'
+            : 'Pachuca Central Valley Soccer Academy proudly extends the renowned Pachuca philosophy to develop exceptional young athletes. Our methodology integrates proven training techniques with a deep understanding of player development, ensuring each individual reaches their full potential.'}
+        </p>
+        <p class='text-white/80 text-base leading-relaxed'>
+          {lang === 'es'
+            ? 'Cultivamos un entorno de disciplina, respeto y una pasión inquebrantable por el hermoso juego, preparando a los jugadores no solo para la competencia, sino para la vida.'
+            : 'We cultivate an environment of discipline, respect, and unwavering passion for the beautiful game, preparing players not just for competition, but for life.'}
+        </p>
+      </div>
+      <div class='flex-1'>
+        <div class='w-full aspect-video rounded-lg overflow-hidden shadow-lg'>
+          <img
+            src='/hero.webp'
+            alt={lang === 'es' ? 'Imagen de ejemplo' : 'Placeholder'}
+            class='w-full h-full object-cover transition-transform duration-300 hover:scale-105'
+          />
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

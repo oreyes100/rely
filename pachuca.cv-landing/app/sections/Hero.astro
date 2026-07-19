@@ -1,0 +1,55 @@
+---
+import ChevronDownIcon from '@/icons/chevron-down.svg'
+
+interface Props {
+  lang?: 'es' | 'en'
+}
+
+const { lang = 'en' } = Astro.props
+
+const translations = {
+  en: {
+    title: 'Welcome to Pachuca Central Valley!',
+    description:
+      'Where dedication meets opportunity. Elite development for aspiring champions.',
+    button: 'Join the team today',
+  },
+  es: {
+    title: '¡Bienvenido al Valle Central de Pachuca!',
+    description:
+      'Donde la dedicación se encuentra con la oportunidad. Desarrollo de élite para aspirantes a campeones.',
+    button: 'Únete al equipo hoy',
+  },
+}
+
+const t = translations[lang]
+---
+
+<div
+  transition:name='hero'
+  class='relative min-h-screen flex items-center justify-center bg-cover bg-center bg-[url(/hero.webp)]'
+>
+  <div
+    class='absolute inset-0 bg-gradient-to-b from-pcv-midnight/40 to-pcv-midnight'
+  >
+  </div>
+  <div class='absolute mx-auto bottom-4 animate-pulse'>
+    <ChevronDownIcon />
+  </div>
+  <div class='relative text-center px-4'>
+    <h1
+      class='text-5xl md:text-8xl font-special font-bold uppercase bg-gradient-to-b from-white to-theme-moonstone text-transparent bg-clip-text'
+    >
+      {t.title}
+    </h1>
+    <p class='md:text-xl mt-2 max-w-2xl mx-auto'>
+      {t.description}
+    </p>
+    <a
+      href={lang == 'en' ? '/apply' : '/aplicar'}
+      class='inline-flex items-center justify-center bg-pcv-yellow px-6 py-3 text-black rounded-md mt-8 font-medium transition hover:scale-105 hover:opacity-90'
+    >
+      {t.button}
+    </a>
+  </div>
+</div>

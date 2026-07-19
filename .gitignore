@@ -12,4 +12,5 @@ manual-vps-cecytem.docx
 # === Artefactos de build ===
 node_modules/
 dist/
+.astro/
 *.log

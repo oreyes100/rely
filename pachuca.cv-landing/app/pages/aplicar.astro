@@ -1,0 +1,703 @@
+---
+import Layout from '@/layouts/Layout.astro'
+import Header from '@/sections/header.astro'
+import SendIcon from '@/icons/send.svg'
+import CircleCheckIcon from '@/icons/circle-check.svg'
+import ThumbsUpIcon from '@/icons/thumbs-up.svg'
+import XIcon from '@/icons/x.svg'
+
+const metadata = [
+  {
+    name: 'keywords',
+    content:
+      'Solicitud Academia de Fútbol, Aplicar Pachuca Central Valley, Registro Fútbol Juvenil, Pruebas de Fútbol',
+  },
+  { name: 'author', content: 'Academia de Fútbol Pachuca Central Valley' },
+  {
+    name: 'og:title',
+    content: 'Aplica Ahora | Academia de Fútbol Pachuca Central Valley',
+  },
+  {
+    name: 'og:description',
+    content:
+      'Da el primer paso hacia el desarrollo futbolístico de élite. Llena tu formulario de solicitud para Pachuca Central Valley SA.',
+  },
+  { name: 'og:type', content: 'website' },
+  { name: 'og:url', content: 'https://www.pachuca.vc/aplicar' },
+  {
+    name: 'og:image',
+    content: 'https://www.pachuca.vc/images/og-es.jpg',
+  },
+  { name: 'og:image:width', content: '1200' },
+  { name: 'og:image:height', content: '630' },
+  {
+    name: 'og:site_name',
+    content: 'Academia de Fútbol Pachuca Central Valley',
+  },
+  { name: 'og:locale', content: 'es_ES' },
+  { name: 'twitter:card', content: 'summary_large_image' },
+  {
+    name: 'twitter:title',
+    content: 'Aplica Ahora | Academia de Fútbol Pachuca Central Valley',
+  },
+  {
+    name: 'twitter:description',
+    content:
+      'Completa tu solicitud para unirte a nuestro programa de desarrollo futbolístico de élite.',
+  },
+  {
+    name: 'twitter:image',
+    content: 'https://www.pachuca.vc/images/og-es.jpg',
+  },
+]
+---
+
+<Layout
+  title='Formulario de Solicitud - Academia de Fútbol Pachuca Central Valley'
+  description='Aplica para unirte a la Academia de Fútbol Pachuca Central Valley. Da el primer paso hacia el desarrollo futbolístico de élite. Llena tu formulario de solicitud hoy mismo.'
+  metadata={metadata}
+>
+  <Header lang='es' />
+
+  <section
+    class='pt-24 md:pt-32 pb-16 md:pb-24 mx-auto container max-w-4xl px-4 sm:px-6 lg:px-8'
+  >
+    <div class='text-center mb-12 md:mb-16 pb-6 border-b-2 border-white/10'>
+      <h1
+        class='text-5xl sm:text-6xl md:text-7xl font-special text-pcv-yellow tracking-wide'
+      >
+        Formulario de Solicitud de la Academia
+      </h1>
+      <p class='mt-3 text-lg md:text-xl text-white/70 max-w-3xl mx-auto'>
+        Por favor, proporciona la siguiente información para ayudarnos a conocer
+        al jugador.
+      </p>
+      <div class='mt-4'>
+        <a href='/apply' class='text-pcv-yellow'>Change to English</a>
+      </div>
+    </div>
+
+    <form id='apply-form' class='space-y-12'>
+      <fieldset class='space-y-6'>
+        <legend
+          class='text-2xl md:text-3xl font-bold text-white pb-3 mb-6 border-b border-white/10 w-full'
+        >
+          Información del Jugador y Tutor
+        </legend>
+        <div class='grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-6'>
+          <div>
+            <label
+              for='child-name'
+              class='block text-sm font-medium text-white/90 mb-1'
+              >Nombre Completo del Jugador <span class='text-red-400'>*</span
+              ></label
+            >
+            <input
+              type='text'
+              name='child_name'
+              id='child-name'
+              required
+              class='block w-full bg-white/5 border-2 border-white/20 rounded-md p-3 text-white outline-none focus:border-pcv-steelblue focus:ring-1 focus:ring-pcv-steelblue placeholder:text-white/40'
+              placeholder='Nombre y Apellido'
+            />
+          </div>
+          <div class='w-full'>
+            <label
+              for='child-dob'
+              class='block text-sm font-medium text-white/90 mb-1'
+              >Fecha de Nacimiento <span class='text-red-400'>*</span></label
+            >
+            <input
+              type='date'
+              name='child_dob'
+              id='child-dob'
+              required
+              class='block w-[calc(100%-1.25rem)] md:w-full bg-white/5 border-2 border-white/20 rounded-md py-3 md:py-6 px-2 text-white outline-none focus:border-pcv-steelblue focus:ring-1 focus:ring-pcv-steelblue h-11'
+            />
+          </div>
+          <div>
+            <label
+              for='parent-name'
+              class='block text-sm font-medium text-white/90 mb-1'
+              >Nombre Completo del Padre/Madre o Tutor <span
+                class='text-red-400'>*</span
+              ></label
+            >
+            <input
+              type='text'
+              name='parent_name'
+              id='parent-name'
+              required
+              class='block w-full bg-white/5 border-2 border-white/20 rounded-md p-3 text-white outline-none focus:border-pcv-steelblue focus:ring-1 focus:ring-pcv-steelblue placeholder:text-white/40'
+              placeholder='Nombre y Apellido'
+            />
+          </div>
+          <div>
+            <label
+              for='parent-relationship'
+              class='block text-sm font-medium text-white/90 mb-1'
+              >Relación con el Jugador <span class='text-red-400'>*</span
+              ></label
+            >
+            <select
+              name='parent_relationship'
+              id='parent-relationship'
+              required
+              class='block w-full bg-white/5 border-2 border-white/20 rounded-md p-3 text-white outline-none focus:border-pcv-steelblue focus:ring-1 focus:ring-pcv-steelblue appearance-none'
+            >
+              <option value='' disabled selected class='bg-pcv-dark-blue'
+                >Selecciona...</option
+              >
+              <option value='mother' class='bg-pcv-dark-blue'>Madre</option>
+              <option value='father' class='bg-pcv-dark-blue'>Padre</option>
+              <option value='guardian' class='bg-pcv-dark-blue'
+                >Tutor Legal</option
+              >
+              <option value='other' class='bg-pcv-dark-blue'>Otro</option>
+            </select>
+          </div>
+          <div>
+            <label
+              for='parent-email'
+              class='block text-sm font-medium text-white/90 mb-1'
+              >Correo Electrónico de Contacto <span class='text-red-400'>*</span
+              ></label
+            >
+            <input
+              type='email'
+              name='parent_email'
+              id='parent-email'
+              required
+              class='block w-full bg-white/5 border-2 border-white/20 rounded-md p-3 text-white outline-none focus:border-pcv-steelblue focus:ring-1 focus:ring-pcv-steelblue placeholder:text-white/40'
+              placeholder='tu@ejemplo.com'
+            />
+          </div>
+          <div>
+            <label
+              for='parent-phone'
+              class='block text-sm font-medium text-white/90 mb-1'
+              >Teléfono de Contacto <span class='text-red-400'>*</span></label
+            >
+            <input
+              type='tel'
+              name='parent_phone'
+              id='parent-phone'
+              required
+              class='block w-full bg-white/5 border-2 border-white/20 rounded-md p-3 text-white outline-none focus:border-pcv-steelblue focus:ring-1 focus:ring-pcv-steelblue placeholder:text-white/40'
+              placeholder='555-123-4567'
+            />
+          </div>
+        </div>
+      </fieldset>
+
+      <fieldset class='space-y-8'>
+        <legend
+          class='text-2xl md:text-3xl font-bold text-white pb-3 mb-6 border-b border-white/10 w-full'
+        >
+          Sobre el Jugador y el Fútbol
+        </legend>
+        <p class='text-sm text-white/70 -mt-4'>
+          Por favor, responde desde la perspectiva del jugador o según tus
+          observaciones.
+        </p>
+
+        <div>
+          <p class='block text-sm font-medium text-white/90 mb-3'>
+            ¿Qué motiva principalmente al jugador a jugar fútbol? <span
+              class='text-xs text-white/60'>(Marca todas las que apliquen)</span
+            >
+          </p>
+          <div class='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4'>
+            {
+              [
+                { id: 'motiv-fun', label: 'Divertirse' },
+                { id: 'motiv-friends', label: 'Estar con amigos' },
+                { id: 'motiv-compete', label: 'Competición / Ganar' },
+                { id: 'motiv-learn', label: 'Aprender y mejorar habilidades' },
+                { id: 'motiv-pro', label: 'Sueño de jugar profesionalmente' },
+                { id: 'motiv-passion', label: 'Amor por el juego en sí' },
+              ].map((option) => (
+                <label
+                  for={option.id}
+                  class='flex items-center space-x-3 p-3 border-2 border-white/20 rounded-md hover:border-pcv-steelblue transition-colors cursor-pointer bg-white/5 has-[:checked]:border-pcv-steelblue has-[:checked]:bg-pcv-steelblue/20'
+                >
+                  <input
+                    type='checkbox'
+                    id={option.id}
+                    name='motivation[]'
+                    value={option.label
+                      .toLowerCase()
+                      .replace(/\s+/g, '-')
+                      .normalize('NFD')
+                      .replace(/[\u0300-\u036f]/g, '')}
+                    class='h-4 w-4 text-pcv-steelblue bg-transparent border-white/30 rounded focus:ring-pcv-steelblue focus:ring-offset-pcv-dark-blue'
+                  />
+                  <span class='text-sm text-white/80'>{option.label}</span>
+                </label>
+              ))
+            }
+          </div>
+        </div>
+
+        <div>
+          <p class='block text-sm font-medium text-white/90 mb-3'>
+            ¿Disfrute general de jugar fútbol? <span
+              class='text-xs text-white/60'>(1=Bajo, 5=Muy Alto)</span
+            ><span class='text-red-400'>*</span>
+          </p>
+          <div class='grid grid-cols-5 gap-3'>
+            {
+              [1, 2, 3, 4, 5].map((num) => (
+                <label
+                  for={`enjoy-${num}`}
+                  class='flex flex-col items-center justify-center p-3 border-2 border-white/20 rounded-md hover:border-pcv-steelblue transition-colors cursor-pointer bg-white/5 has-[:checked]:border-pcv-steelblue has-[:checked]:bg-pcv-steelblue/20'
+                >
+                  <input
+                    type='radio'
+                    id={`enjoy-${num}`}
+                    name='enjoyment_level'
+                    value={num}
+                    required
+                    class='h-4 w-4 text-pcv-steelblue bg-transparent border-white/30 focus:ring-pcv-steelblue focus:ring-offset-pcv-dark-blue mb-1'
+                  />
+                  <span class='text-sm text-white/80 font-medium'>{num}</span>
+                </label>
+              ))
+            }
+          </div>
+        </div>
+
+        <div>
+          <p class='block text-sm font-medium text-white/90 mb-3'>
+            ¿Reacción típica ante desafíos o errores? <span class='text-red-400'
+              >*</span
+            >
+          </p>
+          <div class='grid grid-cols-1 sm:grid-cols-2 gap-4'>
+            {
+              [
+                { id: 'react-persist', label: 'Se esfuerza más / Persistente' },
+                { id: 'react-frustrated', label: 'Se frustra visiblemente' },
+                {
+                  id: 'react-unaffected',
+                  label: 'Parece mayormente no afectado/a',
+                },
+                { id: 'react-discouraged', label: 'Se desanima' },
+              ].map((option) => (
+                <label
+                  for={option.id}
+                  class='flex items-center space-x-3 p-3 border-2 border-white/20 rounded-md hover:border-pcv-steelblue transition-colors cursor-pointer bg-white/5 has-[:checked]:border-pcv-steelblue has-[:checked]:bg-pcv-steelblue/20'
+                >
+                  <input
+                    type='radio'
+                    id={option.id}
+                    name='reaction_challenge'
+                    value={option.label
+                      .toLowerCase()
+                      .replace(/\s+/g, '-')
+                      .normalize('NFD')
+                      .replace(/[\u0300-\u036f]/g, '')}
+                    required
+                    class='h-4 w-4 text-pcv-steelblue bg-transparent border-white/30 rounded focus:ring-pcv-steelblue focus:ring-offset-pcv-dark-blue'
+                  />
+                  <span class='text-sm text-white/80'>{option.label}</span>
+                </label>
+              ))
+            }
+          </div>
+        </div>
+
+        <div>
+          <p class='block text-sm font-medium text-white/90 mb-3'>
+            ¿Actitud hacia el entrenamiento y aprendizaje? <span
+              class='text-red-400'>*</span
+            >
+          </p>
+          <div class='grid grid-cols-1 sm:grid-cols-2 gap-4'>
+            {
+              [
+                {
+                  id: 'learn-eager',
+                  label: 'Ansioso/a por aprender / Receptivo/a',
+                },
+                {
+                  id: 'learn-neutral',
+                  label: 'Acepta el entrenamiento / Neutral',
+                },
+                {
+                  id: 'learn-resistant',
+                  label: 'A veces resistente / Necesita ánimo',
+                  className: 'sm:col-span-2',
+                },
+              ].map((option) => (
+                <label
+                  for={option.id}
+                  class={`flex items-center space-x-3 p-3 border-2 border-white/20 rounded-md hover:border-pcv-steelblue transition-colors cursor-pointer bg-white/5 has-[:checked]:border-pcv-steelblue has-[:checked]:bg-pcv-steelblue/20 ${option.className || ''}`}
+                >
+                  <input
+                    type='radio'
+                    id={option.id}
+                    name='learning_attitude'
+                    value={option.label
+                      .toLowerCase()
+                      .replace(/\s+/g, '-')
+                      .normalize('NFD')
+                      .replace(/[\u0300-\u036f]/g, '')}
+                    required
+                    class='h-4 w-4 text-pcv-steelblue bg-transparent border-white/30 rounded focus:ring-pcv-steelblue focus:ring-offset-pcv-dark-blue'
+                  />
+                  <span class='text-sm text-white/80'>{option.label}</span>
+                </label>
+              ))
+            }
+          </div>
+        </div>
+
+        <div>
+          <p class='block text-sm font-medium text-white/90 mb-3'>
+            ¿Estilo típico de interacción en equipo? <span class='text-red-400'
+              >*</span
+            >
+          </p>
+          <div class='grid grid-cols-1 sm:grid-cols-2 gap-4'>
+            {
+              [
+                {
+                  id: 'team-collaborative',
+                  label: 'Colaborador/a / De apoyo',
+                },
+                { id: 'team-leader', label: 'Toma la iniciativa / Líder' },
+                { id: 'team-focused', label: 'Enfocado/a en su propio juego' },
+                { id: 'team-reserved', label: 'Más reservado/a / Callado/a' },
+              ].map((option) => (
+                <label
+                  for={option.id}
+                  class='flex items-center space-x-3 p-3 border-2 border-white/20 rounded-md hover:border-pcv-steelblue transition-colors cursor-pointer bg-white/5 has-[:checked]:border-pcv-steelblue has-[:checked]:bg-pcv-steelblue/20'
+                >
+                  <input
+                    type='radio'
+                    id={option.id}
+                    name='team_behavior'
+                    value={option.label
+                      .toLowerCase()
+                      .replace(/\s+/g, '-')
+                      .normalize('NFD')
+                      .replace(/[\u0300-\u036f]/g, '')}
+                    required
+                    class='h-4 w-4 text-pcv-steelblue bg-transparent border-white/30 rounded focus:ring-pcv-steelblue focus:ring-offset-pcv-dark-blue'
+                  />
+                  <span class='text-sm text-white/80'>{option.label}</span>
+                </label>
+              ))
+            }
+          </div>
+        </div>
+
+        <div class='space-y-6 pt-4'>
+          <div>
+            <label
+              for='soccer-aspirations'
+              class='block text-sm font-medium text-white/90 mb-1'
+              >Aspiraciones futbolísticas (si las tiene):</label
+            >
+            <textarea
+              name='soccer_aspirations'
+              id='soccer-aspirations'
+              rows='3'
+              class='block w-full bg-white/5 border-2 border-white/20 rounded-md p-3 text-white outline-none focus:border-pcv-steelblue focus:ring-1 focus:ring-pcv-steelblue placeholder:text-white/40'
+              placeholder='ej., Entrar a un equipo específico, jugar en la universidad, ser profesional, solo divertirse...'
+            ></textarea>
+          </div>
+          <div>
+            <label
+              for='potential-challenges'
+              class='block text-sm font-medium text-white/90 mb-1'
+              >Desafíos o cosas que no le gustan del fútbol/entrenamiento (si
+              las hay):</label
+            >
+            <textarea
+              name='potential_challenges'
+              id='potential-challenges'
+              rows='3'
+              class='block w-full bg-white/5 border-2 border-white/20 rounded-md p-3 text-white outline-none focus:border-pcv-steelblue focus:ring-1 focus:ring-pcv-steelblue placeholder:text-white/40'
+              placeholder='Opcional: ¿Algo que cause dificultad o desmotivación?'
+            ></textarea>
+          </div>
+        </div>
+      </fieldset>
+
+      <label class='block text-sm font-medium text-white/90 mb-1'>
+        Acta de nacimiento o Pasaporte <span class='text-red-400'>*</span
+        ></label
+      >
+      <fieldset
+        id='birthDropArea'
+        class='flex items-center justify-center rounded-md bg-white/5 border-2 border-white/10 border-dotted md:px-50 py-30'
+      >
+        <span id='birthDocText'>Arrastra y Suelta o</span>
+        <label
+          for='birthFileInput'
+          class='pl-1 text-pcv-yellow font-medium hover:underline hover:cursor-pointer'
+          >Selecciona manualmente.pdf</label
+        >
+        <input
+          name='birth_document'
+          id='birthFileInput'
+          type='file'
+          accept='.pdf'
+          required
+          class='hidden'
+        />
+      </fieldset>
+
+      <label class='block text-sm font-medium text-white/90 mb-1'>
+        prueba de Aseguranza Medica
+        <span class='text-red-400'>*</span></label
+      >
+      <fieldset
+        id='medicalDropArea'
+        class='flex items-center justify-center rounded-md bg-white/5 border-2 border-white/10 border-dotted md:px-50 py-30'
+      >
+        <span id='medicalDocText'>Arrastra y Suelta o</span>
+        <label
+          for='medicalFileInput'
+          class='pl-1 text-pcv-yellow font-medium hover:underline hover:cursor-pointer'
+          >Selecciona manualmente.pdf</label
+        >
+        <input
+          name='medical_document'
+          id='medicalFileInput'
+          type='file'
+          accept='.pdf'
+          required
+          class='hidden'
+        />
+      </fieldset>
+
+      <fieldset class='space-y-6'>
+        <legend
+          class='text-2xl md:text-3xl font-bold text-white pb-3 mb-6 border-b border-white/10 w-full'
+        >
+          Información Adicional
+        </legend>
+        <div>
+          <label
+            for='other-comments'
+            class='block text-sm font-medium text-white/90 mb-1'
+            >¿Hay algo más importante que debamos saber?</label
+          >
+          <textarea
+            name='other_comments'
+            id='other-comments'
+            rows='4'
+            class='block w-full bg-white/5 border-2 border-white/20 rounded-md p-3 text-white outline-none focus:border-pcv-steelblue focus:ring-1 focus:ring-pcv-steelblue placeholder:text-white/40'
+            placeholder='Opcional: Condiciones médicas, consideraciones de aprendizaje, experiencias pasadas, etc.'
+          ></textarea>
+        </div>
+      </fieldset>
+
+      <div class='pt-8 text-center border-t-2 border-white/10'>
+        <button
+          type='submit'
+          class='inline-flex cursor-pointer items-center justify-center gap-2 px-8 py-3 bg-pcv-yellow rounded-md text-black font-bold text-base shadow-md transition-all duration-150 ease-in-out hover:bg-yellow-400 hover:shadow-lg hover:scale-105 outline-none'
+        >
+          <SendIcon class='w-5 h-5' /> Enviar Solicitud
+        </button>
+      </div>
+    </form>
+  </section>
+
+  <div
+    id='confirmationPopup'
+    class='fixed inset-0 bg-pcv-midnight/80 flex justify-center items-center z-[1000] p-4 transition-opacity duration-300 ease-in-out opacity-0 invisible'
+    aria-labelledby='popupTitle'
+    aria-describedby='popupMessage'
+    role='alertdialog'
+    aria-modal='true'
+  >
+    <div
+      class='bg-pcv-midnight text-pcv-dark-blue p-6 sm:p-8 rounded-lg shadow-2xl text-center max-w-lg w-full mx-auto transition-transform duration-300 ease-out transform scale-95'
+      id='popupContent'
+    >
+      <button
+        class='absolute top-3 right-3 text-pcv-moonstone hover:text-pcv-steelblue transition-colors cursor-pointer'
+        aria-label='Cerrar ventana emergente'
+        data-close-popup
+      >
+        <XIcon class='w-6 h-6' />
+      </button>
+      <div class='mb-4 sm:mb-6'>
+        <CircleCheckIcon
+          class='w-16 h-16 sm:w-20 sm:h-20 text-pcv-yellow mx-auto'
+        />
+      </div>
+      <h2
+        class='font-special text-4xl sm:text-5xl text-pcv-dark-blue mb-3'
+        id='popupTitle'
+      >
+        ¡Solicitud Recibida!
+      </h2>
+      <p
+        class='text-base sm:text-lg text-gray-300 mb-6 sm:mb-8'
+        id='popupMessage'
+      >
+        Gracias por tu interés. Hemos recibido tu solicitud y nos pondremos en
+        contacto en breve.
+      </p>
+      <button
+        class='inline-flex cursor-pointer items-center justify-center gap-2 px-6 py-3 bg-pcv-yellow rounded-md text-black font-bold text-base shadow-md transition-all duration-150 ease-in-out hover:bg-yellow-400 hover:shadow-lg hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-white focus:ring-pcv-yellow'
+        data-close-popup
+      >
+        <ThumbsUpIcon class='w-5 h-5' /> ¡Entendido!
+      </button>
+    </div>
+  </div>
+</Layout>
+
+<script>
+  import { actions } from 'astro:actions'
+
+  document.addEventListener('astro:page-load', () => {
+    const form = document.getElementById('apply-form') as HTMLFormElement
+    const popupOverlay = document.getElementById('confirmationPopup')
+    const popupContent = document.getElementById('popupContent')
+    const closePopupButtons = document.querySelectorAll('[data-close-popup]')
+
+    const birthDropArea = document.getElementById(
+      'birthDropArea'
+    ) as HTMLElement
+    const medicalDropArea = document.getElementById(
+      'medicalDropArea'
+    ) as HTMLElement
+
+    const birthFileInput = document.getElementById(
+      'birthFileInput'
+    ) as HTMLInputElement
+    const medicalFileInput = document.getElementById(
+      'medicalFileInput'
+    ) as HTMLInputElement
+
+    const birthDocText = document.getElementById('birthDocText')
+    const medicalDocText = document.getElementById('medicalDocText')
+
+    function openPopup() {
+      if (popupOverlay && popupContent) {
+        popupOverlay.classList.remove('opacity-0', 'invisible')
+        popupOverlay.classList.add('opacity-100', 'visible')
+        void popupContent.offsetWidth
+        popupContent.classList.remove('scale-95')
+        popupContent.classList.add('scale-100')
+      }
+    }
+
+    function closePopup() {
+      if (popupOverlay && popupContent) {
+        popupOverlay.classList.remove('opacity-100', 'visible')
+        popupOverlay.classList.add('opacity-0')
+        popupContent.classList.remove('scale-100')
+        popupContent.classList.add('scale-95')
+        setTimeout(() => {
+          if (!popupOverlay.classList.contains('opacity-100')) {
+            popupOverlay.classList.add('invisible')
+          }
+        }, 300)
+      }
+    }
+
+    let isLoading = false
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault()
+      if (isLoading) return
+
+      const formData = new FormData(form)
+
+      isLoading = true
+      const result = await actions.apply(formData)
+
+      isLoading = false
+
+      if (result.data.success) {
+        openPopup()
+      } else {
+        alert('Ocurrio un error inesperado')
+      }
+    })
+
+    closePopupButtons.forEach((button) => {
+      button.addEventListener('click', closePopup)
+    })
+
+    if (popupOverlay) {
+      popupOverlay.addEventListener('click', (event) => {
+        if (event.target === popupOverlay) {
+          closePopup()
+        }
+      })
+    }
+
+    document.addEventListener('keydown', (event) => {
+      if (
+        event.key === 'Escape' &&
+        popupOverlay &&
+        popupOverlay.classList.contains('visible')
+      ) {
+        closePopup()
+      }
+    })
+
+    if (birthDropArea) {
+      birthDropArea.addEventListener('dragover', (e) => e.preventDefault())
+      birthDropArea.addEventListener('drop', (e) => {
+        e.preventDefault()
+
+        const files = e.dataTransfer?.files
+
+        if (files && files.length > 0) {
+          const file = files[0]
+          const dt = new DataTransfer()
+          dt.items.add(file)
+          birthFileInput.files = dt.files
+
+          birthFileInput.previousElementSibling.textContent = file.name
+          birthDocText.textContent = ''
+        }
+      })
+
+      birthFileInput.addEventListener('change', () => {
+        if (birthFileInput.files.length > 0) {
+          const file = birthFileInput.files[0]
+          birthFileInput.previousElementSibling.textContent = file.name
+          birthDocText.textContent = ''
+        }
+      })
+    }
+
+    if (medicalDropArea) {
+      medicalDropArea.addEventListener('dragover', (e) => e.preventDefault())
+      medicalDropArea.addEventListener('drop', (e) => {
+        e.preventDefault()
+
+        const files = e.dataTransfer?.files
+
+        if (files && files.length > 0) {
+          const file = files[0]
+          const dt = new DataTransfer()
+          dt.items.add(file)
+          medicalFileInput.files = dt.files
+
+          medicalFileInput.previousElementSibling.textContent = file.name
+          medicalDocText.textContent = ''
+        }
+      })
+
+      medicalFileInput.addEventListener('change', () => {
+        if (medicalFileInput.files.length > 0) {
+          const file = medicalFileInput.files[0]
+          medicalFileInput.previousElementSibling.textContent = file.name
+          medicalDocText.textContent = ''
+        }
+      })
+    }
+  })
+</script>

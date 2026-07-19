@@ -1,0 +1,59 @@
+---
+import InstagramIcon from '@/icons/instagram.svg'
+import FacebookIcon from '@/icons/facebook.svg'
+
+interface Props {
+  lang?: 'es' | 'en'
+}
+
+const { lang = 'en' } = Astro.props
+
+const translations = {
+  en: {
+    logoAlt: 'Logo of Pachuca Central Valley',
+    copyright: 'Pachuca Valle Central Soccer Academy. Forging Champions.',
+    poweredBy: 'Powered by',
+  },
+  es: {
+    logoAlt: 'Logo de Pachuca Valle Central',
+    copyright: 'Pachuca Valle Central Soccer Academy. Forjando Campeones.',
+    poweredBy: 'Desarrollado por',
+  },
+}
+
+const t = translations[lang]
+---
+
+<footer class='py-3 bg-gray-900'>
+  <div class='container mx-auto flex flex-col items-center gap-2 px-4 text-center'>
+    <div class='w-8'>
+      <img
+        src='/images/logo.webp'
+        alt={t.logoAlt}
+        class='w-full h-full'
+      />
+    </div>
+    <div class='flex items-center gap-4 py-4'>
+      <a href='' class='transition hover:scale-90 hover:text-neutral-200'>
+        <FacebookIcon />
+      </a>
+      <a
+        href='https://www.instagram.com/pachucavalle'
+        target='_blank'
+        rel='noreferrer noopener'
+        class='transition hover:scale-90 hover:text-neutral-200'
+      >
+        <InstagramIcon />
+      </a>
+    </div>
+    <span class='text-sm text-gray-300'>
+      &copy; 2025 {t.copyright}
+    </span>
+    <span class='text-sm'>
+      {t.poweredBy}
+      <a href='https://www.devlusoft.com' class='font-medium text-[#DC5F00]'>
+        devlusoft
+      </a>
+    </span>
+  </div>
+</footer>

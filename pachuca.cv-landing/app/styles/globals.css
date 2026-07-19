@@ -1,0 +1,75 @@
+@import 'tailwindcss';
+
+@font-face {
+  font-family: 'Karantina';
+  src: url('/fonts/Karantina-Bold.woff') format('woff');
+  font-weight: bold;
+}
+
+@font-face {
+  font-family: 'Karantina';
+  src: url('/fonts/Karantina-Light.woff') format('woff');
+  font-weight: 300;
+}
+
+@font-face {
+  font-family: 'Karantina';
+  src: url('/fonts/Karantina-Regular.woff') format('woff');
+  font-weight: normal;
+}
+
+:root {
+  color-scheme: light dark;
+}
+
+@theme {
+  --color-theme-moonstone: #bebdba;
+  --color-theme-rustwood: #915645;
+  
+  --color-pcv-yellow: #ffc107;
+  --color-pcv-steelblue: #4b6573;
+  --color-pcv-midnight: #1f232f;
+
+  --font-special: 'Karantina';
+}
+
+@keyframes rotation {
+  0% {
+    transform: rotateZ(0deg);
+  }
+  100% {
+    transform: rotateZ(360deg);
+  }
+}
+
+@keyframes scroll {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(calc(-2000px));
+  }
+}
+
+@utility animate-scroll {
+  animation: scroll 40s linear infinite;
+}
+
+@utility pause {
+  animation-play-state: paused;
+}
+
+html {
+  background-color: var(--color-pcv-midnight);
+  color: #ffffff;
+  scroll-behavior: smooth;
+}
+
+* {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+*::-webkit-scrollbar {
+  display: none;
+}

@@ -1,0 +1,90 @@
+---
+import Layout from '@/layouts/Layout.astro'
+
+import Hero from '@/sections/Hero.astro'
+import Header from '@/sections/header.astro'
+import Speach from '@/sections/speach.astro'
+import Social from '@/sections/Social.astro'
+import About from '@/sections/About.astro'
+import Footer from '@/sections/Footer.astro'
+---
+
+<Layout
+  lang='es'
+  title='Pachuca Valle Central'
+  description='Únete a la Academia de Fútbol Pachuca Valle Central. Entrenamiento de élite, entrenadores expertos y un camino hacia la excelencia para futuros campeones de fútbol. ¡Aplica ahora!'
+  metadata={[
+    {
+      name: 'keywords',
+      content:
+        'Pachuca Valle Central, Academia de Fútbol, Entrenamiento de Fútbol, Fútbol Juvenil, Fútbol de Élite, Desarrollo de Fútbol, Valle Central Fútbol',
+    },
+    {
+      name: 'og:title',
+      content: 'Academia de Fútbol Pachuca Valle Central - Enciende tu Pasión',
+    },
+    {
+      name: 'og:description',
+      content:
+        'Entrenamiento de élite, entrenadores expertos y un camino hacia la excelencia. Descubre tu potencial con una academia de fútbol líder.',
+    },
+    {
+      name: 'og:type',
+      content: 'website',
+    },
+    {
+      name: 'og:url',
+      content: 'https://www.pachuca.vc/',
+    },
+    {
+      name: 'og:image',
+      content: 'https://www.pachuca.vc/images/og-es.jpg',
+    },
+    {
+      name: 'og:image:width',
+      content: '1200',
+    },
+    {
+      name: 'og:image:height',
+      content: '630',
+    },
+    {
+      name: 'og:site_name',
+      content: 'Academia de Fútbol Pachuca Valle Central',
+    },
+    {
+      name: 'og:locale',
+      content: 'es_US',
+    },
+    {
+      name: 'twitter:card',
+      content: 'summary_large_image',
+    },
+    {
+      name: 'twitter:title',
+      content: 'Academia de Fútbol Pachuca Valle Central - Enciende tu Pasión',
+    },
+    {
+      name: 'twitter:description',
+      content:
+        'Entrenamiento de élite, entrenadores expertos y un camino hacia la excelencia. Descubre tu potencial.',
+    },
+    {
+      name: 'twitter:image',
+      content: 'https://www.pachuca.vc/images/og-es.jpg',
+    },
+    {
+      name: 'theme-color',
+      content: '#1F232F',
+    },
+  ]}
+/>
+  <Header lang='es' />
+  <main>
+    <Hero lang='es' />
+    <Speach lang='es' />
+    <About lang='es' />
+    <Social lang='es' />
+  </main>
+  <Footer lang='es' />
+</Layout>

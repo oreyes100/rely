@@ -1,0 +1,62 @@
+---
+import { Image } from 'astro:assets'
+
+interface Props {
+  lang?: 'es' | 'en'
+}
+
+const { lang = 'en' } = Astro.props
+
+const translations = {
+  en: {
+    title: 'Forging Champions: Your Future in Soccer Starts Here',
+    description:
+      'At Pachuca Central Valley, we transform passion for soccer into excellence. With top-level coaches, we welcome players of all levels. Join the next generation of champions.',
+  },
+  es: {
+    title: 'Forjando Campeones: Tu Futuro en el Fútbol Comienza Aquí',
+    description:
+      'En Pachuca Central Valley, transformamos la pasión por el fútbol en excelencia. Con entrenadores de primer nivel, recibimos a jugadores de todos los niveles. Únete a la próxima generación de campeones.',
+  },
+}
+
+const { title, description } = translations[lang]
+---
+
+<section
+  id='why'
+  class='flex flex-col lg:flex-row justify-center items-center container max-w-6xl mx-auto px-4 lg:gap-8 py-12'
+>
+  <div
+    class='flex flex-col text-center lg:text-start items-center lg:items-start gap-4'
+  >
+    <h3
+      class='text-4xl lg:text-6xl text-transparent bg-gradient-to-tr from-amber-400 to-amber-600 bg-clip-text font-special font-bold uppercase'
+    >
+      {title}
+    </h3>
+    <div class='lg:hidden'>
+      <Image
+        src='/ball-lights.webp'
+        alt=''
+        width={512}
+        height={549}
+        aria-hidden
+        class='w-full h-full'
+      />
+    </div>
+    <p class='text-white/80'>
+      {description}
+    </p>
+  </div>
+  <div class='w-full hidden lg:flex'>
+    <Image
+      src='/ball-lights.webp'
+      alt=''
+      width={512}
+      height={549}
+      aria-hidden
+      class='w-full h-full'
+    />
+  </div>
+</section>

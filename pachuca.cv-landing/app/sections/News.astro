@@ -1,0 +1,78 @@
+---
+import { Image } from 'astro:assets'
+import CircleArrowRightIcon from '@/icons/circle-arrow-right.svg'
+---
+
+<section class='items-center py-12'>
+  <div class='flex mb-5'>
+    <h3
+      class='text-3xl md:text-6xl text-amber-500 mx-auto font-special font-bold uppercase'
+    >
+      News
+    </h3>
+  </div>
+  <div
+    class='relative w-full overflow-hidden'
+    style='mask-image: linear-gradient(to right, transparent, black 20%, black 80%, transparent); -webkit-mask-image: linear-gradient(to right, transparent, black 20%, black 80%, transparent);'
+  >
+    <div class='flex animate-scroll hover:pause'>
+      <div class='flex'>
+        {
+          Array.from({ length: 5 }).map(() => (
+            <div class='p-2 bg-white/5 m-2 border-2 border-white/10 rounded-md w-96'>
+              <div class='w-full aspect-square relative'>
+                <Image
+                  src='/post_image.webp'
+                  alt='Image de la publicación'
+                  width={520}
+                  height={520}
+                  class='w-full h-full aspect-square object-cover rounded-md'
+                />
+                <span class='absolute bottom-2 left-2 text-xs font-medium bg-pcv-midnight border-2 border-theme-steelblue px-3 py-1 rounded-full'>
+                  News
+                </span>
+              </div>
+              <div class='m-1'>
+                <h4 class='md:text-xl'>Coming soon</h4>
+                <p>Join Pachuca.vc at its next Inauguration</p>
+                <p>DD-MM-YYYY</p>
+              </div>
+            </div>
+          ))
+        }
+      </div>
+      <div class='flex'>
+        {
+          Array.from({ length: 5 }).map(() => (
+            <div class='p-2 bg-white/5 m-2 border-2 border-white/10 rounded-md w-96'>
+              <div class='w-full aspect-square relative'>
+                <Image
+                  src='/post_image.webp'
+                  alt='Image de la publicación'
+                  width={520}
+                  height={520}
+                  class='w-full h-full aspect-square object-cover rounded-md'
+                />
+                <span class='absolute bottom-2 left-2 text-xs font-medium bg-pcv-midnight border-2 border-theme-steelblue px-3 py-1 rounded-full'>
+                  News
+                </span>
+              </div>
+              <div class='m-1'>
+                <h4 class='md:text-xl'>Coming soon</h4>
+                <p>Join Pachuca.vc at its next Inauguration</p>
+                <p>DD-MM-YYYY</p>
+              </div>
+            </div>
+          ))
+        }
+      </div>
+    </div>
+  </div>
+  <div class='flex mt-5'>
+    <div
+      class='inline-flex items-center justify-center bg-pcv-midnight gap-2 px-4 py-2 mx-auto rounded-full text-white border-2 border-theme-steelblue transition hover:scale-95'
+    >
+      Ver mas en el Blog <CircleArrowRightIcon />
+    </div>
+  </div>
+</section>

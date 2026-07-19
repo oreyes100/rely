@@ -1,0 +1,89 @@
+---
+import Layout from '@/layouts/Layout.astro'
+
+import Hero from '@/sections/Hero.astro'
+import Header from '@/sections/header.astro'
+import Speach from '@/sections/speach.astro'
+import Social from '@/sections/Social.astro'
+import About from '@/sections/About.astro'
+import Footer from '@/sections/Footer.astro'
+---
+
+<Layout
+  title='Pachuca Central Valley'
+  description='Join Pachuca Central Valley Soccer Academy. Elite training, expert coaching, and a pathway to excellence for aspiring soccer champions. Apply now!'
+  metadata={[
+    {
+      name: 'keywords',
+      content:
+        'Pachuca Central Valley, Soccer Academy, Soccer Training, Youth Soccer, Elite Soccer, Soccer Development, Valle Central Soccer',
+    },
+    {
+      name: 'og:title',
+      content: 'Pachuca Valle Central Soccer Academy - Ignite Your Passion',
+    },
+    {
+      name: 'og:description',
+      content:
+        'Elite training, expert coaching, and a pathway to excellence. Discover your potential with a leading soccer academy.',
+    },
+    {
+      name: 'og:type',
+      content: 'website',
+    },
+    {
+      name: 'og:url',
+      content: 'https://www.pachuca.vc/',
+    },
+    {
+      name: 'og:image',
+      content: 'https://www.pachuca.vc/images/og.png',
+    },
+    {
+      name: 'og:image:width',
+      content: '1200',
+    },
+    {
+      name: 'og:image:height',
+      content: '630',
+    },
+    {
+      name: 'og:site_name',
+      content: 'Pachuca Central Valley Soccer Academy',
+    },
+    {
+      name: 'og:locale',
+      content: 'en_US',
+    },
+    {
+      name: 'twitter:card',
+      content: 'summary_large_image',
+    },
+    {
+      name: 'twitter:title',
+      content: 'Pachuca Central Valley Soccer Academy - Ignite Your Passion',
+    },
+    {
+      name: 'twitter:description',
+      content:
+        'Elite training, expert coaching, and a pathway to excellence. Discover your potential.',
+    },
+    {
+      name: 'twitter:image',
+      content: 'https://www.pachuca.vc/images/og.png',
+    },
+    {
+      name: 'theme-color',
+      content: '#1F232F',
+    },
+  ]}
+>
+  <Header />
+  <main>
+    <Hero />
+    <Speach />
+    <About />
+    <Social />
+  </main>
+  <Footer />
+</Layout>
