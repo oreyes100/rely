@@ -28,7 +28,7 @@
     "type": "hyperv",
     "host": "192.168.1.229",
     "agentPort": 3002,
-    "agentToken": "aulamedios-panel-token-2026",
+    "agentToken": "CAMBIA-ESTE-TOKEN-EN-PRODUCCION",
     "subnetPrefix": "192.168.1.",
     "vmidRange": [500, 599]
   }

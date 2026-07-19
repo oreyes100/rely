@@ -1,0 +1,15 @@
+# === Secretos / notas de trabajo (NO commitear) ===
+# Estos archivos contienen credenciales e IPs reales de infraestructura.
+# Se mantienen localmente como notas, pero NUNCA deben entrar a git.
+cyberpanel.txt
+esssdf.txt
+ntop.txt
+sacsa.txt
+nuevo frontend.txt
+token.txt
+manual-vps-cecytem.docx
+
+# === Artefactos de build ===
+node_modules/
+dist/
+*.log
