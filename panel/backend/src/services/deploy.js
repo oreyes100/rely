@@ -7,6 +7,7 @@ import { config } from '../config.js';
 import { getNode, allNodes } from '../proxmox.js';
 import { provisionVm, checkCapacity } from './provision.js';
 import { HttpError } from '../errors.js';
+import { sendAdminAlert } from './mailer.js';
 
 const execFileAsync = promisify(execFile);
 const deploysFile = path.join(config.dataDir, 'deploys.json');
@@ -210,6 +211,11 @@ export async function startDeploy(deploySpec) {
   pipeline(id, resources, nodeName).catch((err) => {
     patchDeploy(id, { status: 'error', updatedAt: new Date().toISOString() });
     console.error(`[deploy:${id}] FATAL:`, err.message);
+    // Notificar al administrador
+    sendAdminAlert({
+      subject: `[ALERTA] Deploy fallido: ${hostname}`,
+      body: `Deploy ID: ${id}\nHostname: ${hostname}\nNodo: ${nodeName}\nPlan: ${plan}\nCliente: ${clientId ?? 'admin'}\n\nError:\n${err.message}`,
+    }).catch(() => {});
   });
 
   return id;
@@ -473,6 +479,46 @@ async function pipeline(deployId, resources, nodeName) {
   });
 
   patchDeploy(deployId, { status: 'done', updatedAt: new Date().toISOString() });
+}
+
+// ── Reintentar deploy fallido ─────────────────────────────────────────────────
+export async function retryDeploy(deployId) {
+  const dep = getDeploy(deployId);
+  if (dep.status !== 'error') throw new HttpError(400, 'Solo se puede reintentar un deploy en estado error');
+
+  // Limpiar VM anterior si se llegó a crear
+  if (dep.vmid && dep.node) {
+    const { client, cfg } = getNode(dep.node);
+    try { await client.post(`/nodes/${dep.node}/qemu/${dep.vmid}/status/stop`, {}); } catch { /* ya parada */ }
+    await new Promise((r) => setTimeout(r, 3000));
+    try { const u = await client.del(`/nodes/${dep.node}/qemu/${dep.vmid}`, { purge: 1 }); await client.waitTask(u); } catch { /* continuar */ }
+    if (dep.wanPort) {
+      try { await sshNode(cfg.host, `iptables -t nat -D PREROUTING -p tcp --dport ${dep.wanPort} -j DNAT --to-destination ${dep.guestIP}:80 2>/dev/null || true`); } catch { /* continuar */ }
+    }
+  }
+
+  // Reset de pasos y estado
+  const resources = dep.plan === 'estandar'
+    ? { cores: 2, memoryMb: 2048 + (dep.db !== 'ninguna' ? 512 : 0), diskGb: 25 }
+    : { cores: 1, memoryMb: 1024 + (dep.db !== 'ninguna' ? 512 : 0), diskGb: 20 };
+
+  patchDeploy(deployId, {
+    status: 'running',
+    vmid: null,
+    guestIP: null,
+    wanPort: undefined,
+    steps: makeSteps(dep.domain?.type === 'wildcard'),
+    updatedAt: new Date().toISOString(),
+  });
+
+  pipeline(deployId, resources, dep.node).catch((err) => {
+    patchDeploy(deployId, { status: 'error', updatedAt: new Date().toISOString() });
+    console.error(`[deploy:${deployId}] RETRY-FATAL:`, err.message);
+    sendAdminAlert({
+      subject: `[ALERTA] Retry fallido: ${dep.hostname}`,
+      body: `Deploy ID: ${deployId}\nHostname: ${dep.hostname}\nNodo: ${dep.node}\nCliente: ${dep.clientId ?? 'admin'}\n\nError:\n${err.message}`,
+    }).catch(() => {});
+  });
 }
 
 // ── Limpieza al borrar un deploy ──────────────────────────────────────────────

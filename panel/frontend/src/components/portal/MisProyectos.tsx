@@ -16,6 +16,7 @@ export default function MisProyectos({ onNuevo }: { onNuevo: () => void }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [deleting, setDeleting] = useState<string | null>(null);
+  const [retrying, setRetrying] = useState<string | null>(null);
 
   const cargar = useCallback(async () => {
     try {
@@ -38,6 +39,18 @@ export default function MisProyectos({ onNuevo }: { onNuevo: () => void }) {
     const t = setTimeout(cargar, 4000);
     return () => clearTimeout(t);
   }, [proyectos, cargar]);
+
+  async function reintentar(id: string) {
+    setRetrying(id);
+    try {
+      await api(`/portal/projects/${id}/retry`, { method: 'POST' });
+      await cargar();
+    } catch (e) {
+      alert(e instanceof Error ? e.message : 'Error al reintentar');
+    } finally {
+      setRetrying(null);
+    }
+  }
 
   async function eliminar(id: string) {
     if (!confirm('¿Eliminar este proyecto? Esta acción no se puede deshacer.')) return;
@@ -99,6 +112,12 @@ export default function MisProyectos({ onNuevo }: { onNuevo: () => void }) {
                   className="rounded-lg px-3 py-1.5 text-xs text-slate-400 hover:text-slate-200 hover:bg-slate-700 transition-colors">
                   {expandido === p.id ? 'Ocultar' : 'Detalles'}
                 </button>
+                {p.estado === 'error' && (
+                  <button onClick={() => reintentar(p.id)} disabled={retrying === p.id}
+                    className="rounded-lg px-3 py-1.5 text-xs text-amber-400 hover:text-amber-300 hover:bg-amber-900/20 transition-colors disabled:opacity-50">
+                    {retrying === p.id ? '…' : 'Reintentar'}
+                  </button>
+                )}
                 {(p.estado === 'activo' || p.estado === 'error') && (
                   <button onClick={() => eliminar(p.id)} disabled={deleting === p.id}
                     className="rounded-lg px-3 py-1.5 text-xs text-red-400 hover:text-red-300 hover:bg-red-900/20 transition-colors disabled:opacity-50">

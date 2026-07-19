@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { getToken, getRole } from './api/client';
+import Landing from './components/Landing';
 import Login from './components/Login';
 import DashboardLayout, { type Page } from './components/DashboardLayout';
 import ResourceMonitor from './components/ResourceMonitor';
@@ -47,13 +48,18 @@ function ClientPortal() {
 export default function App() {
   const [authed, setAuthed] = useState(() => !!getToken());
   const [role, setRole] = useState<'admin' | 'client' | null>(() => authed ? getRole() : null);
+  const [showLogin, setShowLogin] = useState(false);
 
   function handleLogin() {
     setRole(getRole());
     setAuthed(true);
+    setShowLogin(false);
   }
 
-  if (!authed) return <Login onLogin={handleLogin} />;
+  if (!authed) {
+    if (showLogin) return <Login onLogin={handleLogin} onBack={() => setShowLogin(false)} />;
+    return <Landing onLogin={() => setShowLogin(true)} />;
+  }
   if (role === 'client') return <ClientPortal />;
   return <AdminPanel />;
 }

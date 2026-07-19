@@ -32,6 +32,18 @@ class ProxmoxClient {
   async put(p, body) { return (await this.http.put(p, form(body))).data.data; }
   async del(p, params) { return (await this.http.delete(p, { params })).data.data; }
 
+  // Extrae mensaje de error de una respuesta Proxmox (para mejorar diagnóstico)
+  static extractError(err) {
+    if (err?.response?.data) {
+      const d = err.response.data;
+      const msg = d.message ?? '';
+      const errs = d.errors ? Object.entries(d.errors).map(([k, v]) => `${k}: ${v}`).join('; ') : '';
+      const detail = [msg.trim(), errs].filter(Boolean).join(' — ');
+      if (detail) return `Proxmox HTTP ${err.response.status}: ${detail}`;
+    }
+    return err?.message ?? String(err);
+  }
+
   // Ejecuta comando en el guest vía qemu-agent, devuelve pid
   async agentExec(nodeName, vmid, cmd) {
     const p = new URLSearchParams();
@@ -91,6 +103,7 @@ class ProxmoxClient {
   }
 }
 
+export { ProxmoxClient };
 const registry = new Map(
   config.nodes.map((n) => [
     n.name,

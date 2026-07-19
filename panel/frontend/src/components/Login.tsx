@@ -4,7 +4,7 @@ import { api, setToken } from '../api/client';
 type Tab = 'admin' | 'cliente';
 type ClientMode = 'login' | 'registro';
 
-export default function Login({ onLogin }: { onLogin: () => void }) {
+export default function Login({ onLogin, onBack }: { onLogin: () => void; onBack?: () => void }) {
   const [tab, setTab] = useState<Tab>('admin');
   const [clientMode, setClientMode] = useState<ClientMode>('login');
   const [password, setPassword] = useState('');
@@ -48,9 +48,16 @@ export default function Login({ onLogin }: { onLogin: () => void }) {
   return (
     <div className="flex min-h-screen items-center justify-center p-4">
       <div className="card w-full max-w-sm space-y-4">
-        <div>
-          <h1 className="text-xl font-semibold text-slate-100">Panel VPS</h1>
-          <p className="text-sm text-slate-400">Plataforma de hosting gestionado</p>
+        <div className="flex items-start justify-between">
+          <div>
+            <h1 className="text-xl font-semibold text-slate-100">Panel VPS</h1>
+            <p className="text-sm text-slate-400">Plataforma de hosting gestionado</p>
+          </div>
+          {onBack && (
+            <button onClick={onBack} className="text-xs text-slate-500 hover:text-slate-300 transition-colors mt-1">
+              ← Volver
+            </button>
+          )}
         </div>
 
         {/* Tabs */}

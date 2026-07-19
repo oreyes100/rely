@@ -7,7 +7,7 @@ import { config } from '../config.js';
 import { HttpError } from '../errors.js';
 import { clientOnly } from './auth.js';
 import { getClient, getClientQuota } from '../services/clients.js';
-import { startDeploy, getDeploy, listDeploys, deleteDeploy } from '../services/deploy.js';
+import { startDeploy, getDeploy, listDeploys, deleteDeploy, retryDeploy } from '../services/deploy.js';
 import { buildLandingZip } from '../services/sitegen.js';
 
 export const portalRouter = Router();
@@ -127,6 +127,17 @@ portalRouter.post('/uploads', clientOnly, async (req, res, next) => {
     mkdirSync(dir, { recursive: true });
     writeFileSync(path.join(dir, `${uploadId}.zip`), data);
     res.status(201).json({ uploadId });
+  } catch (e) { next(e); }
+});
+
+// ── Reintentar proyecto fallido ───────────────────────────────────────────────
+portalRouter.post('/projects/:id/retry', clientOnly, deployLimiter, async (req, res, next) => {
+  try {
+    const dep = getDeploy(req.params.id);
+    if (dep.clientId !== req.clientId) throw new HttpError(404, 'Proyecto no encontrado');
+    if (dep.status !== 'error') throw new HttpError(400, 'Solo se pueden reintentar proyectos en estado de error');
+    await retryDeploy(req.params.id);
+    res.json({ ok: true, mensaje: 'Reintentando el despliegue. Puedes ver el progreso en tu dashboard.' });
   } catch (e) { next(e); }
 });
 

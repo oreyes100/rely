@@ -71,6 +71,20 @@ export async function sendInviteEmail({ to, name, inviteCode, panelUrl }) {
   return true;
 }
 
+export async function sendAdminAlert({ subject, body }) {
+  const transporter = getTransporter();
+  if (!transporter) return false;
+  const adminEmail = config.smtpUser; // el admin usa el mismo correo SMTP
+  await transporter.sendMail({
+    from: `"Portal VPS ALERTA" <${config.smtpFrom}>`,
+    to: adminEmail,
+    subject,
+    text: body,
+    html: `<pre style="font-family:monospace;white-space:pre-wrap">${escapeHtml(body)}</pre>`,
+  });
+  return true;
+}
+
 function escapeHtml(str) {
   return String(str ?? '')
     .replace(/&/g, '&amp;')

@@ -1,4 +1,4 @@
-import { getNode } from '../proxmox.js';
+import { getNode, ProxmoxClient } from '../proxmox.js';
 import { HttpError } from '../errors.js';
 import { generatePassword } from '../utils/password.js';
 import { upsertCredential } from './credentials.js';
@@ -65,12 +65,18 @@ export async function provisionVm({ node: nodeName, hostname, cores, memoryMb, d
   await checkCapacity(nodeName, { memoryMb, diskGb });
   const vmid = nextFreeVmid(cfg, vms);
 
-  // 1. Clon completo del template
-  const upid = await client.post(`/nodes/${cfg.name}/qemu/${cfg.templateVmid}/clone`, {
-    newid: vmid,
-    name: hostname,
-    full: 1,
-  });
+  // 1. Clon completo del template (storage requerido en lvmthin para full clone)
+  let upid;
+  try {
+    upid = await client.post(`/nodes/${cfg.name}/qemu/${cfg.templateVmid}/clone`, {
+      newid: vmid,
+      name: hostname,
+      full: 1,
+      storage: cfg.storage,
+    });
+  } catch (err) {
+    throw new Error(ProxmoxClient.extractError(err));
+  }
   await client.waitTask(upid);
 
   try {
