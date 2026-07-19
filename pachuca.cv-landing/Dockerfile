@@ -1,6 +1,8 @@
 FROM node:lts AS runtime
 WORKDIR /app
 
+RUN npm install -g pnpm@10.6.1
+
 COPY . .
 
 ARG MONGO_URI
@@ -17,8 +19,8 @@ ENV R2_BUCKET_NAME=$R2_BUCKET_NAME
 ENV R2_SECRET_ACCESS_KEY=$R2_SECRET_ACCESS_KEY
 ENV R2_ACCESS_KEY_ID=$R2_ACCESS_KEY_ID
 
-RUN npm install
-RUN npm run build
+RUN pnpm install --frozen-lockfile
+RUN pnpm run build
 
 ENV HOST=0.0.0.0
 ENV PORT=4321

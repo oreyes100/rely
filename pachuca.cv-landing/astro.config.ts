@@ -4,7 +4,7 @@ import node from '@astrojs/node'
 import sitemap from '@astrojs/sitemap'
 
 export default defineConfig({
-  site: 'https://www.pachuca.vc',
+  site: 'https://pachucacv.duckdns.org:8443',
   srcDir: 'app',
   output: 'server',
   integrations: [sitemap()],
