@@ -13,6 +13,14 @@ use Box_Event;
  * Configurar en /opt/vps-panel/backend/.env:
  *   WEBHOOK_SECRET=<secreto-compartido>
  *   PANEL_PUBLIC_URL=https://capuvps.duckdns.org
+ *
+ * IMPORTANTE — registro en DB requerido (FossBilling no auto-descubre hooks):
+ *   mysql -u USER -pPASS fossbilling_db <<SQL
+ *   INSERT IGNORE INTO extension (type, name, status, version)
+ *     VALUES ('mod', 'vpsinvite', 'installed', '1.0.0');
+ *   INSERT INTO extension_meta (extension, rel_type, rel_id, meta_key, meta_value, created_at, updated_at)
+ *     VALUES ('mod_hook','mod','vpsinvite','listener','onAfterClientSignUp', NOW(), NOW());
+ *   SQL
  */
 class Service implements \FOSSBilling\InjectionAwareInterface
 {
