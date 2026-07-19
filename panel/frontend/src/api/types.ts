@@ -75,3 +75,37 @@ export interface Snapshot {
   snaptime?: number;
   description?: string;
 }
+
+// ── Portal de cliente ─────────────────────────────────────────────────────────
+export interface PasoPortal {
+  etiqueta: string;
+  estado: 'listo' | 'en progreso' | 'error' | 'pendiente';
+  mensaje?: string;
+}
+
+export interface DbInfo {
+  tipo: string;
+  usuario?: string;
+  password?: string;
+  nombre?: string;
+  urlConexion?: string;
+  nota?: string;
+}
+
+export interface ProyectoPortal {
+  id: string;
+  nombre: string;
+  url: string;
+  plan: string;
+  estado: 'activo' | 'en progreso' | 'error' | 'eliminado';
+  pasos: PasoPortal[];
+  db: DbInfo | null;
+  creadoEl: string;
+}
+
+export interface ClienteMe {
+  name: string;
+  email: string;
+  quota: number;
+  createdAt: string;
+}

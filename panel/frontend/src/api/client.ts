@@ -1,5 +1,16 @@
 const TOKEN_KEY = 'panel_token';
 
+export function getRole(): 'admin' | 'client' | null {
+  const token = localStorage.getItem(TOKEN_KEY);
+  if (!token) return null;
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    return payload.role === 'client' ? 'client' : 'admin';
+  } catch {
+    return null;
+  }
+}
+
 export function getToken(): string | null {
   return localStorage.getItem(TOKEN_KEY);
 }

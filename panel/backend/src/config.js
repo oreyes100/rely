@@ -44,6 +44,11 @@ export const config = {
   jwtSecret: required('JWT_SECRET'),
   credSecret: required('CRED_SECRET'),
   sessionHours: Number(process.env.SESSION_HOURS || 12),
+  // Portal de clientes
+  appsDomain: process.env.APPS_DOMAIN || '',           // ej. "pachucavps.duckdns.org"
+  appsDuckdnsToken: process.env.APPS_DUCKDNS_TOKEN || '', // token DuckDNS de la plataforma
+  panelPublicUrl: process.env.PANEL_PUBLIC_URL || 'https://capuvps.duckdns.org', // para URLs firmadas
+  nodesSshKey: '/home/admin/.ssh/panel_nodes',          // llave SSH panel→nodos Proxmox
   nodes,
   dataDir,
 };

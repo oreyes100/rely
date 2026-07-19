@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { getToken } from './api/client';
+import { getToken, getRole } from './api/client';
 import Login from './components/Login';
 import DashboardLayout, { type Page } from './components/DashboardLayout';
 import ResourceMonitor from './components/ResourceMonitor';
@@ -9,13 +9,14 @@ import CredentialManager from './components/CredentialManager';
 import HistoryLog from './components/HistoryLog';
 import ProxmoxConsole from './components/ProxmoxConsole';
 import Services from './components/Services';
+import PortalLayout from './components/portal/PortalLayout';
+import MisProyectos from './components/portal/MisProyectos';
+import NuevoProyecto from './components/portal/NuevoProyecto';
 
-export default function App() {
-  const [authed, setAuthed] = useState(() => !!getToken());
+type PortalPage = 'proyectos' | 'nuevo';
+
+function AdminPanel() {
   const [page, setPage] = useState<Page>('dashboard');
-
-  if (!authed) return <Login onLogin={() => setAuthed(true)} />;
-
   return (
     <DashboardLayout page={page} onNavigate={setPage}>
       {page === 'dashboard' && (
@@ -31,4 +32,28 @@ export default function App() {
       {page === 'console' && <ProxmoxConsole />}
     </DashboardLayout>
   );
+}
+
+function ClientPortal() {
+  const [page, setPage] = useState<PortalPage>('proyectos');
+  return (
+    <PortalLayout page={page} onNavigate={setPage}>
+      {page === 'proyectos' && <MisProyectos onNuevo={() => setPage('nuevo')} />}
+      {page === 'nuevo' && <NuevoProyecto onCreado={() => setPage('proyectos')} onCancelar={() => setPage('proyectos')} />}
+    </PortalLayout>
+  );
+}
+
+export default function App() {
+  const [authed, setAuthed] = useState(() => !!getToken());
+  const [role, setRole] = useState<'admin' | 'client' | null>(() => authed ? getRole() : null);
+
+  function handleLogin() {
+    setRole(getRole());
+    setAuthed(true);
+  }
+
+  if (!authed) return <Login onLogin={handleLogin} />;
+  if (role === 'client') return <ClientPortal />;
+  return <AdminPanel />;
 }
