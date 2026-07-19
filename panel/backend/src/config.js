@@ -45,10 +45,18 @@ export const config = {
   credSecret: required('CRED_SECRET'),
   sessionHours: Number(process.env.SESSION_HOURS || 12),
   // Portal de clientes
-  appsDomain: process.env.APPS_DOMAIN || '',           // ej. "pachucavps.duckdns.org"
-  appsDuckdnsToken: process.env.APPS_DUCKDNS_TOKEN || '', // token DuckDNS de la plataforma
-  panelPublicUrl: process.env.PANEL_PUBLIC_URL || 'https://capuvps.duckdns.org', // para URLs firmadas
-  nodesSshKey: '/home/admin/.ssh/panel_nodes',          // llave SSH panel→nodos Proxmox
+  appsDomain: process.env.APPS_DOMAIN || '',
+  appsDuckdnsToken: process.env.APPS_DUCKDNS_TOKEN || '',
+  panelPublicUrl: process.env.PANEL_PUBLIC_URL || 'https://capuvps.duckdns.org',
+  nodesSshKey: '/home/admin/.ssh/panel_nodes',
+  // Webhook (FossBilling → panel)
+  webhookSecret: process.env.WEBHOOK_SECRET || '',
+  // SMTP para envío de emails de invitación
+  smtpHost: process.env.SMTP_HOST || '',
+  smtpPort: Number(process.env.SMTP_PORT || 587),
+  smtpUser: process.env.SMTP_USER || '',
+  smtpPass: process.env.SMTP_PASS || '',
+  smtpFrom: process.env.SMTP_FROM || process.env.SMTP_USER || 'noreply@capuvps.duckdns.org',
   nodes,
   dataDir,
 };

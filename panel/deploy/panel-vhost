@@ -10,7 +10,7 @@ set -euo pipefail
 
 NGINX_AVAIL="/etc/nginx/sites-available"
 NGINX_ENABLED="/etc/nginx/sites-enabled"
-WILDCARD_CERT="/etc/nginx/ssl/wildcard-apps"
+WILDCARD_CERT="/etc/nginx/ssl/wildcard-capuvps"
 ACME_WEBROOT="/var/www/acme"
 
 # Leer dominio de apps desde env o archivo de config del panel

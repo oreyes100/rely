@@ -1,0 +1,8 @@
+{
+  "id": "vpsinvite",
+  "type": "mod",
+  "name": "VPS Invite",
+  "description": "Al registrarse un cliente en FossBilling, genera automáticamente un código de invitación para el Portal VPS y lo envía por email.",
+  "icon_url": "",
+  "version": "1.0.0"
+}

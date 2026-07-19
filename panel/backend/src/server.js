@@ -13,6 +13,7 @@ import { servicesRouter } from './routes/services.js';
 import { deploysRouter } from './routes/deploys.js';
 import { invitesRouter } from './routes/invites.js';
 import { portalRouter } from './routes/portal.js';
+import { webhookRouter } from './routes/webhook.js';
 
 const app = express();
 app.set('trust proxy', 'loopback');
@@ -27,6 +28,9 @@ app.use('/api', rateLimit({ windowMs: 15 * 60 * 1000, max: 2000, standardHeaders
 
 // ── Auth (público) ────────────────────────────────────────────────────────────
 app.use('/api/auth', authRouter);
+
+// ── Webhooks internos (shared secret, no JWT) ─────────────────────────────────
+app.use('/api/webhook', webhookRouter);
 
 // ── Portal: upload de zips y proyectos del cliente ────────────────────────────
 // Nota: clientOnly se aplica dentro de portalRouter, no aquí, porque /auth/portal/* es público
