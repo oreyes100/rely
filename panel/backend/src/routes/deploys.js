@@ -4,7 +4,7 @@ import path from 'path';
 import crypto from 'crypto';
 import { config } from '../config.js';
 import { HttpError } from '../errors.js';
-import { startDeploy, getDeploy, listDeploys, deleteDeploy } from '../services/deploy.js';
+import { startDeploy, getDeploy, listDeploys, deleteDeploy, retryDeploy } from '../services/deploy.js';
 
 export const deploysRouter = Router();
 
@@ -32,6 +32,14 @@ deploysRouter.post('/', async (req, res, next) => {
 // Estado de un deploy
 deploysRouter.get('/:id', (req, res, next) => {
   try { res.json(getDeploy(req.params.id)); } catch (e) { next(e); }
+});
+
+// Reintentar deploy fallido (admin)
+deploysRouter.post('/:id/retry', async (req, res, next) => {
+  try {
+    await retryDeploy(req.params.id, typeof req.body?.variables === 'string' ? req.body.variables : undefined);
+    res.json({ ok: true });
+  } catch (e) { next(e); }
 });
 
 // Eliminar deploy

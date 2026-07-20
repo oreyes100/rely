@@ -264,13 +264,25 @@ async function pipeline(deployId, resources, nodeName) {
     }
   });
 
-  // 3. prepare_guest
+  // 3. prepare_guest — instala Docker esperando el lock de apt (primer boot puede
+  // tenerlo tomado por cloud-init/unattended-upgrades) y VERIFICA el resultado.
   await runStep(deployId, 'prepare', async () => {
     const r = await client.agentExecWait(nodeName, vmid,
-      'command -v docker || (apt-get update -qq && apt-get install -y docker.io docker-compose-v2 git curl unzip 2>&1 | tail -3)',
-      300000
+      'export DEBIAN_FRONTEND=noninteractive; ' +
+      'if ! command -v docker >/dev/null 2>&1; then ' +
+      '  apt-get -o DPkg::Lock::Timeout=600 update -qq >/tmp/prep.log 2>&1; ' +
+      '  apt-get -o DPkg::Lock::Timeout=600 install -y docker.io docker-compose-v2 git curl unzip >>/tmp/prep.log 2>&1; ' +
+      'fi; ' +
+      'command -v docker >/dev/null 2>&1 || { echo PREP-FAIL; tail -8 /tmp/prep.log; exit 1; }; ' +
+      'docker compose version >/dev/null 2>&1 || apt-get -o DPkg::Lock::Timeout=600 install -y docker-compose-v2 >>/tmp/prep.log 2>&1; ' +
+      'systemctl enable --now docker >/dev/null 2>&1 || true; ' +
+      'command -v git >/dev/null 2>&1 || apt-get -o DPkg::Lock::Timeout=600 install -y git curl unzip >>/tmp/prep.log 2>&1; ' +
+      'echo PREP-OK',
+      600000
     );
-    if (r.exitcode !== 0) throw new Error(`prepare falló: ${r.err}`);
+    if (r.exitcode !== 0 || !r.out.includes('PREP-OK')) {
+      throw new Error(`prepare falló: ${(r.out + ' ' + r.err).slice(-300)}`);
+    }
     return { detail: 'Docker y dependencias listas' };
   });
 
