@@ -36,12 +36,14 @@ export DuckDNS_Token="$DUCKDNS_TOKEN"
 # Guardar en el entorno de acme.sh para renovaciones automáticas
 "$ACME" --set-default-ca --server letsencrypt
 
-# ── 4. Emitir cert wildcard *.capuvps.duckdns.org (incluye apex) ─────────────
+# ── 4a. Emitir cert wildcard *.capuvps.duckdns.org ───────────────────────────
+# NOTA: DuckDNS solo soporta UN registro TXT por dominio; NO emitir apex+wildcard juntos.
+# El cert wildcard cubre todos los subdominios (apps de clientes).
+# El apex capuvps.duckdns.org necesita un cert separado (paso 4b).
 echo ""
 echo "==> Emitiendo cert wildcard *.capuvps.duckdns.org ..."
 "$ACME" --issue \
   --dns dns_duckdns \
-  -d capuvps.duckdns.org \
   -d '*.capuvps.duckdns.org' \
   --force 2>&1
 
@@ -54,16 +56,23 @@ mkdir -p "${NGINX_SSL}/wildcard-capuvps"
 
 echo "==> Wildcard cert instalado en ${NGINX_SSL}/wildcard-capuvps/"
 
-# ── 5. Emitir cert para el apex capuvps.duckdns.org (para el vhost landing) ──
-#    (ya está cubierto por el wildcard, solo aseguramos el vhost nginx)
-if [ -f "${NGINX_SSL}/capuvps.duckdns.org/fullchain.pem" ]; then
-  echo "==> Cert específico para capuvps.duckdns.org ya existe — actualizando..."
-else
-  echo "==> Instalando symlink de cert para el vhost del panel..."
-  mkdir -p "${NGINX_SSL}/capuvps.duckdns.org"
-  ln -sf "${NGINX_SSL}/wildcard-capuvps/fullchain.pem" "${NGINX_SSL}/capuvps.duckdns.org/fullchain.pem"
-  ln -sf "${NGINX_SSL}/wildcard-capuvps/key.pem"       "${NGINX_SSL}/capuvps.duckdns.org/key.pem"
-fi
+# ── 4b. Emitir cert para el apex capuvps.duckdns.org ─────────────────────────
+# El apex necesita un cert separado porque el wildcard no lo cubre.
+echo ""
+echo "==> Emitiendo cert para el apex capuvps.duckdns.org ..."
+"$ACME" --issue \
+  --dns dns_duckdns \
+  -d capuvps.duckdns.org \
+  --force 2>&1
+
+mkdir -p "${NGINX_SSL}/capuvps.duckdns.org"
+"$ACME" --install-cert \
+  -d capuvps.duckdns.org \
+  --fullchain-file "${NGINX_SSL}/capuvps.duckdns.org/fullchain.pem" \
+  --key-file       "${NGINX_SSL}/capuvps.duckdns.org/key.pem" \
+  --reloadcmd      "systemctl reload nginx"
+
+echo "==> Cert apex instalado en ${NGINX_SSL}/capuvps.duckdns.org/"
 
 # ── 6. Verificar que el vhost del panel usa el cert correcto ─────────────────
 if grep -q "wildcard-capuvps" /etc/nginx/sites-available/capuvps.duckdns.org 2>/dev/null; then
