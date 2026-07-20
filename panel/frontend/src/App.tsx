@@ -19,6 +19,7 @@ import AdminTools from './components/AdminTools';
 import ClientManagement from './components/ClientManagement';
 import AdminPayments from './components/AdminPayments';
 import ServerManager from './components/ServerManager';
+import AIConfig from './components/AIConfig';
 
 type PortalPage = 'proyectos' | 'nuevo' | 'servidor';
 
@@ -35,6 +36,11 @@ function AdminPanel() {
         </div>
       )}
       {page === 'provision' && <ProvisioningForm />}
+      {page === 'ia' && (
+        <div className="space-y-2">
+          <AIConfig />
+        </div>
+      )}
       {page === 'herramientas' && (
         <div className="space-y-2">
           <h2 className="text-lg font-semibold text-slate-100">Herramientas de sistema</h2>

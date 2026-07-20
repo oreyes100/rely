@@ -1,6 +1,6 @@
 import { allNodes } from '../proxmox.js';
 import { HttpError } from '../errors.js';
-import { config } from '../config.js';
+import { callConfiguredAI, readAiSettings } from './ai-provider.js';
 
 const GiB = 1024 ** 3;
 
@@ -43,38 +43,23 @@ async function selectWithAI(candidates, resources, projectHint) {
   if (eligible.length === 0) throw new HttpError(503, 'No hay nodos con capacidad suficiente');
   if (eligible.length === 1) return { node: eligible[0].name, reason: 'Único nodo elegible' };
 
+  const s = readAiSettings();
   const prompt = `Selecciona el mejor nodo Proxmox para una nueva VM.
 
 Requerimientos:
-- RAM: ${resources.memoryMb / 1024} GB (se requieren +2 GB de margen)
+- RAM: ${resources.memoryMb / 1024} GB (+2 GB margen)
 - Disco: ${resources.diskGb} GB
 - Cores: ${resources.cores}
 ${projectHint ? `- Contexto: ${projectHint}` : ''}
 
-Nodos elegibles (ya verificados con capacidad):
+Nodos disponibles (capacidad verificada):
 ${JSON.stringify(eligible, null, 2)}
 
-Prioridades (en orden): 1) más disco libre, 2) menor CPU, 3) más RAM libre, 4) menos VMs existentes.
+Prioridades: 1) más disco libre, 2) menor CPU, 3) más RAM libre, 4) menos VMs.
 
-Responde ÚNICAMENTE con JSON válido: {"node": "nombre_exacto", "reason": "razón breve"}`;
+Responde ÚNICAMENTE con JSON: {"node":"nombre_exacto","reason":"razón breve"}`;
 
-  const response = await fetch('https://api.anthropic.com/v1/messages', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'x-api-key': config.anthropicApiKey,
-      'anthropic-version': '2023-06-01',
-    },
-    body: JSON.stringify({
-      model: 'claude-haiku-4-5-20251001',
-      max_tokens: 128,
-      messages: [{ role: 'user', content: prompt }],
-    }),
-  });
-
-  if (!response.ok) throw new Error(`Anthropic API HTTP ${response.status}`);
-  const data = await response.json();
-  const text = (data.content?.[0]?.text ?? '').trim();
+  const text = await callConfiguredAI(prompt);
   const match = text.match(/\{[\s\S]+\}/);
   if (!match) throw new Error('Respuesta IA sin JSON válido');
   const result = JSON.parse(match[0]);
@@ -87,8 +72,10 @@ Responde ÚNICAMENTE con JSON válido: {"node": "nombre_exacto", "reason": "raz�
 function selectRuleBased(candidates) {
   const eligible = candidates.filter((n) => n.meetsRequirements && !n.error);
   if (eligible.length === 0) {
-    const names = candidates.map((n) => `${n.name}(${n.error ?? `disco:${n.diskFreeGb}GB ram:${n.memFreeGb}GB`})`).join(', ');
-    throw new HttpError(503, `No hay nodos con capacidad suficiente. Estado: ${names}`);
+    const summary = candidates.map((n) =>
+      n.error ? `${n.name}(error)` : `${n.name}(disco:${n.diskFreeGb}GB,ram:${n.memFreeGb}GB)`
+    ).join(', ');
+    throw new HttpError(503, `No hay nodos con capacidad suficiente. Estado: ${summary}`);
   }
   const score = (n) => 0.6 * n.diskFreeGb + 0.3 * n.memFreeGb + 0.1 * (100 - n.cpuUsagePct);
   return eligible.reduce((best, n) => (score(n) > score(best) ? n : best));
@@ -96,17 +83,18 @@ function selectRuleBased(candidates) {
 
 export async function selectBestNode(resources, projectHint = '') {
   const candidates = await gatherNodeMetrics(resources);
+  const s = readAiSettings();
 
-  if (config.anthropicApiKey) {
+  if (s.enabled && s.provider && s.model && s.apiKey) {
     try {
       const aiResult = await Promise.race([
         selectWithAI(candidates, resources, projectHint),
         new Promise((_, reject) => setTimeout(() => reject(new Error('timeout 6s')), 6000)),
       ]);
-      console.log(`[node-selector] IA → ${aiResult.node}: ${aiResult.reason}`);
+      console.log(`[node-selector] IA (${s.provider}/${s.model}) → ${aiResult.node}: ${aiResult.reason}`);
       return aiResult.node;
     } catch (aiErr) {
-      console.warn(`[node-selector] IA no disponible (${aiErr.message}), usando rule-based`);
+      console.warn(`[node-selector] IA falló (${aiErr.message}), usando rule-based`);
     }
   }
 

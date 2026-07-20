@@ -4,6 +4,9 @@ import { promisify } from 'util';
 import { readdirSync, existsSync, statSync } from 'fs';
 import path from 'path';
 import { HttpError } from '../errors.js';
+import { readAiSettings, saveAiSettings, callAI } from '../services/ai-provider.js';
+
+const VALID_PROVIDERS = new Set(['anthropic', 'google', 'openrouter']);
 
 const execAsync = promisify(execFile);
 export const sysadminRouter = Router();
@@ -156,6 +159,51 @@ sysadminRouter.get('/logs/:service', async (req, res, next) => {
     );
     const logLines = (r.stdout || r.stderr).split('\n').filter(Boolean);
     res.json({ ok: true, service, lines: logLines });
+  } catch (e) { next(e); }
+});
+
+// ── Configuración de IA para selección de nodo ───────────────────────────────
+sysadminRouter.get('/ai-settings', (_req, res) => {
+  const s = readAiSettings();
+  res.json({
+    provider: s.provider ?? null,
+    model: s.model ?? null,
+    apiKeySet: !!(s.apiKey),
+    apiKeyHint: s.apiKey ? `...${s.apiKey.slice(-6)}` : null,
+    enabled: s.enabled ?? false,
+  });
+});
+
+sysadminRouter.put('/ai-settings', async (req, res, next) => {
+  try {
+    const { provider, model, apiKey, enabled } = req.body ?? {};
+    if (provider && !VALID_PROVIDERS.has(provider)) throw new HttpError(400, 'Proveedor inválido');
+    const current = readAiSettings();
+    const updated = {
+      provider: provider ?? current.provider,
+      model: model ?? current.model,
+      // Si apiKey es string vacío → borrar; si es undefined → conservar el actual
+      apiKey: typeof apiKey === 'string' ? apiKey : current.apiKey,
+      enabled: enabled !== undefined ? !!enabled : current.enabled,
+    };
+    saveAiSettings(updated);
+    res.json({ ok: true, provider: updated.provider, model: updated.model, enabled: updated.enabled });
+  } catch (e) { next(e); }
+});
+
+sysadminRouter.post('/ai-settings/test', async (req, res, next) => {
+  try {
+    const s = readAiSettings();
+    if (!s.provider || !s.model || !s.apiKey) {
+      throw new HttpError(400, 'Configura proveedor, modelo y API key antes de probar');
+    }
+    const t0 = Date.now();
+    const text = await Promise.race([
+      callAI(s.provider, s.model, s.apiKey,
+        'Responde SOLO con este JSON exacto, sin texto adicional: {"node":"test-ok","reason":"conexion exitosa"}'),
+      new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout 12s')), 12000)),
+    ]);
+    res.json({ ok: true, provider: s.provider, model: s.model, response: text.slice(0, 300), ms: Date.now() - t0 });
   } catch (e) { next(e); }
 });
 

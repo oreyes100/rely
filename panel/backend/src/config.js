@@ -73,8 +73,6 @@ export const config = {
   usdtTrc20Address: process.env.USDT_TRC20_ADDRESS || '',
   nowpaymentsApiKey: process.env.NOWPAYMENTS_API_KEY || '',
   nowpaymentsIpnSecret: process.env.NOWPAYMENTS_IPN_SECRET || '',
-  // IA para selección de nodo (opcional — fallback rule-based si no está configurada)
-  anthropicApiKey: process.env.ANTHROPIC_API_KEY || '',
   nodes,
   dataDir,
 };
