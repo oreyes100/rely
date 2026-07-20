@@ -14,12 +14,13 @@ import PortalLayout from './components/portal/PortalLayout';
 import MisProyectos from './components/portal/MisProyectos';
 import NuevoProyecto from './components/portal/NuevoProyecto';
 import PagoPlanes from './components/portal/PagoPlanes';
+import MiServidor from './components/portal/MiServidor';
 import AdminTools from './components/AdminTools';
 import ClientManagement from './components/ClientManagement';
 import AdminPayments from './components/AdminPayments';
 import ServerManager from './components/ServerManager';
 
-type PortalPage = 'proyectos' | 'nuevo';
+type PortalPage = 'proyectos' | 'nuevo' | 'servidor';
 
 interface ClientInfo { name?: string; approved: boolean; plan?: string | null }
 
@@ -64,10 +65,13 @@ function AdminPanel() {
   );
 }
 
+interface ProyectoResumen { id: string; nombre: string; url?: string; estado: string }
+
 function ClientPortal() {
   const [page, setPage] = useState<PortalPage>('proyectos');
   const [clientInfo, setClientInfo] = useState<ClientInfo | null>(null);
   const [loading, setLoading] = useState(true);
+  const [activeProject, setActiveProject] = useState<ProyectoResumen | null>(null);
 
   useEffect(() => {
     api<ClientInfo>('/portal/me')
@@ -75,6 +79,17 @@ function ClientPortal() {
       .catch(() => setClientInfo({ approved: false }))
       .finally(() => setLoading(false));
   }, []);
+
+  // Cuando el cliente va a "Mi servidor", cargar el proyecto activo más reciente
+  useEffect(() => {
+    if (page !== 'servidor' || activeProject) return;
+    api<ProyectoResumen[]>('/portal/projects')
+      .then((ps) => {
+        const activo = ps.find((p) => p.estado === 'activo') ?? ps[0] ?? null;
+        setActiveProject(activo);
+      })
+      .catch(() => {});
+  }, [page, activeProject]);
 
   if (loading) {
     return (
@@ -94,8 +109,23 @@ function ClientPortal() {
 
   return (
     <PortalLayout page={page} onNavigate={setPage} userName={clientInfo?.name}>
-      {page === 'proyectos' && <MisProyectos onNuevo={() => setPage('nuevo')} />}
+      {page === 'proyectos' && (
+        <MisProyectos
+          onNuevo={() => setPage('nuevo')}
+          onGestionarServidor={(p) => { setActiveProject(p); setPage('servidor'); }}
+        />
+      )}
       {page === 'nuevo' && <NuevoProyecto onCreado={() => setPage('proyectos')} onCancelar={() => setPage('proyectos')} />}
+      {page === 'servidor' && (
+        activeProject
+          ? <MiServidor proyectoId={activeProject.id} url={activeProject.url} />
+          : (
+            <div className="py-8 text-center text-slate-500 text-sm space-y-2">
+              <p>Aún no tienes proyectos activos.</p>
+              <button onClick={() => setPage('nuevo')} className="text-indigo-400 hover:underline text-sm">Crear tu primer proyecto →</button>
+            </div>
+          )
+      )}
     </PortalLayout>
   );
 }

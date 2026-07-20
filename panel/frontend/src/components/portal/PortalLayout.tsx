@@ -1,11 +1,16 @@
 import type { ReactNode } from 'react';
 import { clearToken } from '../../api/client';
 
-type PortalPage = 'proyectos' | 'nuevo';
+export type PortalPage = 'proyectos' | 'nuevo' | 'servidor';
 
 export default function PortalLayout({
   page, onNavigate, children, userName,
 }: { page: PortalPage; onNavigate: (p: PortalPage) => void; children: ReactNode; userName?: string }) {
+  const navItems: [PortalPage, string][] = [
+    ['proyectos', 'Mis proyectos'],
+    ['nuevo', '+ Nuevo proyecto'],
+    ['servidor', '⬡ Mi servidor'],
+  ];
   return (
     <div className="flex min-h-screen flex-col text-slate-100">
       <header className="border-b border-slate-800 bg-slate-900/80 px-4 py-3">
@@ -13,7 +18,7 @@ export default function PortalLayout({
           <div className="flex items-center gap-3">
             <span className="text-xl font-bold text-indigo-400">▦ Mi Portal</span>
             <nav className="hidden gap-1 sm:flex">
-              {([['proyectos', 'Mis proyectos'], ['nuevo', '+ Nuevo proyecto']] as [PortalPage, string][]).map(([id, label]) => (
+              {navItems.map(([id, label]) => (
                 <button key={id} onClick={() => onNavigate(id)}
                   className={`rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${
                     page === id ? 'bg-indigo-600/20 text-indigo-300' : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800'

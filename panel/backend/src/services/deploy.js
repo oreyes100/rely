@@ -81,6 +81,15 @@ function makeSteps(skipDnsTls = false) {
 
 // ── Compose generator ─────────────────────────────────────────────────────────
 function dbService(dbType, password) {
+  if (dbType === 'supabase-pg') {
+    // PostgreSQL + PostgREST: reemplaza Supabase para apps que sólo usan la DB REST API
+    const jwtSecret = crypto.randomBytes(32).toString('hex');
+    return {
+      yml: `  db:\n    image: postgres:16-alpine\n    restart: unless-stopped\n    environment:\n      POSTGRES_USER: postgres\n      POSTGRES_PASSWORD: "${password}"\n      POSTGRES_DB: postgres\n    volumes:\n      - db-data:/var/lib/postgresql/data\n  postgrest:\n    image: postgrest/postgrest:latest\n    restart: unless-stopped\n    ports:\n      - "3001:3000"\n    environment:\n      PGRST_DB_URI: "postgres://postgres:${password}@db:5432/postgres"\n      PGRST_DB_ANON_ROLE: anon\n      PGRST_DB_SCHEMA: public\n      PGRST_JWT_SECRET: "${jwtSecret}"\n    depends_on:\n      - db`,
+      env: `DATABASE_URL=postgres://postgres:${password}@db:5432/postgres\nPOSTGREST_URL=http://postgrest:3000\nSUPABASE_URL=http://postgrest:3000\nSUPABASE_ANON_KEY=placeholder-migra-tu-auth`,
+      info: { tipo: 'supabase-pg', usuario: 'postgres', password, dbName: 'postgres', urlInterna: `postgres://postgres:${password}@db:5432/postgres`, postgrestaUrl: 'http://postgrest:3001 (externo)' },
+    };
+  }
   if (dbType === 'postgres') return {
     yml: `  db:\n    image: postgres:16-alpine\n    restart: unless-stopped\n    environment:\n      POSTGRES_USER: app\n      POSTGRES_PASSWORD: "${password}"\n      POSTGRES_DB: app\n    volumes:\n      - db-data:/var/lib/postgresql/data`,
     env: `DATABASE_URL=postgres://app:${password}@db:5432/app\nPGUSER=app\nPGPASSWORD=${password}\nPGDATABASE=app\nPGHOST=db`,
@@ -123,22 +132,37 @@ function buildCompose(stack, appPort, dbType, dbPass, hasEnvFile = false) {
   return { override: false, yml, dbInfo: db?.info ?? null };
 }
 
+// Elimina chars de control y secuencias ANSI que corrompen el display del error
+function sanitizeBuildOutput(str) {
+  return str
+    // Secuencias de escape ANSI (colores, cursores, etc.)
+    .replace(/\x1B\[[0-9;]*[A-Za-z]/g, '')
+    // Chars de control excepto \n y \t
+    .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '')
+    // Reemplaza bytes Multi-byte inválidos como UTF-8 con '?'
+    .replace(/[-]/g, '?')
+    .trim();
+}
+
 function nodeDockerfile(appPort) {
-  // El build NO se silencia: si la app tiene script "build" y falla, el deploy
-  // falla en el paso build con el error real (no con un crash críptico en run).
+  // Build en una sola RUN para que el source del .env aplique al npm run build.
+  // Next.js y otros frameworks necesitan NEXT_PUBLIC_* disponibles en build-time.
   return `FROM node:lts
 WORKDIR /app
 COPY . .
 RUN if [ -f pnpm-lock.yaml ]; then npm i -g pnpm@10 && pnpm install --frozen-lockfile; \\
     elif [ -f yarn.lock ]; then corepack enable && yarn install --frozen-lockfile; \\
     else npm ci 2>/dev/null || npm install; fi
-RUN if ! grep -q '"build"[[:space:]]*:' package.json; then echo "sin script build"; \\
+RUN sh -c 'if [ -f .env ]; then set -a; . ./.env; set +a; fi && \\
+    if ! grep -q \\"build\\"[[:space:]]*: package.json 2>/dev/null; then echo "sin script build"; \\
     elif [ -f pnpm-lock.yaml ]; then pnpm run build; \\
     elif [ -f yarn.lock ]; then yarn build; \\
-    else npm run build; fi
+    else npm run build; fi'
 ENV HOST=0.0.0.0 PORT=${appPort}
 EXPOSE ${appPort}
-CMD node dist/server/entry.mjs 2>/dev/null || node server.js 2>/dev/null || npm start
+CMD node dist/server/entry.mjs 2>/dev/null || \\
+    node .next/standalone/server.js 2>/dev/null || \\
+    node server.js 2>/dev/null || npm start
 `;
 }
 
@@ -362,9 +386,29 @@ async function pipeline(deployId, resources, nodeName) {
     detectedStack = m ? m[1] : 'unknown';
     if (detectedStack === 'unknown') throw new Error('No se reconoció el tipo de proyecto (se esperaba compose.yaml, Dockerfile, package.json o index.html)');
 
+    // Detectar uso de Supabase para advertir al cliente si no hay vars
+    let usesSupabase = false;
+    if (detectedStack === 'node' || detectedStack === 'dockerfile') {
+      const sbCheck = await client.agentExecWait(nodeName, vmid,
+        'grep -q "@supabase/supabase-js\\|@supabase/auth-helpers" /opt/app/package.json 2>/dev/null && echo SUPABASE=yes || echo SUPABASE=no',
+        10000
+      );
+      usesSupabase = sbCheck.out.includes('SUPABASE=yes');
+    }
+    if (usesSupabase) {
+      patchDeploy(deployId, { usesSupabase: true, updatedAt: new Date().toISOString() });
+    }
+
     // Variables de entorno del cliente (build-time vía COPY y runtime vía env_file)
     if (dep.envVars) {
       await client.agentWriteFile(nodeName, vmid, '/opt/app/.env', dep.envVars.trim() + '\n');
+    } else if (usesSupabase) {
+      // Crear .env mínimo para que el build no falle por vars vacías
+      await client.agentWriteFile(nodeName, vmid, '/opt/app/.env',
+        '# Agrega tus variables de Supabase al hacer Retry\n' +
+        'NEXT_PUBLIC_SUPABASE_URL=https://placeholder.supabase.co\n' +
+        'NEXT_PUBLIC_SUPABASE_ANON_KEY=placeholder\n'
+      );
     }
 
     // Generar Dockerfile para node si no tiene
@@ -390,7 +434,10 @@ async function pipeline(deployId, resources, nodeName) {
       patchDeploy(deployId, { dbInfo: compose.dbInfo, updatedAt: new Date().toISOString() });
     }
 
-    return { detail: `Stack: ${detectedStack}${dbType ? ' + ' + dbType : ''}` };
+    const supabaseNote = usesSupabase && !dep.envVars
+      ? ' ⚠ App usa Supabase — agrega tus vars en Retry'
+      : usesSupabase ? ' + Supabase (vars aplicadas)' : '';
+    return { detail: `Stack: ${detectedStack}${dbType ? ' + ' + dbType : ''}${supabaseNote}` };
   });
 
   // 6. build
@@ -402,7 +449,12 @@ async function pipeline(deployId, resources, nodeName) {
     const exitMatch = r.out.match(/BUILD_EXIT=(\d+)/);
     if (exitMatch && exitMatch[1] !== '0') {
       const logR = await client.agentExecWait(nodeName, vmid, 'tail -30 /tmp/build.log');
-      throw new Error(`Build falló (exit ${exitMatch[1]}): ${logR.out.slice(-400)}`);
+      const rawErr = sanitizeBuildOutput(logR.out.slice(-400));
+      const depNow = getDeploy(deployId);
+      const hint = depNow.usesSupabase && !dep.envVars
+        ? ' | Supabase detectado: agrega NEXT_PUBLIC_SUPABASE_URL y NEXT_PUBLIC_SUPABASE_ANON_KEY en Retry'
+        : '';
+      throw new Error(`Build falló (exit ${exitMatch[1]}): ${rawErr}${hint}`);
     }
     return { detail: 'Imagen construida' };
   });

@@ -10,7 +10,8 @@ const ESTADO_BADGE: Record<ProyectoPortal['estado'], string> = {
   eliminado: 'bg-slate-800 text-slate-500',
 };
 
-export default function MisProyectos({ onNuevo }: { onNuevo: () => void }) {
+interface ProyectoResumen { id: string; nombre: string; url?: string; estado: string }
+export default function MisProyectos({ onNuevo, onGestionarServidor }: { onNuevo: () => void; onGestionarServidor?: (p: ProyectoResumen) => void }) {
   const [proyectos, setProyectos] = useState<ProyectoPortal[]>([]);
   const [expandido, setExpandido] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -112,7 +113,13 @@ export default function MisProyectos({ onNuevo }: { onNuevo: () => void }) {
                   Creado {new Date(p.creadoEl).toLocaleDateString('es-MX', { dateStyle: 'medium' })}
                 </p>
               </div>
-              <div className="flex shrink-0 gap-2">
+              <div className="flex shrink-0 flex-wrap gap-2">
+                {p.estado === 'activo' && onGestionarServidor && (
+                  <button onClick={() => onGestionarServidor({ id: p.id, nombre: p.nombre, url: p.url, estado: p.estado })}
+                    className="rounded-lg px-3 py-1.5 text-xs text-indigo-400 hover:text-indigo-300 hover:bg-indigo-900/20 transition-colors">
+                    ⬡ Mi servidor
+                  </button>
+                )}
                 <button onClick={() => setExpandido(expandido === p.id ? null : p.id)}
                   className="rounded-lg px-3 py-1.5 text-xs text-slate-400 hover:text-slate-200 hover:bg-slate-700 transition-colors">
                   {expandido === p.id ? 'Ocultar' : 'Detalles'}

@@ -9,6 +9,7 @@ import { clientOnly } from './auth.js';
 import { getClient, getClientQuota, isClientApproved } from '../services/clients.js';
 import { startDeploy, getDeploy, listDeploys, deleteDeploy, retryDeploy } from '../services/deploy.js';
 import { buildLandingZip } from '../services/sitegen.js';
+import { getNode } from '../proxmox.js';
 
 export const portalRouter = Router();
 
@@ -194,4 +195,107 @@ portalRouter.get('/me', clientOnly, (req, res, next) => {
       createdAt: c.createdAt,
     });
   } catch (e) { next(e); }
+});
+
+// ── Administración del servidor del cliente (Plesk-like) ──────────────────────
+
+function requireDeployOwner(req) {
+  const dep = getDeploy(req.params.id);
+  if (dep.clientId !== req.clientId) throw new HttpError(404, 'Proyecto no encontrado');
+  return dep;
+}
+
+function getDeployNode(dep) {
+  if (dep.status !== 'done' || !dep.vmid || !dep.node) {
+    throw new HttpError(503, 'Servidor no disponible: el proyecto no está activo');
+  }
+  return getNode(dep.node);
+}
+
+// Estado del servidor: contenedores, disco, memoria
+portalRouter.get('/projects/:id/server', clientOnly, async (req, res, next) => {
+  try {
+    const dep = requireDeployOwner(req);
+    const { client } = getDeployNode(dep);
+
+    const r = await client.agentExecWait(dep.node, dep.vmid,
+      'cd /opt/app 2>/dev/null && ' +
+      'echo "===CONTAINERS===" && docker compose ps --format "{{.Name}}|{{.Status}}|{{.Image}}" 2>/dev/null; ' +
+      'echo "===DISK===" && df -h / | tail -1; ' +
+      'echo "===MEM===" && free -m | grep Mem; ' +
+      'echo "===UPTIME===" && uptime -p 2>/dev/null || uptime',
+      15000
+    );
+
+    // Parsear secciones
+    const sections = r.out.split(/===\w+===/);
+    const parseContainers = (s = '') =>
+      s.trim().split('\n').filter(Boolean).map((line) => {
+        const [name, status, image] = line.split('|');
+        return { name: name?.trim(), status: status?.trim(), image: image?.trim() };
+      });
+    const parseDisk = (s = '') => {
+      const m = s.trim().match(/(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)%/);
+      return m ? { total: m[2], used: m[3], free: m[4], pct: m[5] } : null;
+    };
+    const parseMem = (s = '') => {
+      const m = s.trim().match(/Mem:\s+(\d+)\s+(\d+)\s+(\d+)/);
+      return m ? { total: m[1], used: m[2], free: m[3] } : null;
+    };
+
+    res.json({
+      available: true,
+      containers: parseContainers(sections[1]),
+      disk: parseDisk(sections[2]),
+      mem: parseMem(sections[3]),
+      uptime: sections[4]?.trim() ?? '',
+      ip: dep.guestIP,
+      vmid: dep.vmid,
+      url: dep.url,
+      usesSupabase: dep.usesSupabase ?? false,
+      dbInfo: dep.dbInfo ?? null,
+    });
+  } catch (e) {
+    if (e instanceof HttpError && e.status === 503) return res.json({ available: false, reason: e.message });
+    next(e);
+  }
+});
+
+// Logs de la aplicación
+portalRouter.get('/projects/:id/server/logs', clientOnly, async (req, res, next) => {
+  try {
+    const dep = requireDeployOwner(req);
+    const { client } = getDeployNode(dep);
+    const lines = Math.min(Number(req.query.lines ?? 80), 300);
+    const r = await client.agentExecWait(dep.node, dep.vmid,
+      `cd /opt/app 2>/dev/null && docker compose logs --tail ${lines} --no-color 2>&1 || echo "Sin logs disponibles"`,
+      20000
+    );
+    res.json({
+      ok: true,
+      lines: r.out.split('\n').filter(Boolean),
+    });
+  } catch (e) {
+    if (e instanceof HttpError && e.status === 503) return res.json({ ok: false, lines: [], reason: e.message });
+    next(e);
+  }
+});
+
+// Reiniciar la aplicación
+const restartLimiter = rateLimit({ windowMs: 5 * 60 * 1000, max: 3,
+  message: { error: 'Máximo 3 reinicios por 5 minutos' } });
+
+portalRouter.post('/projects/:id/server/restart', clientOnly, restartLimiter, async (req, res, next) => {
+  try {
+    const dep = requireDeployOwner(req);
+    const { client } = getDeployNode(dep);
+    await client.agentExecWait(dep.node, dep.vmid,
+      'cd /opt/app && docker compose restart 2>&1',
+      60000
+    );
+    res.json({ ok: true, mensaje: 'Aplicación reiniciada correctamente' });
+  } catch (e) {
+    if (e instanceof HttpError && e.status === 503) return res.json({ ok: false, reason: e.message });
+    next(e);
+  }
 });
