@@ -4,8 +4,9 @@ import crypto from 'crypto';
 import { execFile } from 'child_process';
 import { promisify } from 'util';
 import { config } from '../config.js';
-import { getNode, allNodes } from '../proxmox.js';
-import { provisionVm, checkCapacity, stopAndDestroy } from './provision.js';
+import { getNode } from '../proxmox.js';
+import { provisionVm, stopAndDestroy } from './provision.js';
+import { selectBestNode } from './node-selector.js';
 import { HttpError } from '../errors.js';
 import { sendAdminAlert } from './mailer.js';
 
@@ -233,20 +234,10 @@ export async function startDeploy(deploySpec) {
     ? { cores: 2, memoryMb: 2048 + dbExtra, diskGb: 25 }
     : { cores: 1, memoryMb: 1024 + dbExtra, diskGb: 20 };
 
-  // Determinar nodo
+  // Determinar nodo — selector IA (considera RAM + disco + CPU) con fallback rule-based
   let nodeName = preferNode;
   if (!nodeName) {
-    const candidates = allNodes().filter((n) => n.cfg.type !== 'hyperv');
-    let best = null; let bestFree = -1;
-    for (const { cfg, client } of candidates) {
-      try {
-        const st = await client.get(`/nodes/${cfg.name}/status`);
-        const free = st.memory.total - st.memory.used;
-        if (free > bestFree) { bestFree = free; best = cfg.name; }
-      } catch { /* nodo caído */ }
-    }
-    if (!best) throw new HttpError(503, 'No hay nodos disponibles');
-    nodeName = best;
+    nodeName = await selectBestNode(resources, `plan:${plan} db:${db}`);
   }
 
   const skipDnsTls = domain.type === 'wildcard';
@@ -614,8 +605,17 @@ export async function retryDeploy(deployId, envVars) {
     ? { cores: 2, memoryMb: 2048 + (dep.db !== 'ninguna' ? 512 : 0), diskGb: 25 }
     : { cores: 1, memoryMb: 1024 + (dep.db !== 'ninguna' ? 512 : 0), diskGb: 20 };
 
+  // Re-seleccionar nodo — el nodo original puede estar sin disco o caído
+  let retryNode = dep.node;
+  try {
+    retryNode = await selectBestNode(resources, `retry:${dep.hostname} plan:${dep.plan} db:${dep.db}`);
+  } catch (e) {
+    console.warn(`[retry:${deployId}] No se pudo re-seleccionar nodo: ${e.message}. Usando ${dep.node}`);
+  }
+
   patchDeploy(deployId, {
     status: 'running',
+    node: retryNode,
     vmid: null,
     guestIP: null,
     wanPort: undefined,
@@ -623,12 +623,12 @@ export async function retryDeploy(deployId, envVars) {
     updatedAt: new Date().toISOString(),
   });
 
-  pipeline(deployId, resources, dep.node).catch((err) => {
+  pipeline(deployId, resources, retryNode).catch((err) => {
     patchDeploy(deployId, { status: 'error', updatedAt: new Date().toISOString() });
     console.error(`[deploy:${deployId}] RETRY-FATAL:`, err.message);
     sendAdminAlert({
       subject: `[ALERTA] Retry fallido: ${dep.hostname}`,
-      body: `Deploy ID: ${deployId}\nHostname: ${dep.hostname}\nNodo: ${dep.node}\nCliente: ${dep.clientId ?? 'admin'}\n\nError:\n${err.message}`,
+      body: `Deploy ID: ${deployId}\nHostname: ${dep.hostname}\nNodo: ${retryNode}\nCliente: ${dep.clientId ?? 'admin'}\n\nError:\n${err.message}`,
     }).catch(() => {});
   });
 }

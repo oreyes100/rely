@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNodes } from '../api/queries';
+import { api } from '../api/client';
 import { formatBytes, formatUptime, pct } from '../format';
 import type { NodeInfo } from '../api/types';
 
@@ -27,6 +28,31 @@ function Sparkline({ points }: { points: number[] }) {
 
 function NodeCard({ node, cpuHistory }: { node: NodeInfo; cpuHistory: number[] }) {
   const isHyperV = node.nodeType === 'hyperv';
+  const isTokenError = !node.online && node.error?.includes('Token API');
+  const [showTokenForm, setShowTokenForm] = useState(false);
+  const [newToken, setNewToken] = useState('');
+  const [tokenMsg, setTokenMsg] = useState('');
+  const [saving, setSaving] = useState(false);
+
+  const handleUpdateToken = async () => {
+    setSaving(true);
+    setTokenMsg('');
+    try {
+      const data = await api<{ mensaje: string }>(`/nodes/${node.name}/token`, {
+        method: 'POST',
+        body: JSON.stringify({ tokenSecret: newToken }),
+      });
+      setTokenMsg(data.mensaje ?? 'Token actualizado');
+      setShowTokenForm(false);
+      setNewToken('');
+    } catch (e: any) {
+      setTokenMsg(e.message ?? 'Error al actualizar token');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
 
   if (!node.online) {
     return (
@@ -39,7 +65,55 @@ function NodeCard({ node, cpuHistory }: { node: NodeInfo; cpuHistory: number[] }
           <span className="rounded-full bg-red-500/20 px-2 py-0.5 text-xs text-red-400">sin conexión</span>
         </div>
         <p className="mt-2 text-sm text-slate-500">{node.host} · {node.subnet}</p>
-        {node.error && <p className="mt-1.5 text-xs text-red-400/80 truncate" title={node.error}>{node.error}</p>}
+        {node.error && (
+          <p className="mt-1.5 text-xs text-red-400/80 break-words" title={node.error}>
+            {node.error}
+          </p>
+        )}
+        {isTokenError && (
+          <div className="mt-3 space-y-2">
+            {!showTokenForm ? (
+              <button
+                className="rounded bg-amber-500/20 px-3 py-1.5 text-xs text-amber-300 hover:bg-amber-500/30 transition-colors"
+                onClick={() => setShowTokenForm(true)}
+              >
+                Actualizar token API
+              </button>
+            ) : (
+              <div className="space-y-2">
+                <p className="text-xs text-slate-400">
+                  Proxmox → Datacenter → Permissions → API Tokens → regenerar "panel" y pegar UUID aquí:
+                </p>
+                <input
+                  className="w-full rounded bg-slate-800 border border-slate-700 px-2 py-1.5 text-xs font-mono text-slate-200 placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                  placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+                  value={newToken}
+                  onChange={(e) => setNewToken(e.target.value.toLowerCase().trim())}
+                />
+                <div className="flex gap-2">
+                  <button
+                    className="flex-1 rounded bg-indigo-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-indigo-700 disabled:opacity-40 transition-colors"
+                    onClick={handleUpdateToken}
+                    disabled={saving || !uuidRegex.test(newToken)}
+                  >
+                    {saving ? 'Aplicando…' : 'Aplicar'}
+                  </button>
+                  <button
+                    className="rounded bg-slate-700 px-3 py-1.5 text-xs text-slate-300 hover:bg-slate-600 transition-colors"
+                    onClick={() => { setShowTokenForm(false); setNewToken(''); setTokenMsg(''); }}
+                  >
+                    Cancelar
+                  </button>
+                </div>
+              </div>
+            )}
+            {tokenMsg && (
+              <p className={`text-xs ${tokenMsg.includes('Error') || tokenMsg.includes('inválido') ? 'text-red-400' : 'text-emerald-400'}`}>
+                {tokenMsg}
+              </p>
+            )}
+          </div>
+        )}
       </div>
     );
   }

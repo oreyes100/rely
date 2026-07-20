@@ -121,3 +121,11 @@ export function getNode(name) {
 export function allNodes() {
   return [...registry.values()];
 }
+
+export function refreshNodeToken(nodeName, tokenSecret) {
+  const entry = registry.get(nodeName);
+  if (!entry || entry.cfg.type === 'hyperv') return false;
+  entry.cfg.tokenSecret = tokenSecret;
+  entry.client = new ProxmoxClient(entry.cfg);
+  return true;
+}

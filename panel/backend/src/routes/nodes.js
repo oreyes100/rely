@@ -1,5 +1,12 @@
 import { Router } from 'express';
-import { allNodes } from '../proxmox.js';
+import { readFileSync, writeFileSync } from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import { allNodes, refreshNodeToken } from '../proxmox.js';
+import { HttpError } from '../errors.js';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const nodesFile = path.join(__dirname, '../../config/nodes.json');
 
 export const nodesRouter = Router();
 
@@ -71,4 +78,33 @@ nodesRouter.get('/', async (_req, res) => {
     })
   );
   res.json(results);
+});
+
+// Actualizar tokenSecret de un nodo Proxmox sin reiniciar el panel
+nodesRouter.post('/:nodeName/token', async (req, res, next) => {
+  try {
+    const { nodeName } = req.params;
+    const { tokenSecret } = req.body ?? {};
+
+    if (typeof tokenSecret !== 'string' ||
+        !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/.test(tokenSecret)) {
+      throw new HttpError(400, 'tokenSecret debe ser un UUID válido (xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx)');
+    }
+
+    const nodes = JSON.parse(readFileSync(nodesFile, 'utf8'));
+    const node = nodes.find((n) => n.name === nodeName);
+    if (!node) throw new HttpError(404, `Nodo no encontrado: ${nodeName}`);
+    if (node.type === 'hyperv') throw new HttpError(400, 'Los nodos Hyper-V no usan tokenSecret de Proxmox');
+
+    node.tokenSecret = tokenSecret;
+    writeFileSync(nodesFile, JSON.stringify(nodes, null, 2));
+
+    const refreshed = refreshNodeToken(nodeName, tokenSecret);
+    res.json({
+      ok: true,
+      mensaje: refreshed
+        ? `Token de ${nodeName} actualizado y aplicado. El nodo debería aparecer online en el próximo refresco.`
+        : `Token guardado en nodes.json. Reinicia el panel para aplicarlo.`,
+    });
+  } catch (e) { next(e); }
 });
