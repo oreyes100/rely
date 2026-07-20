@@ -35,6 +35,7 @@ interface NodeInfo {
 }
 
 const CATEGORY_LABEL: Record<string, string> = {
+  ai: 'Inteligencia Artificial',
   gaming: 'Gaming',
   communication: 'Comunicación',
   devops: 'DevOps / Hosting',
@@ -63,7 +64,6 @@ export default function Services() {
   const [activeTab, setActiveTab] = useState<'catalog' | 'installed'>('catalog');
 
   useEffect(() => {
-    // Load catalog and installs immediately — no dependency on Proxmox nodes
     Promise.all([
       api<ServiceDef[]>('/services/catalog'),
       api<ServiceInstall[]>('/services/installs'),
@@ -75,16 +75,28 @@ export default function Services() {
       .catch((e) => setError(e.message))
       .finally(() => setLoading(false));
 
-    // Load nodes in background — only needed for install modal node selector
     api<NodeInfo[]>('/nodes')
       .then((nds) => {
         const online = nds.filter((n) => n.online);
         setNodes(online);
         if (online.length > 0) setForm((f) => ({ ...f, node: online[0].name }));
       })
-      .catch(() => { /* nodes offline — install button will be disabled */ })
+      .catch(() => {})
       .finally(() => setNodesLoading(false));
   }, []);
+
+  // Polling mientras haya installs instalándose en segundo plano
+  useEffect(() => {
+    const hasRunning = installs.some((i) => i.setupStatus === 'running');
+    if (!hasRunning) return;
+    const t = setTimeout(async () => {
+      try {
+        const inst = await api<ServiceInstall[]>('/services/installs');
+        setInstalls(inst);
+      } catch { /* ignorar errores de polling */ }
+    }, 6000);
+    return () => clearTimeout(t);
+  }, [installs]);
 
   async function handleInstall() {
     if (!showInstallModal || !form.hostname || !form.node) return;

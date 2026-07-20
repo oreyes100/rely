@@ -21,97 +21,125 @@ function saveInstalls(list) {
   writeFileSync(installsFile, JSON.stringify(list, null, 2));
 }
 
+function updateInstallStatus(installId, setupStatus, errMsg = null) {
+  const installs = readInstalls();
+  const idx = installs.findIndex((i) => i.id === installId);
+  if (idx === -1) return;
+  installs[idx].setupStatus = setupStatus;
+  if (setupStatus === 'done') installs[idx].completedAt = new Date().toISOString();
+  if (errMsg) installs[idx].setupError = errMsg.slice(0, 400);
+  saveInstalls(installs);
+}
+
 export const SERVICE_CATALOG = [
   {
     id: 'openclaw',
-    name: 'OpenClaw Server',
-    description: 'Servidor de juego OpenClaw. Multiplayer sandbox con Docker.',
-    category: 'gaming',
-    icon: '🎮',
-    resources: { cores: 2, memoryMb: 4096, diskGb: 30 },
-    ports: [{ port: 25565, proto: 'tcp', label: 'Juego' }, { port: 8080, proto: 'tcp', label: 'Admin Web' }],
+    name: 'OpenClaw AI Server',
+    description: 'Servidor de inferencia de IA OpenClaw. Despliega modelos LLM localmente con API compatible con OpenAI. Interfaz web incluida (Open WebUI).',
+    category: 'ai',
+    icon: '🧠',
+    resources: { cores: 4, memoryMb: 8192, diskGb: 60 },
+    ports: [
+      { port: 11434, proto: 'tcp', label: 'API Ollama' },
+      { port: 3000, proto: 'tcp', label: 'Open WebUI' },
+    ],
     setupScript: `#!/bin/bash
 set -e
-apt-get update -qq
-apt-get install -y docker.io docker-compose-v2 curl
+export DEBIAN_FRONTEND=noninteractive
+
+apt-get -o DPkg::Lock::Timeout=300 update -qq
+apt-get -o DPkg::Lock::Timeout=300 install -y docker.io docker-compose-v2 curl
 systemctl enable --now docker
 
-mkdir -p /opt/openclaw
-cat > /opt/openclaw/docker-compose.yml << 'EOF'
+mkdir -p /opt/openclaw/data /opt/openclaw/webui
+cat > /opt/openclaw/docker-compose.yml << 'COMPOSE'
 services:
-  openclaw:
-    image: itzg/minecraft-server:latest
-    container_name: openclaw
+  ollama:
+    image: ollama/ollama:latest
+    container_name: openclaw-ollama
     restart: unless-stopped
-    environment:
-      EULA: "TRUE"
-      TYPE: PAPER
-      VERSION: "1.21"
-      MEMORY: "3G"
-      SERVER_NAME: "OpenClaw Server"
-      ENABLE_AUTOPAUSE: "FALSE"
-    ports:
-      - "25565:25565"
-      - "25575:25575"
     volumes:
-      - /opt/openclaw/data:/data
-  admin:
-    image: itzg/mc-router:latest
-    container_name: openclaw-admin
+      - /opt/openclaw/data:/root/.ollama
+    ports:
+      - "11434:11434"
+  webui:
+    image: ghcr.io/open-webui/open-webui:main
+    container_name: openclaw-webui
     restart: unless-stopped
     environment:
-      API_BINDING: "0.0.0.0:8080"
+      OLLAMA_BASE_URL: http://ollama:11434
+      WEBUI_NAME: OpenClaw AI
+    volumes:
+      - /opt/openclaw/webui:/app/backend/data
     ports:
-      - "8080:8080"
-    depends_on: [openclaw]
-EOF
+      - "3000:8080"
+    depends_on:
+      - ollama
+COMPOSE
+
 cd /opt/openclaw && docker compose up -d
-echo "OpenClaw instalado" > /var/log/service-install.log`,
+sleep 15
+
+# Descargar modelo en background (no bloquear la instalación)
+docker exec -d openclaw-ollama ollama pull llama3.2:3b || true
+
+echo "OpenClaw instalado - modelo descargando en background" > /var/log/service-install.log
+echo SETUP-OK`,
   },
   {
     id: 'hermes',
-    name: 'Hermes Messaging',
-    description: 'Servidor de mensajería Rocket.Chat. Chat, canales, videoconferencias.',
-    category: 'communication',
-    icon: '💬',
-    resources: { cores: 2, memoryMb: 4096, diskGb: 30 },
-    ports: [{ port: 3000, proto: 'tcp', label: 'Web' }],
+    name: 'Hermes Agent (Nous Research)',
+    description: 'Servidor del modelo Hermes de Nous Research. Agente de IA fine-tuned con capacidades de razonamiento avanzado. API compatible con OpenAI + interfaz web.',
+    category: 'ai',
+    icon: '⚡',
+    resources: { cores: 4, memoryMb: 8192, diskGb: 60 },
+    ports: [
+      { port: 11434, proto: 'tcp', label: 'API Ollama' },
+      { port: 3000, proto: 'tcp', label: 'Open WebUI' },
+    ],
     setupScript: `#!/bin/bash
 set -e
-apt-get update -qq
-apt-get install -y docker.io docker-compose-v2
+export DEBIAN_FRONTEND=noninteractive
+
+apt-get -o DPkg::Lock::Timeout=300 update -qq
+apt-get -o DPkg::Lock::Timeout=300 install -y docker.io docker-compose-v2 curl
 systemctl enable --now docker
 
-mkdir -p /opt/hermes
-cat > /opt/hermes/docker-compose.yml << 'EOF'
+mkdir -p /opt/hermes/data /opt/hermes/webui
+cat > /opt/hermes/docker-compose.yml << 'COMPOSE'
 services:
-  rocketchat:
-    image: registry.rocket.chat/rocketchat/rocket.chat:latest
-    container_name: hermes-chat
+  ollama:
+    image: ollama/ollama:latest
+    container_name: hermes-ollama
+    restart: unless-stopped
+    volumes:
+      - /opt/hermes/data:/root/.ollama
+    ports:
+      - "11434:11434"
+  webui:
+    image: ghcr.io/open-webui/open-webui:main
+    container_name: hermes-webui
     restart: unless-stopped
     environment:
-      MONGO_URL: mongodb://mongo:27017/rocketchat
-      MONGO_OPLOG_URL: mongodb://mongo:27017/local
-      ROOT_URL: http://localhost:3000
-      PORT: "3000"
-    ports:
-      - "3000:3000"
-    depends_on: [mongo]
-  mongo:
-    image: mongo:6
-    container_name: hermes-mongo
-    restart: unless-stopped
-    command: mongod --oplogSize 128 --replSet rs0
+      OLLAMA_BASE_URL: http://ollama:11434
+      WEBUI_NAME: Hermes Agent
+      DEFAULT_MODELS: nous-hermes2
     volumes:
-      - /opt/hermes/mongo:/data/db
-  mongo-init:
-    image: mongo:6
-    command: >
-      bash -c "sleep 10 && mongosh --host mongo:27017 --eval 'rs.initiate({_id: \"rs0\", members: [{_id: 0, host: \"localhost:27017\"}]})'"
-    depends_on: [mongo]
-EOF
+      - /opt/hermes/webui:/app/backend/data
+    ports:
+      - "3000:8080"
+    depends_on:
+      - ollama
+COMPOSE
+
 cd /opt/hermes && docker compose up -d
-echo "Hermes instalado" > /var/log/service-install.log`,
+sleep 15
+
+# Descargar modelo Nous Hermes 2 en background
+docker exec -d hermes-ollama ollama pull nous-hermes2 || true
+
+echo "Hermes instalado - modelo nous-hermes2 descargando en background" > /var/log/service-install.log
+echo SETUP-OK`,
   },
   {
     id: 'coolify',
@@ -127,7 +155,7 @@ apt-get update -qq
 apt-get install -y curl docker.io
 systemctl enable --now docker
 curl -fsSL https://cdn.coollabs.io/coolify/install.sh | bash
-echo "Coolify instalado" > /var/log/service-install.log`,
+echo SETUP-OK`,
   },
   {
     id: 'supabase',
@@ -150,34 +178,45 @@ cd /opt
 git clone --depth 1 https://github.com/supabase/supabase.git
 cd supabase/docker
 
-# Generar secrets aleatorios
 POSTGRES_PASSWORD=$(openssl rand -hex 20)
 JWT_SECRET=$(openssl rand -hex 40)
-ANON_KEY=$(python3 -c "
-import hmac, hashlib, base64, json, time, struct
-header = base64.urlsafe_b64encode(json.dumps({'alg':'HS256','typ':'JWT'}).encode()).rstrip(b'=')
-payload = base64.urlsafe_b64encode(json.dumps({'role':'anon','iss':'supabase','iat':int(time.time()),'exp':int(time.time())+315360000}).encode()).rstrip(b'=')
-msg = header + b'.' + payload
-sig = base64.urlsafe_b64encode(hmac.new(b'$JWT_SECRET', msg, hashlib.sha256).digest()).rstrip(b'=')
-print((msg + b'.' + sig).decode())
-" 2>/dev/null || echo "anon-key-placeholder")
 
 cp .env.example .env
 sed -i "s/POSTGRES_PASSWORD=.*/POSTGRES_PASSWORD=$POSTGRES_PASSWORD/" .env
 sed -i "s/JWT_SECRET=.*/JWT_SECRET=$JWT_SECRET/" .env
-sed -i "s/ANON_KEY=.*/ANON_KEY=$ANON_KEY/" .env
-sed -i "s/SERVICE_ROLE_KEY=.*/SERVICE_ROLE_KEY=$ANON_KEY/" .env
 
 docker compose pull
 docker compose up -d
-cat > /var/log/service-install.log << LOGEOF
-Supabase instalado
-PostgreSQL password: $POSTGRES_PASSWORD
-JWT secret: $JWT_SECRET
-LOGEOF
-echo "Supabase instalado" >> /var/log/service-install.log`,
+echo "Supabase instalado" > /var/log/service-install.log
+echo SETUP-OK`,
   },
 ];
+
+// ── Auto-deploy: ejecutar setup script en la VM via qemu-agent ───────────────
+async function runServiceSetup(installId, svc, nodeName, vmid) {
+  const { client } = getNode(nodeName);
+
+  // 1. Esperar a que el agente QEMU esté listo (max 10 min)
+  const agentDeadline = Date.now() + 10 * 60 * 1000;
+  for (;;) {
+    try {
+      await client.agentExecWait(nodeName, vmid, 'echo AGENT-READY', 5000);
+      break;
+    } catch {
+      if (Date.now() > agentDeadline) throw new Error('Timeout esperando que la VM arranque (10 min)');
+      await new Promise((r) => setTimeout(r, 10000));
+    }
+  }
+
+  // 2. Ejecutar setup script (instalación de docker + compose up) — timeout 15 min
+  const r = await client.agentExecWait(nodeName, vmid, svc.setupScript, 900000);
+  if (r.exitcode !== 0 || !r.out.includes('SETUP-OK')) {
+    const detail = (r.out + '\n' + r.err).slice(-400);
+    throw new Error(`Setup falló (exit ${r.exitcode}): ${detail}`);
+  }
+
+  updateInstallStatus(installId, 'done');
+}
 
 const installLimiter = rateLimit({
   windowMs: 60 * 60 * 1000,
@@ -217,10 +256,8 @@ servicesRouter.post('/install', installLimiter, async (req, res, next) => {
     const svc = SERVICE_CATALOG.find((s) => s.id === serviceId);
     if (!svc) throw new HttpError(404, `Servicio desconocido: ${serviceId}`);
 
-    // Verificar nodo accesible
     getNode(nodeName);
 
-    // Aprovisionar VM con los recursos del servicio
     const { cores, memoryMb, diskGb } = svc.resources;
     const vmResult = await provisionVm({
       node: nodeName,
@@ -231,7 +268,6 @@ servicesRouter.post('/install', installLimiter, async (req, res, next) => {
       tags: [`svc:${serviceId}`],
     });
 
-    // Registrar en installs
     const installs = readInstalls();
     const install = {
       id: `${nodeName}-${vmResult.vmid}`,
@@ -245,7 +281,7 @@ servicesRouter.post('/install', installLimiter, async (req, res, next) => {
       password: vmResult.password,
       subnetHint: vmResult.subnetHint,
       status: 'vm_running',
-      setupStatus: 'pending',
+      setupStatus: 'running',
       installedAt: new Date().toISOString(),
       ports: svc.ports,
     };
@@ -259,17 +295,22 @@ servicesRouter.post('/install', installLimiter, async (req, res, next) => {
       detail: `${svc.name} → ${hostname}`,
     });
 
+    // Lanzar setup en background — no bloquear el request
+    runServiceSetup(install.id, svc, nodeName, vmResult.vmid).catch((e) => {
+      console.error(`[service-setup:${install.id}] FATAL:`, e.message);
+      updateInstallStatus(install.id, 'error', e.message);
+    });
+
     res.status(201).json({
       ...install,
-      setupScript: svc.setupScript,
-      note: 'VM aprovisionada. Ejecuta setupScript en la VM para completar la instalación del servicio.',
+      note: 'VM aprovisionada. El servicio se está instalando en segundo plano (5-15 min). Refresca la pestaña "Instalados" para ver el progreso.',
     });
   } catch (e) {
     next(e);
   }
 });
 
-// Obtener script de setup de un servicio instalado
+// Obtener script de setup de un servicio instalado (para descarga manual / diagnóstico)
 servicesRouter.get('/installs/:installId/script', (req, res, next) => {
   try {
     const installs = readInstalls();

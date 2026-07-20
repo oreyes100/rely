@@ -186,6 +186,7 @@ export default function Landing({ onLogin }: { onLogin: () => void }) {
           </div>
           <nav className="hidden items-center gap-8 lg:flex">
             <a href="#planes" className="text-sm font-medium text-gray-600 hover:text-[#673de6] transition-colors">Planes y precios</a>
+            <a href="#servicios-ia" className="text-sm font-medium text-gray-600 hover:text-[#673de6] transition-colors">Servidores IA</a>
             <a href="#caracteristicas" className="text-sm font-medium text-gray-600 hover:text-[#673de6] transition-colors">Características</a>
             <a href="#como-funciona" className="text-sm font-medium text-gray-600 hover:text-[#673de6] transition-colors">Cómo funciona</a>
           </nav>
@@ -253,6 +254,73 @@ export default function Landing({ onLogin }: { onLogin: () => void }) {
               <div className="mt-1 text-sm text-gray-500">{s.label}</div>
             </div>
           ))}
+        </div>
+      </section>
+
+      {/* Servidores de IA */}
+      <section id="servicios-ia" className="bg-white px-6 py-20 border-t border-gray-100">
+        <div className="mx-auto max-w-6xl">
+          <div className="mb-12 text-center">
+            <span className="inline-block rounded-full bg-[#f4f0ff] px-4 py-1.5 text-sm font-semibold text-[#673de6]">
+              Inteligencia Artificial
+            </span>
+            <h2 className="mt-4 text-3xl font-extrabold tracking-tight text-[#1d1e20] md:text-4xl">
+              Servidores de IA dedicados
+            </h2>
+            <p className="mt-3 text-gray-500 max-w-2xl mx-auto">
+              Despliega modelos de IA de última generación en tu propio servidor. Sin costos por token, sin límites de uso, con tu API privada.
+            </p>
+          </div>
+          <div className="grid gap-8 md:grid-cols-2">
+            {/* OpenClaw AI */}
+            <div className="rounded-2xl border border-gray-200 bg-white p-8 flex flex-col gap-4">
+              <div className="flex items-start gap-4">
+                <span className="text-4xl">🧠</span>
+                <div>
+                  <h3 className="text-xl font-bold text-[#1d1e20]">OpenClaw AI Server</h3>
+                  <p className="text-sm text-[#673de6] font-medium mt-0.5">Inteligencia Artificial</p>
+                </div>
+              </div>
+              <p className="text-gray-600 text-sm leading-relaxed">
+                Servidor de inferencia LLM privado con API compatible con OpenAI. Corre cualquier modelo de lenguaje en tu infraestructura — sin depender de servicios externos ni pagar por token.
+              </p>
+              <ul className="space-y-2 text-sm text-gray-600">
+                {['API REST compatible con OpenAI', 'Interfaz web Open WebUI incluida', '4 vCPU · 8 GB RAM · 60 GB SSD', 'Instalación automática en menos de 15 min'].map(f => (
+                  <li key={f} className="flex items-start gap-2"><Check />{f}</li>
+                ))}
+              </ul>
+              <a href={FOSSBILLING_URL}
+                className="mt-auto rounded-lg border-2 border-[#673de6] px-6 py-2.5 text-center text-sm font-bold text-[#673de6] hover:bg-[#673de6] hover:text-white transition-colors">
+                Solicitar servidor
+              </a>
+            </div>
+
+            {/* Hermes Agent */}
+            <div className="rounded-2xl border-2 border-[#673de6] bg-white p-8 flex flex-col gap-4 relative shadow-xl shadow-[#673de6]/10">
+              <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 rounded-full bg-[#673de6] px-4 py-1 text-xs font-bold text-white">
+                Recomendado
+              </div>
+              <div className="flex items-start gap-4">
+                <span className="text-4xl">⚡</span>
+                <div>
+                  <h3 className="text-xl font-bold text-[#1d1e20]">Hermes Agent</h3>
+                  <p className="text-sm text-[#673de6] font-medium mt-0.5">Nous Research · Inteligencia Artificial</p>
+                </div>
+              </div>
+              <p className="text-gray-600 text-sm leading-relaxed">
+                El modelo Hermes de Nous Research: un agente de IA con razonamiento avanzado, fine-tuning para seguimiento de instrucciones y soporte para function calling. Tu agente privado.
+              </p>
+              <ul className="space-y-2 text-sm text-gray-600">
+                {['Modelo Nous Hermes 2 (Mistral)', 'Razonamiento avanzado y function calling', '4 vCPU · 8 GB RAM · 60 GB SSD', 'Modelo pre-cargado · API + WebUI incluidas'].map(f => (
+                  <li key={f} className="flex items-start gap-2"><Check />{f}</li>
+                ))}
+              </ul>
+              <a href={FOSSBILLING_URL}
+                className="mt-auto rounded-lg bg-[#673de6] px-6 py-2.5 text-center text-sm font-bold text-white hover:bg-[#5025d1] transition-colors">
+                Solicitar servidor
+              </a>
+            </div>
+          </div>
         </div>
       </section>
 

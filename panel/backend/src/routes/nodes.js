@@ -50,11 +50,22 @@ nodesRouter.get('/', async (_req, res) => {
           uptime: status.uptime,
         };
       } catch (e) {
+        let error = e.message;
+        if (e.isAxiosError) {
+          const st = e.response?.status;
+          if (st === 401 || st === 403) {
+            error = `Token API inválido (HTTP ${st}) — Proxmox > Datacenter > Permissions > API Tokens > regenerar token "panel"`;
+          } else if (e.code === 'ECONNREFUSED') {
+            error = `Nodo sin conexión (ECONNREFUSED) — verifica que Proxmox esté activo en ${cfg.host}`;
+          } else if (e.code === 'ETIMEDOUT' || e.code === 'ECONNABORTED') {
+            error = `Timeout conectando a ${cfg.host}:${cfg.port || 8006}`;
+          }
+        }
         return {
           name: cfg.name, host: cfg.host,
           subnet: `${cfg.subnetPrefix}0/24`,
           nodeType: cfg.type ?? 'proxmox',
-          online: false, error: e.message,
+          online: false, error,
         };
       }
     })

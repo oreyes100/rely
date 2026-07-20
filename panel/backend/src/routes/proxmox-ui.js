@@ -40,6 +40,16 @@ function createNodeProxy(node) {
           res.removeHeader(h);
         }
 
+        // Reescribir Location header en redirects (Proxmox redirige con paths absolutos)
+        if (proxyRes.headers['location']) {
+          const loc = proxyRes.headers['location'];
+          if (loc.startsWith('/') && !loc.startsWith(mountPath)) {
+            const newLoc = mountPath + loc;
+            proxyRes.headers['location'] = newLoc;
+            res.setHeader('location', newLoc);
+          }
+        }
+
         // Inyectar el interceptor JS solo en respuestas HTML
         const ct = (proxyRes.headers['content-type'] || '').toLowerCase();
         if (ct.includes('text/html')) {
@@ -51,6 +61,18 @@ function createNodeProxy(node) {
           } else {
             html = script + html;
           }
+
+          // Reescribir src/href/action absolutos para que pasen por el proxy.
+          // Esto carga los JS/CSS estáticos de Proxmox a través de /proxmox/<nodo>/pve2/...
+          // en vez de pedirlos al panel (que devolvería index.html en su lugar).
+          html = html.replace(
+            /((?:src|href|action|data-src)=["'])(\/(?!\/)[^"']*)(["'])/g,
+            (match, attr, urlPath, quote) => {
+              if (urlPath.startsWith(mountPath)) return match;
+              return `${attr}${mountPath}${urlPath}${quote}`;
+            }
+          );
+
           return Buffer.from(html, 'utf8');
         }
 
