@@ -1,9 +1,11 @@
 import { Router } from 'express';
+import express from 'express';
 import crypto from 'crypto';
 import { config } from '../config.js';
 import { HttpError } from '../errors.js';
 import { createInvite } from '../services/clients.js';
 import { sendInviteEmail } from '../services/mailer.js';
+import { handleStripeWebhook, handleNowPaymentsWebhook } from '../services/payments.js';
 
 export const webhookRouter = Router();
 
@@ -40,5 +42,26 @@ webhookRouter.post('/fossbilling-signup', async (req, res, next) => {
     console.log(`[webhook] FossBilling signup: client_id=${client_id} email=${email} invite=${code} emailSent=${emailSent}`);
 
     res.json({ ok: true, inviteCode: code, emailSent });
+  } catch (e) { next(e); }
+});
+
+// ── Stripe webhook (para pagos con tarjeta) ───────────────────────────────────
+// Stripe necesita el rawBody para verificar la firma — no JSON-parseado
+webhookRouter.post('/stripe',
+  express.raw({ type: 'application/json' }),
+  async (req, res, next) => {
+    try {
+      const sig = req.headers['stripe-signature'];
+      const result = await handleStripeWebhook(req.body, sig);
+      res.json(result);
+    } catch (e) { next(e); }
+  }
+);
+
+// ── NOWPayments webhook (para pagos crypto) ───────────────────────────────────
+webhookRouter.post('/nowpayments', async (req, res, next) => {
+  try {
+    const result = await handleNowPaymentsWebhook(req.body);
+    res.json(result);
   } catch (e) { next(e); }
 });

@@ -1,0 +1,174 @@
+import { Router } from 'express';
+import { execFile } from 'child_process';
+import { promisify } from 'util';
+import { readdirSync, existsSync, statSync } from 'fs';
+import path from 'path';
+import { HttpError } from '../errors.js';
+
+const execAsync = promisify(execFile);
+export const sysadminRouter = Router();
+
+const ALLOWED_SERVICES = new Set(['nginx', 'vps-panel', 'fossbilling', 'mariadb', 'mysql', 'postgresql', 'redis-server']);
+const ALLOWED_ACTIONS = new Set(['start', 'stop', 'restart', 'reload']);
+const ALLOWED_LOG_SERVICES = new Set(['nginx', 'vps-panel', 'fossbilling']);
+
+async function safeExec(cmd, args, timeoutMs = 8000) {
+  try {
+    const { stdout, stderr } = await execAsync(cmd, args, { timeout: timeoutMs });
+    return { ok: true, stdout: stdout.trim(), stderr: stderr.trim() };
+  } catch (e) {
+    return { ok: false, stdout: '', stderr: (e.stderr ?? e.message ?? '').trim(), exitCode: e.code };
+  }
+}
+
+// ── Servicios ─────────────────────────────────────────────────────────────────
+sysadminRouter.get('/services', async (_req, res) => {
+  const names = ['nginx', 'vps-panel', 'mariadb', 'mysql', 'postgresql', 'redis-server', 'fossbilling'];
+  const results = await Promise.all(names.map(async (name) => {
+    const [active, enabled] = await Promise.all([
+      safeExec('systemctl', ['is-active', name]),
+      safeExec('systemctl', ['is-enabled', name]),
+    ]);
+    const activeStr = active.stdout || 'inactive';
+    const enabledStr = enabled.stdout || 'unknown';
+    // Filtrar unidades que no existen en el sistema
+    if (activeStr.includes('not-found') || enabledStr.includes('not-found')) return null;
+    return { name, active: activeStr, enabled: enabledStr, running: activeStr === 'active' };
+  }));
+  res.json(results.filter(Boolean));
+});
+
+sysadminRouter.post('/services/:name/action', async (req, res, next) => {
+  try {
+    const { name } = req.params;
+    const { action } = req.body ?? {};
+    if (!ALLOWED_SERVICES.has(name)) throw new HttpError(400, 'Servicio no permitido');
+    if (!ALLOWED_ACTIONS.has(action)) throw new HttpError(400, 'Acción no válida: usa start, stop, restart o reload');
+    const r = await safeExec('sudo', ['/usr/local/bin/panel-sysadmin', action, name], 20000);
+    if (!r.ok) throw new HttpError(500, r.stderr || `Error al ejecutar ${action} ${name}`);
+    res.json({ ok: true, output: r.stdout });
+  } catch (e) { next(e); }
+});
+
+// ── SSL Certs ─────────────────────────────────────────────────────────────────
+const CERT_SEARCH_DIRS = [
+  '/etc/nginx/ssl',
+  '/etc/letsencrypt/live',
+  '/etc/letsencrypt/renewal',  // solo para enumerar dominios
+];
+
+sysadminRouter.get('/certs', async (_req, res) => {
+  const certs = [];
+
+  async function checkCert(domain, filePath) {
+    const r = await safeExec('openssl', ['x509', '-enddate', '-subject', '-noout', '-in', filePath]);
+    if (!r.ok) return null;
+    const dateMatch = r.stdout.match(/notAfter=(.+)/);
+    const expiry = dateMatch ? new Date(dateMatch[1].trim()) : null;
+    const daysLeft = expiry ? Math.floor((expiry.getTime() - Date.now()) / 86_400_000) : null;
+    return { domain, file: filePath, expiry: expiry?.toISOString() ?? null, daysLeft };
+  }
+
+  for (const dir of ['/etc/nginx/ssl', '/etc/letsencrypt/live']) {
+    if (!existsSync(dir)) continue;
+    let entries;
+    try { entries = readdirSync(dir); } catch { continue; }
+    for (const entry of entries) {
+      const entryPath = path.join(dir, entry);
+      // Buscar fullchain.pem dentro del subdirectorio
+      const fullchain = path.join(entryPath, 'fullchain.pem');
+      if (existsSync(fullchain)) {
+        const result = await checkCert(entry, fullchain);
+        if (result) certs.push(result);
+        continue;
+      }
+      // O el propio archivo si termina en .pem/.crt
+      if (['.pem', '.crt'].some((ext) => entry.endsWith(ext))) {
+        try {
+          const st = statSync(entryPath);
+          if (st.isFile()) {
+            const result = await checkCert(entry.replace(/\.(pem|crt)$/, ''), entryPath);
+            if (result) certs.push(result);
+          }
+        } catch { /* skip */ }
+      }
+    }
+  }
+
+  res.json(certs.sort((a, b) => (a.daysLeft ?? 9999) - (b.daysLeft ?? 9999)));
+});
+
+// ── nginx vhosts ──────────────────────────────────────────────────────────────
+sysadminRouter.get('/vhosts', (_req, res) => {
+  const availDir = '/etc/nginx/sites-available';
+  const enabledDir = '/etc/nginx/sites-enabled';
+
+  if (!existsSync(availDir)) return res.json([]);
+
+  let available = [];
+  let enabled = [];
+  try { available = readdirSync(availDir); } catch { /* */ }
+  try { enabled = readdirSync(enabledDir); } catch { /* */ }
+
+  const enabledSet = new Set(enabled);
+  const vhosts = available.map((name) => ({ name, enabled: enabledSet.has(name) }));
+  res.json(vhosts);
+});
+
+sysadminRouter.post('/vhosts/:name/enable', async (req, res, next) => {
+  try {
+    const { name } = req.params;
+    if (!/^[a-zA-Z0-9._-]+$/.test(name)) throw new HttpError(400, 'Nombre de vhost inválido');
+    const r = await safeExec('sudo', ['/usr/local/bin/panel-sysadmin', 'vhost-enable', name], 15000);
+    if (!r.ok) throw new HttpError(500, r.stderr || 'Error habilitando vhost');
+    res.json({ ok: true, output: r.stdout });
+  } catch (e) { next(e); }
+});
+
+sysadminRouter.post('/vhosts/:name/disable', async (req, res, next) => {
+  try {
+    const { name } = req.params;
+    if (!/^[a-zA-Z0-9._-]+$/.test(name)) throw new HttpError(400, 'Nombre de vhost inválido');
+    const r = await safeExec('sudo', ['/usr/local/bin/panel-sysadmin', 'vhost-disable', name], 15000);
+    if (!r.ok) throw new HttpError(500, r.stderr || 'Error deshabilitando vhost');
+    res.json({ ok: true, output: r.stdout });
+  } catch (e) { next(e); }
+});
+
+// ── nginx config test ─────────────────────────────────────────────────────────
+sysadminRouter.post('/nginx/test', async (_req, res, next) => {
+  try {
+    const r = await safeExec('sudo', ['/usr/local/bin/panel-sysadmin', 'nginx-test'], 10000);
+    res.json({ ok: r.ok, output: (r.stdout + '\n' + r.stderr).trim() });
+  } catch (e) { next(e); }
+});
+
+// ── Logs ──────────────────────────────────────────────────────────────────────
+sysadminRouter.get('/logs/:service', async (req, res, next) => {
+  try {
+    const { service } = req.params;
+    const lines = Math.min(Math.max(Number(req.query.lines ?? 100), 20), 500);
+    if (!ALLOWED_LOG_SERVICES.has(service)) throw new HttpError(400, 'Servicio de log no permitido');
+    const r = await safeExec(
+      'journalctl',
+      ['-u', service, '-n', String(lines), '--no-pager', '-o', 'short-iso', '--no-hostname'],
+      15000,
+    );
+    const logLines = (r.stdout || r.stderr).split('\n').filter(Boolean);
+    res.json({ ok: true, service, lines: logLines });
+  } catch (e) { next(e); }
+});
+
+// ── Info de sistema (uptime, kernel) ─────────────────────────────────────────
+sysadminRouter.get('/system', async (_req, res) => {
+  const [uptime, kernel, hostname] = await Promise.all([
+    safeExec('uptime', ['-p']),
+    safeExec('uname', ['-r']),
+    safeExec('hostname', []),
+  ]);
+  res.json({
+    uptime: uptime.stdout,
+    kernel: kernel.stdout,
+    hostname: hostname.stdout,
+  });
+});

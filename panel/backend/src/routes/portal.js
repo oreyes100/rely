@@ -185,6 +185,13 @@ portalRouter.delete('/projects/:id', clientOnly, async (req, res, next) => {
 portalRouter.get('/me', clientOnly, (req, res, next) => {
   try {
     const c = getClient(req.clientId);
-    res.json({ name: c.name, email: c.email, quota: c.quota, createdAt: c.createdAt });
+    res.json({
+      name: c.name,
+      email: c.email,
+      quota: c.quota ?? 0,
+      plan: c.plan ?? null,
+      approved: c.approved !== false,
+      createdAt: c.createdAt,
+    });
   } catch (e) { next(e); }
 });

@@ -57,6 +57,22 @@ export const config = {
   smtpUser: process.env.SMTP_USER || '',
   smtpPass: process.env.SMTP_PASS || '',
   smtpFrom: process.env.SMTP_FROM || process.env.SMTP_USER || 'noreply@capuvps.duckdns.org',
+  // ── Pasarelas de pago (opcionales — modo manual si no están configuradas) ──
+  // Stripe (tarjeta de crédito/débito)
+  stripePublicKey: process.env.STRIPE_PUBLIC_KEY || '',
+  stripeSecretKey: process.env.STRIPE_SECRET_KEY || '',
+  stripeWebhookSecret: process.env.STRIPE_WEBHOOK_SECRET || '',
+  // SPEI (transferencia bancaria México)
+  speiClabe: process.env.SPEI_CLABE || '',
+  speiBank: process.env.SPEI_BANK || 'STP',
+  speiBeneficiario: process.env.SPEI_BENEFICIARIO || 'CapuVPS Hosting',
+  openpayMerchantId: process.env.OPENPAY_MERCHANT_ID || '',
+  // Crypto (Bitcoin / Ethereum / USDT)
+  bitcoinAddress: process.env.BITCOIN_ADDRESS || '',
+  ethereumAddress: process.env.ETHEREUM_ADDRESS || '',
+  usdtTrc20Address: process.env.USDT_TRC20_ADDRESS || '',
+  nowpaymentsApiKey: process.env.NOWPAYMENTS_API_KEY || '',
+  nowpaymentsIpnSecret: process.env.NOWPAYMENTS_IPN_SECRET || '',
   nodes,
   dataDir,
 };

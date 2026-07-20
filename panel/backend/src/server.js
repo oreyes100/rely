@@ -14,6 +14,8 @@ import { deploysRouter } from './routes/deploys.js';
 import { invitesRouter } from './routes/invites.js';
 import { portalRouter } from './routes/portal.js';
 import { webhookRouter } from './routes/webhook.js';
+import { paymentsRouter } from './routes/payments.js';
+import { sysadminRouter } from './routes/sysadmin.js';
 
 const app = express();
 app.set('trust proxy', 'loopback');
@@ -33,8 +35,13 @@ app.use('/api/auth', authRouter);
 app.use('/api/webhook', webhookRouter);
 
 // ── Portal: upload de zips y proyectos del cliente ────────────────────────────
-// Nota: clientOnly se aplica dentro de portalRouter, no aquí, porque /auth/portal/* es público
 app.use('/api/portal', authMiddleware, portalRouter);
+
+// ── Pagos: planes públicos + órdenes de cliente + admin ──────────────────────
+// /api/payments/plans — público
+// /api/payments/orders — clientOnly (dentro del router)
+// /api/payments/admin/* — adminOnly (aplicado abajo con el bloque admin)
+app.use('/api/payments', authMiddleware, paymentsRouter);
 
 // ── Rutas ADMIN (todas protegidas por authMiddleware + adminOnly) ──────────────
 app.use('/api', authMiddleware, adminOnly);
@@ -45,6 +52,7 @@ app.use('/api/history', historyRouter);
 app.use('/api/services', servicesRouter);
 app.use('/api/deploys', deploysRouter);
 app.use('/api/invites', invitesRouter);
+app.use('/api/sysadmin', sysadminRouter);
 
 app.use((_req, _res, next) => next(new HttpError(404, 'Ruta no encontrada')));
 

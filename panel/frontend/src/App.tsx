@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { getToken, getRole } from './api/client';
+import { useState, useEffect } from 'react';
+import { getToken, getRole, api } from './api/client';
 import Landing from './components/Landing';
 import Login from './components/Login';
 import DashboardLayout, { type Page } from './components/DashboardLayout';
@@ -13,10 +13,15 @@ import Services from './components/Services';
 import PortalLayout from './components/portal/PortalLayout';
 import MisProyectos from './components/portal/MisProyectos';
 import NuevoProyecto from './components/portal/NuevoProyecto';
+import PagoPlanes from './components/portal/PagoPlanes';
 import AdminTools from './components/AdminTools';
 import ClientManagement from './components/ClientManagement';
+import AdminPayments from './components/AdminPayments';
+import ServerManager from './components/ServerManager';
 
 type PortalPage = 'proyectos' | 'nuevo';
+
+interface ClientInfo { name?: string; approved: boolean; plan?: string | null }
 
 function AdminPanel() {
   const [page, setPage] = useState<Page>('dashboard');
@@ -43,6 +48,14 @@ function AdminPanel() {
           <ClientManagement />
         </div>
       )}
+      {page === 'pagos' && (
+        <div className="space-y-2">
+          <h2 className="text-lg font-semibold text-slate-100">Gestión de pagos</h2>
+          <p className="text-sm text-slate-500 mb-4">Órdenes de pago, confirmación manual y estadísticas de cobro.</p>
+          <AdminPayments />
+        </div>
+      )}
+      {page === 'servidor' && <ServerManager />}
       {page === 'services' && <Services />}
       {page === 'credentials' && <CredentialManager />}
       {page === 'history' && <HistoryLog />}
@@ -53,8 +66,34 @@ function AdminPanel() {
 
 function ClientPortal() {
   const [page, setPage] = useState<PortalPage>('proyectos');
+  const [clientInfo, setClientInfo] = useState<ClientInfo | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    api<ClientInfo>('/portal/me')
+      .then(setClientInfo)
+      .catch(() => setClientInfo({ approved: false }))
+      .finally(() => setLoading(false));
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center text-slate-500">
+        Cargando...
+      </div>
+    );
+  }
+
+  if (!clientInfo?.approved) {
+    return (
+      <PortalLayout page={page} onNavigate={setPage} userName={clientInfo?.name}>
+        <PagoPlanes onAprobado={() => setClientInfo((prev) => prev ? { ...prev, approved: true } : { approved: true })} />
+      </PortalLayout>
+    );
+  }
+
   return (
-    <PortalLayout page={page} onNavigate={setPage}>
+    <PortalLayout page={page} onNavigate={setPage} userName={clientInfo?.name}>
       {page === 'proyectos' && <MisProyectos onNuevo={() => setPage('nuevo')} />}
       {page === 'nuevo' && <NuevoProyecto onCreado={() => setPage('proyectos')} onCancelar={() => setPage('proyectos')} />}
     </PortalLayout>

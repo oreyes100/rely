@@ -1,0 +1,47 @@
+#!/bin/bash
+# /usr/local/bin/panel-sysadmin
+# Wrapper ejecutado como root vía sudo desde el panel backend.
+# Sudoers: admin ALL=(root) NOPASSWD: /usr/local/bin/panel-sysadmin
+set -euo pipefail
+
+ACTION="${1:-}"
+ARG="${2:-}"
+
+ALLOWED_SERVICES="nginx vps-panel fossbilling mariadb mysql postgresql redis-server"
+
+is_allowed() {
+  local item="$1" list="$2"
+  for x in $list; do [ "$x" = "$item" ] && return 0; done
+  return 1
+}
+
+case "$ACTION" in
+  start|stop|restart|reload)
+    is_allowed "$ARG" "$ALLOWED_SERVICES" || { echo "Servicio no permitido: $ARG" >&2; exit 1; }
+    systemctl "$ACTION" "$ARG"
+    ;;
+  nginx-test)
+    nginx -t 2>&1
+    ;;
+  vhost-enable)
+    [[ "$ARG" =~ ^[a-zA-Z0-9._-]+$ ]] || { echo "Nombre de vhost inválido" >&2; exit 1; }
+    src="/etc/nginx/sites-available/$ARG"
+    dst="/etc/nginx/sites-enabled/$ARG"
+    [ -f "$src" ] || { echo "Vhost no existe: $src" >&2; exit 1; }
+    ln -sfn "$src" "$dst"
+    nginx -t && systemctl reload nginx
+    echo "Vhost $ARG habilitado"
+    ;;
+  vhost-disable)
+    [[ "$ARG" =~ ^[a-zA-Z0-9._-]+$ ]] || { echo "Nombre de vhost inválido" >&2; exit 1; }
+    dst="/etc/nginx/sites-enabled/$ARG"
+    [ -L "$dst" ] || [ -f "$dst" ] || { echo "Vhost no está habilitado: $ARG" >&2; exit 1; }
+    rm -f "$dst"
+    nginx -t && systemctl reload nginx
+    echo "Vhost $ARG deshabilitado"
+    ;;
+  *)
+    echo "Acción desconocida: $ACTION" >&2
+    exit 1
+    ;;
+esac
