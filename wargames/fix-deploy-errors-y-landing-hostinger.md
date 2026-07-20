@@ -75,6 +75,13 @@ Dejar el pipeline de deploy del portal funcionando de punta a punta (fuente GitH
 - **Causa raíz #4 (app del cliente)**: `meeting-scheduler-pro` es Next.js 16 y su build requiere `NEXT_PUBLIC_SUPABASE_URL` y `NEXT_PUBLIC_SUPABASE_ANON_KEY`; sin ellas `next build` falla prerenderizando `/attendance` → no se genera `prerender-manifest.json` → `next start` crashea. NO es problema de infraestructura.
 - **Mejoras aplicadas**: el Dockerfile generado ya NO silencia fallos de build (falla en el paso `build` con el error real); el portal acepta `variables` (KEY=VALUE por línea) al crear proyecto y al reintentar (`POST /projects/:id/retry` con body `{variables}`) — se escriben en `/opt/app/.env` (build-time vía COPY, runtime vía `env_file`).
 - **Trampa de deploy**: nginx sirve el frontend desde `/opt/vps-panel/frontend/dist`, no `/var/www/vps-panel`. Verificar SIEMPRE el hash del bundle servido tras cada deploy.
+- **Causa raíz #5**: el paso `prepare` enmascaraba fallos de apt con `| tail -3` (exit 0 siempre); si apt chocaba con el lock de dpkg del primer boot, quedaba sin Docker y `build` moría con `docker: command not found`. Corregido: `DPkg::Lock::Timeout=600` + verificación real de `command -v docker`.
+- **Causa raíz #6**: `vps-panel.service` tenía `NoNewPrivileges=true`, que bloquea `sudo panel-vhost` en el paso `vhost`. Puesto en `false` (el sudo está limitado a un solo binario vía sudoers). Unit documentado en `panel/deploy/vps-panel.service`.
+- **Causa raíz #7**: `panel-vhost` moría en silencio — `set -e` + `[ "$d" = "$p" ] && die` al final de `validate_domain` devolvía 1 cuando el dominio NO era protegido. Cambiado a `if/fi` + `return 0`.
+- **Otros**: timeout de `wait_ip` subido de 8 a 15 min (primer boot tarda hasta 10 min con el nodo cargado); endpoint `POST /api/deploys/:id/retry` para admin.
+
+## Resultado final (2026-07-19)
+Pipeline validado de punta a punta: deploy `test-pipeline` (repo estático de GitHub + subdominio wildcard) terminó `done` con 11/11 pasos ok y `https://test-pipeline.capuvps.duckdns.org/` sirviendo el sitio (HTTP 200, cert wildcard). VM de prueba eliminada tras la validación. El proyecto `micongre` del cliente queda en error esperando que el cliente reintente con sus variables `NEXT_PUBLIC_SUPABASE_URL`/`NEXT_PUBLIC_SUPABASE_ANON_KEY` (campo nuevo en el portal).
 
 ## Unresolved assumptions
 - El token DuckDNS `d7a2720f-...` del cliente realmente controla el subdominio `micongre.duckdns.org` — solo el cliente puede confirmarlo; si no, los pasos dns/tls fallarán con `KO`/`Incorrect TXT record` y hay que pedirle el token correcto.
