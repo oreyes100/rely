@@ -17,6 +17,7 @@ export default function NuevoProyecto({ onCreado, onCancelar }: { onCreado: () =
   const [gitUrl, setGitUrl] = useState('');
   const [campos, setCampos] = useState<Campos>({ negocio: '', descripcion: '', color: '#4f46e5', whatsapp: '', eslogan: '' });
   const [db, setDb] = useState<TipoDB>('ninguna');
+  const [variables, setVariables] = useState('');
   const [tipoDominio, setTipoDominio] = useState<TipoDominio>('plataforma');
   const [dominioFqdn, setDominioFqdn] = useState('');
   const [duckdnsNombre, setDuckdnsNombre] = useState('');
@@ -39,6 +40,7 @@ export default function NuevoProyecto({ onCreado, onCancelar }: { onCreado: () =
           nombre, tipo, gitUrl: tipo === 'git' ? gitUrl : undefined,
           campos: tipo === 'plantilla' ? campos : undefined,
           db, dominio,
+          variables: variables.trim() || undefined,
         }),
       });
       onCreado();
@@ -142,11 +144,20 @@ export default function NuevoProyecto({ onCreado, onCancelar }: { onCreado: () =
             )}
 
             {tipo === 'git' && (
-              <div>
-                <label className="label" htmlFor="giturl">URL del repositorio público</label>
-                <input id="giturl" type="url" className="input font-mono" value={gitUrl} autoFocus
-                  onChange={(e) => setGitUrl(e.target.value.trim())} placeholder="https://github.com/usuario/mi-proyecto" />
-                <p className="mt-1 text-xs text-slate-500">El repositorio debe ser público. Detectamos automáticamente el tipo de proyecto (Node.js, Docker, etc.)</p>
+              <div className="space-y-3">
+                <div>
+                  <label className="label" htmlFor="giturl">URL del repositorio público</label>
+                  <input id="giturl" type="url" className="input font-mono" value={gitUrl} autoFocus
+                    onChange={(e) => setGitUrl(e.target.value.trim())} placeholder="https://github.com/usuario/mi-proyecto" />
+                  <p className="mt-1 text-xs text-slate-500">El repositorio debe ser público. Detectamos automáticamente el tipo de proyecto (Node.js, Docker, etc.)</p>
+                </div>
+                <div>
+                  <label className="label" htmlFor="envvars">Variables de entorno (opcional)</label>
+                  <textarea id="envvars" className="input resize-none font-mono text-xs" rows={4} value={variables}
+                    onChange={(e) => setVariables(e.target.value)}
+                    placeholder={'NEXT_PUBLIC_SUPABASE_URL=https://xxxx.supabase.co\nNEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGci…'} />
+                  <p className="mt-1 text-xs text-slate-500">Una por línea, formato <code className="text-indigo-300">NOMBRE=valor</code>. Si tu app usa servicios externos (Supabase, Stripe, APIs), agrégalas aquí — se usan al construir y al ejecutar tu app.</p>
+                </div>
               </div>
             )}
           </>

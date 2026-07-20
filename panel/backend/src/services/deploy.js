@@ -89,10 +89,11 @@ function dbService(dbType, password) {
   return null;
 }
 
-function buildCompose(stack, appPort, dbType, dbPass) {
+function buildCompose(stack, appPort, dbType, dbPass, hasEnvFile = false) {
   const db = dbType && dbType !== 'ninguna' ? dbService(dbType, dbPass) : null;
   const dbEnvLines = db ? db.env.split('\n').map((e) => `      - ${e}`).join('\n') : '';
   const dependsOn = db ? `\n    depends_on:\n      - db` : '';
+  const envFile = hasEnvFile ? `\n    env_file:\n      - .env` : '';
   const volumes = db ? `\nvolumes:\n  db-data:` : '';
 
   let webService;
@@ -105,7 +106,7 @@ function buildCompose(stack, appPort, dbType, dbPass) {
     webService = `  web:\n    image: nginx:alpine\n    restart: unless-stopped\n    volumes:\n      - .:/usr/share/nginx/html:ro\n    ports:\n      - "80:80"${dependsOn}`;
   } else {
     // dockerfile o node (el Dockerfile ya está generado)
-    webService = `  web:\n    build: .\n    restart: unless-stopped\n    ports:\n      - "80:${appPort}"\n    environment:\n${dbEnvLines}${dependsOn}`;
+    webService = `  web:\n    build: .\n    restart: unless-stopped\n    ports:\n      - "80:${appPort}"\n    environment:\n${dbEnvLines}${envFile}${dependsOn}`;
   }
 
   const yml = `services:\n${webService}\n${db ? db.yml : ''}${volumes}`;
@@ -113,15 +114,18 @@ function buildCompose(stack, appPort, dbType, dbPass) {
 }
 
 function nodeDockerfile(appPort) {
+  // El build NO se silencia: si la app tiene script "build" y falla, el deploy
+  // falla en el paso build con el error real (no con un crash críptico en run).
   return `FROM node:lts
 WORKDIR /app
 COPY . .
 RUN if [ -f pnpm-lock.yaml ]; then npm i -g pnpm@10 && pnpm install --frozen-lockfile; \\
     elif [ -f yarn.lock ]; then corepack enable && yarn install --frozen-lockfile; \\
     else npm ci 2>/dev/null || npm install; fi
-RUN if [ -f pnpm-lock.yaml ]; then pnpm run build 2>/dev/null || true; \\
-    elif [ -f yarn.lock ]; then yarn build 2>/dev/null || true; \\
-    else npm run build 2>/dev/null || true; fi
+RUN if ! grep -q '"build"[[:space:]]*:' package.json; then echo "sin script build"; \\
+    elif [ -f pnpm-lock.yaml ]; then pnpm run build; \\
+    elif [ -f yarn.lock ]; then yarn build; \\
+    else npm run build; fi
 ENV HOST=0.0.0.0 PORT=${appPort}
 EXPOSE ${appPort}
 CMD node dist/server/entry.mjs 2>/dev/null || node server.js 2>/dev/null || npm start
@@ -162,6 +166,7 @@ export async function startDeploy(deploySpec) {
     node: preferNode,   // nodo Proxmox preferido (o auto)
     clientId = null,    // id del cliente si viene del portal
     plan = 'basico',    // 'basico'|'estandar'
+    envVars = null,     // string "KEY=VALUE\n..." — variables de entorno del cliente
   } = deploySpec;
 
   // Recursos según plan + DB
@@ -195,7 +200,7 @@ export async function startDeploy(deploySpec) {
       : `https://${domain.fqdn}/`;
 
   const deploy = {
-    id, hostname, source, appPort, db, domain, plan, clientId,
+    id, hostname, source, appPort, db, domain, plan, clientId, envVars,
     node: nodeName, vmid: null, guestIP: null, url,
     status: 'running',
     steps: makeSteps(skipDnsTls),
@@ -311,13 +316,18 @@ async function pipeline(deployId, resources, nodeName) {
     detectedStack = m ? m[1] : 'unknown';
     if (detectedStack === 'unknown') throw new Error('No se reconoció el tipo de proyecto (se esperaba compose.yaml, Dockerfile, package.json o index.html)');
 
+    // Variables de entorno del cliente (build-time vía COPY y runtime vía env_file)
+    if (dep.envVars) {
+      await client.agentWriteFile(nodeName, vmid, '/opt/app/.env', dep.envVars.trim() + '\n');
+    }
+
     // Generar Dockerfile para node si no tiene
     if (detectedStack === 'node') {
       await client.agentWriteFile(nodeName, vmid, '/opt/app/Dockerfile', nodeDockerfile(dep.appPort));
     }
 
     // Generar compose
-    const compose = buildCompose(detectedStack, dep.appPort, dbType, dbPass);
+    const compose = buildCompose(detectedStack, dep.appPort, dbType, dbPass, !!dep.envVars);
     if (compose.override && compose.dbyml) {
       // Agregar DB como override
       await client.agentWriteFile(nodeName, vmid, '/opt/app/docker-compose.override.yml',
@@ -483,9 +493,10 @@ async function pipeline(deployId, resources, nodeName) {
 }
 
 // ── Reintentar deploy fallido ─────────────────────────────────────────────────
-export async function retryDeploy(deployId) {
+export async function retryDeploy(deployId, envVars) {
   const dep = getDeploy(deployId);
   if (dep.status !== 'error') throw new HttpError(400, 'Solo se puede reintentar un deploy en estado error');
+  if (envVars !== undefined) { dep.envVars = envVars; patchDeploy(deployId, { envVars }); }
 
   // Limpiar VM anterior si se llegó a crear
   if (dep.vmid && dep.node) {

@@ -70,6 +70,12 @@ Dejar el pipeline de deploy del portal funcionando de punta a punta (fuente GitH
 - **Expected observation if it failed:** Hook o pathspec falla.
 - **Countermove:** Revisar `git status`, corregir rutas (repo raíz `C:\vpsserver`).
 
+## Hallazgos durante la ejecución (post-brief)
+- **Causa raíz #3**: `agentExec` en `proxmox.js` enviaba `command[0]=bash&command[1]=-c&command[2]=<cmd>` — Proxmox rechaza esa sintaxis con 400 (`property is not defined in schema`); exige el parámetro `command` **repetido**. Rompía el paso `prepare` (y todos los que ejecutan comandos en el guest). Corregido y verificado contra la API.
+- **Causa raíz #4 (app del cliente)**: `meeting-scheduler-pro` es Next.js 16 y su build requiere `NEXT_PUBLIC_SUPABASE_URL` y `NEXT_PUBLIC_SUPABASE_ANON_KEY`; sin ellas `next build` falla prerenderizando `/attendance` → no se genera `prerender-manifest.json` → `next start` crashea. NO es problema de infraestructura.
+- **Mejoras aplicadas**: el Dockerfile generado ya NO silencia fallos de build (falla en el paso `build` con el error real); el portal acepta `variables` (KEY=VALUE por línea) al crear proyecto y al reintentar (`POST /projects/:id/retry` con body `{variables}`) — se escriben en `/opt/app/.env` (build-time vía COPY, runtime vía `env_file`).
+- **Trampa de deploy**: nginx sirve el frontend desde `/opt/vps-panel/frontend/dist`, no `/var/www/vps-panel`. Verificar SIEMPRE el hash del bundle servido tras cada deploy.
+
 ## Unresolved assumptions
 - El token DuckDNS `d7a2720f-...` del cliente realmente controla el subdominio `micongre.duckdns.org` — solo el cliente puede confirmarlo; si no, los pasos dns/tls fallarán con `KO`/`Incorrect TXT record` y hay que pedirle el token correcto.
 - El repo `meeting-scheduler-pro` contiene algo desplegable (package.json/Dockerfile/index.html). Si no, el paso `stack` fallará con "No se reconoció el tipo de proyecto".

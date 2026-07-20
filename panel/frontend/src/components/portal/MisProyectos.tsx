@@ -17,6 +17,7 @@ export default function MisProyectos({ onNuevo }: { onNuevo: () => void }) {
   const [error, setError] = useState<string | null>(null);
   const [deleting, setDeleting] = useState<string | null>(null);
   const [retrying, setRetrying] = useState<string | null>(null);
+  const [retryVars, setRetryVars] = useState('');
 
   const cargar = useCallback(async () => {
     try {
@@ -43,7 +44,11 @@ export default function MisProyectos({ onNuevo }: { onNuevo: () => void }) {
   async function reintentar(id: string) {
     setRetrying(id);
     try {
-      await api(`/portal/projects/${id}/retry`, { method: 'POST' });
+      await api(`/portal/projects/${id}/retry`, {
+        method: 'POST',
+        body: JSON.stringify({ variables: retryVars.trim() || undefined }),
+      });
+      setRetryVars('');
       await cargar();
     } catch (e) {
       alert(e instanceof Error ? e.message : 'Error al reintentar');
@@ -127,8 +132,22 @@ export default function MisProyectos({ onNuevo }: { onNuevo: () => void }) {
               </div>
             </div>
             {expandido === p.id && (
-              <div className="mt-4 border-t border-slate-700 pt-4">
+              <div className="mt-4 border-t border-slate-700 pt-4 space-y-4">
                 <ProgresoDeploy proyecto={p} />
+                {p.estado === 'error' && (
+                  <div className="rounded-lg border border-amber-800/40 bg-amber-900/10 p-3 space-y-2">
+                    <p className="text-xs font-medium text-amber-300">
+                      ¿Tu app necesita variables de entorno? (Supabase, Stripe, APIs externas…)
+                    </p>
+                    <textarea className="input resize-none font-mono text-xs" rows={3} value={retryVars}
+                      onChange={(e) => setRetryVars(e.target.value)}
+                      placeholder={'NOMBRE=valor (una por línea)\nNEXT_PUBLIC_SUPABASE_URL=https://xxxx.supabase.co'} />
+                    <button onClick={() => reintentar(p.id)} disabled={retrying === p.id}
+                      className="btn-primary text-xs disabled:opacity-50">
+                      {retrying === p.id ? 'Reintentando…' : 'Reintentar despliegue'}
+                    </button>
+                  </div>
+                )}
               </div>
             )}
           </div>

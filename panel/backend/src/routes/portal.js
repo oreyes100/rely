@@ -72,7 +72,18 @@ portalRouter.get('/projects/:id', clientOnly, (req, res, next) => {
 // ── Crear proyecto ────────────────────────────────────────────────────────────
 portalRouter.post('/projects', clientOnly, deployLimiter, async (req, res, next) => {
   try {
-    const { nombre, tipo, gitUrl, campos, db = 'ninguna', dominio, plan = 'basico' } = req.body ?? {};
+    const { nombre, tipo, gitUrl, campos, db = 'ninguna', dominio, plan = 'basico', variables } = req.body ?? {};
+
+    // Variables de entorno opcionales: "KEY=VALUE" por línea
+    let envVars = null;
+    if (variables) {
+      if (typeof variables !== 'string' || variables.length > 8192) throw new HttpError(400, 'Variables de entorno inválidas (máx 8 KB)');
+      const lines = variables.split('\n').map((l) => l.trim()).filter((l) => l && !l.startsWith('#'));
+      for (const l of lines) {
+        if (!/^[A-Za-z_][A-Za-z0-9_]*=[^\r]*$/.test(l)) throw new HttpError(400, `Variable inválida: "${l.slice(0, 40)}" (formato: NOMBRE=valor, una por línea)`);
+      }
+      if (lines.length) envVars = lines.join('\n');
+    }
 
     if (!nombre || !validProjectName(nombre)) throw new HttpError(400, 'El nombre del proyecto debe tener 3-30 letras minúsculas, números o guiones');
     if (!['plantilla', 'git'].includes(tipo)) throw new HttpError(400, 'tipo debe ser "plantilla" o "git"');
@@ -109,7 +120,7 @@ portalRouter.post('/projects', clientOnly, deployLimiter, async (req, res, next)
       source = { type: 'zip', uploadId };
     }
 
-    const id = await startDeploy({ hostname: nombre, source, db, domain, plan, clientId: req.clientId });
+    const id = await startDeploy({ hostname: nombre, source, db, domain, plan, envVars, clientId: req.clientId });
     res.status(201).json({ id, mensaje: 'Tu proyecto está siendo creado. Puedes ver el progreso en tu dashboard.' });
   } catch (e) { next(e); }
 });
@@ -136,7 +147,20 @@ portalRouter.post('/projects/:id/retry', clientOnly, deployLimiter, async (req, 
     const dep = getDeploy(req.params.id);
     if (dep.clientId !== req.clientId) throw new HttpError(404, 'Proyecto no encontrado');
     if (dep.status !== 'error') throw new HttpError(400, 'Solo se pueden reintentar proyectos en estado de error');
-    await retryDeploy(req.params.id);
+
+    // Permitir actualizar variables de entorno en el reintento
+    const { variables } = req.body ?? {};
+    let envVars;
+    if (typeof variables === 'string' && variables.trim()) {
+      if (variables.length > 8192) throw new HttpError(400, 'Variables de entorno inválidas (máx 8 KB)');
+      const lines = variables.split('\n').map((l) => l.trim()).filter((l) => l && !l.startsWith('#'));
+      for (const l of lines) {
+        if (!/^[A-Za-z_][A-Za-z0-9_]*=[^\r]*$/.test(l)) throw new HttpError(400, `Variable inválida: "${l.slice(0, 40)}" (formato: NOMBRE=valor, una por línea)`);
+      }
+      if (lines.length) envVars = lines.join('\n');
+    }
+
+    await retryDeploy(req.params.id, envVars);
     res.json({ ok: true, mensaje: 'Reintentando el despliegue. Puedes ver el progreso en tu dashboard.' });
   } catch (e) { next(e); }
 });
