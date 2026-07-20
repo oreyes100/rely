@@ -14,12 +14,15 @@ export function saveAiSettings(settings) {
   writeFileSync(settingsFile, JSON.stringify(settings, null, 2));
 }
 
+// Proveedores con API OpenAI-compatible (mismo formato de respuesta)
+const OPENAI_COMPAT = new Set(['openrouter', 'groq']);
+
 // Extrae texto de la respuesta según el proveedor
 async function parseResponse(provider, res) {
   const data = await res.json();
   if (provider === 'anthropic') return data.content?.[0]?.text ?? '';
   if (provider === 'google') return data.candidates?.[0]?.content?.parts?.[0]?.text ?? '';
-  if (provider === 'openrouter') return data.choices?.[0]?.message?.content ?? '';
+  if (OPENAI_COMPAT.has(provider)) return data.choices?.[0]?.message?.content ?? '';
   return '';
 }
 
@@ -59,7 +62,18 @@ export async function callAI(provider, model, apiKey, prompt) {
         'HTTP-Referer': 'https://capuvps.duckdns.org',
         'X-Title': 'VPS Panel',
       },
-      body: JSON.stringify({ model, max_tokens: 256, messages: [{ role: 'user', content: prompt }] }),
+      body: JSON.stringify({ model, max_tokens: 256, temperature: 0.1, messages: [{ role: 'user', content: prompt }] }),
+    });
+
+  } else if (provider === 'groq') {
+    // Groq: LPU ultra-rápido, API OpenAI-compatible, modelos open-source gratis
+    response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify({ model, max_tokens: 256, temperature: 0.1, messages: [{ role: 'user', content: prompt }] }),
     });
 
   } else {

@@ -28,6 +28,27 @@ interface ProviderDef {
 
 const PROVIDERS: ProviderDef[] = [
   {
+    id: 'groq',
+    name: 'Groq',
+    tagline: 'LPU ultra-rápido · Llama, Mixtral, DeepSeek gratis',
+    color: 'border-rose-500',
+    textColor: 'text-rose-400',
+    bgSel: 'bg-rose-500/10',
+    apiKeyUrl: 'https://console.groq.com/keys',
+    apiKeyLabel: 'API key gratis en console.groq.com (sin tarjeta)',
+    placeholder: 'gsk_...',
+    models: [
+      { id: 'llama-3.3-70b-versatile', name: 'Llama 3.3 70B Versatile', tier: FREE, note: 'Recomendado · Alta calidad' },
+      { id: 'llama-3.1-8b-instant', name: 'Llama 3.1 8B Instant', tier: FREE, note: 'Ultra rápido · ~500 tok/s' },
+      { id: 'deepseek-r1-distill-llama-70b', name: 'DeepSeek R1 70B', tier: FREE, note: 'Razonamiento · Potente' },
+      { id: 'qwen-qwq-32b', name: 'Qwen QwQ 32B', tier: FREE, note: 'Razonamiento avanzado' },
+      { id: 'gemma2-9b-it', name: 'Gemma 2 9B', tier: FREE, note: 'Google · Eficiente' },
+      { id: 'mixtral-8x7b-32768', name: 'Mixtral 8x7B', tier: FREE, note: 'Contexto largo 32k' },
+      { id: 'llama-3.1-70b-versatile', name: 'Llama 3.1 70B', tier: FREE, note: 'Meta · Alta calidad' },
+      { id: 'llama-3.2-3b-preview', name: 'Llama 3.2 3B', tier: FREE, note: 'Más ligero · Muy rápido' },
+    ],
+  },
+  {
     id: 'google',
     name: 'Google Gemini',
     tagline: 'Modelos gratuitos disponibles',
@@ -152,8 +173,8 @@ function ProviderCard({
 
 export default function AIConfig() {
   const [settings, setSettings] = useState<AiSettings | null>(null);
-  const [selectedProvider, setSelectedProvider] = useState<string>('google');
-  const [selectedModel, setSelectedModel] = useState<string>('gemini-2.0-flash');
+  const [selectedProvider, setSelectedProvider] = useState<string>('groq');
+  const [selectedModel, setSelectedModel] = useState<string>('llama-3.3-70b-versatile');
   const [apiKey, setApiKey] = useState('');
   const [showKey, setShowKey] = useState(false);
   const [enabled, setEnabled] = useState(false);
@@ -182,24 +203,28 @@ export default function AIConfig() {
     setTestResult(null);
   }
 
+  async function persist() {
+    await api('/sysadmin/ai-settings', {
+      method: 'PUT',
+      body: JSON.stringify({
+        provider: selectedProvider,
+        model: selectedModel,
+        ...(apiKey ? { apiKey } : {}),
+        enabled,
+      }),
+    });
+    const s = await api<AiSettings>('/sysadmin/ai-settings');
+    setSettings(s);
+    setApiKey('');
+    return s;
+  }
+
   async function handleSave() {
     setSaving(true);
     setSaveMsg('');
     setTestResult(null);
     try {
-      await api('/sysadmin/ai-settings', {
-        method: 'PUT',
-        body: JSON.stringify({
-          provider: selectedProvider,
-          model: selectedModel,
-          ...(apiKey ? { apiKey } : {}),
-          enabled,
-        }),
-      });
-      // Recargar para reflejar apiKeyHint actualizado
-      const s = await api<AiSettings>('/sysadmin/ai-settings');
-      setSettings(s);
-      setApiKey('');
+      await persist();
       setSaveMsg('Configuración guardada');
     } catch (e: any) {
       setSaveMsg(`Error: ${e.message}`);
@@ -211,9 +236,10 @@ export default function AIConfig() {
   async function handleTest() {
     setTesting(true);
     setTestResult(null);
-    // Guardar primero si hay nueva key
-    if (apiKey) await handleSave();
+    setSaveMsg('');
     try {
+      // Guardar siempre antes de probar (para aplicar provider/model/key actuales)
+      await persist();
       const r = await api<{ ok: boolean; provider: string; model: string; response: string; ms: number }>(
         '/sysadmin/ai-settings/test',
         { method: 'POST' }

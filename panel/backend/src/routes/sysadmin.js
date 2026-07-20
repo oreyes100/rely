@@ -6,7 +6,7 @@ import path from 'path';
 import { HttpError } from '../errors.js';
 import { readAiSettings, saveAiSettings, callAI } from '../services/ai-provider.js';
 
-const VALID_PROVIDERS = new Set(['anthropic', 'google', 'openrouter']);
+const VALID_PROVIDERS = new Set(['anthropic', 'google', 'openrouter', 'groq']);
 
 const execAsync = promisify(execFile);
 export const sysadminRouter = Router();
