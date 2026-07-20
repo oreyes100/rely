@@ -28,8 +28,11 @@ validate_domain() {
   local d="$1"
   echo "$d" | grep -qE '^[a-z0-9][a-z0-9._-]{1,60}[a-z0-9]$' || die "Dominio inválido: $d"
   for p in $PROTECTED; do
-    [ "$d" = "$p" ] && die "Dominio protegido, no se puede modificar: $d"
+    # OJO: usar if, no "[ ] && die" — con set -e el test falso al final de la
+    # función devolvía 1 y mataba el script en silencio.
+    if [ "$d" = "$p" ]; then die "Dominio protegido, no se puede modificar: $d"; fi
   done
+  return 0
 }
 
 write_vhost() {
