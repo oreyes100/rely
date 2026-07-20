@@ -243,9 +243,9 @@ async function pipeline(deployId, resources, nodeName) {
     return { detail: `VMID ${vmid} en ${nodeName}` };
   });
 
-  // 2. wait_ip (máx 8 min — el primer boot de cloud-init tarda ~3-5 min)
+  // 2. wait_ip (máx 15 min — el primer boot de cloud-init tarda 3-10 min según carga del nodo)
   await runStep(deployId, 'wait_ip', async () => {
-    const deadline = Date.now() + 8 * 60 * 1000;
+    const deadline = Date.now() + 15 * 60 * 1000;
     for (;;) {
       try {
         const ifaces = await client.get(`/nodes/${nodeName}/qemu/${vmid}/agent/network-get-interfaces`);
