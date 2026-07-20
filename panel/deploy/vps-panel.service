@@ -1,0 +1,26 @@
+[Unit]
+Description=VPS Panel Backend
+After=network.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=admin
+WorkingDirectory=/opt/vps-panel/backend
+EnvironmentFile=/opt/vps-panel/backend/.env
+ExecStart=/usr/bin/node src/server.js
+Restart=on-failure
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=vps-panel
+# Limit blast radius
+# NoNewPrivileges DEBE ser false: el pipeline de deploys ejecuta
+# "sudo /usr/local/sbin/panel-vhost" (paso vhost). El acceso sudo está
+# restringido a ese único binario vía /etc/sudoers.d/panel-vhost:
+#   admin ALL=(root) NOPASSWD: /usr/local/sbin/panel-vhost
+NoNewPrivileges=false
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target
