@@ -42,7 +42,17 @@ function setStepStatus(deployId, stepName, status, detail = '') {
   const dep = list.find((d) => d.id === deployId);
   if (!dep) return;
   const step = dep.steps.find((s) => s.name === stepName);
-  if (step) { step.status = status; step.detail = detail; step.updatedAt = new Date().toISOString(); }
+  if (step) {
+    const now = new Date().toISOString();
+    step.status = status;
+    step.detail = detail;
+    step.updatedAt = now;
+    if (status === 'running') {
+      step.startedAt = now;
+    } else if ((status === 'ok' || status === 'error') && step.startedAt) {
+      step.elapsedMs = Date.now() - new Date(step.startedAt).getTime();
+    }
+  }
   saveDeploys(list);
 }
 
@@ -66,7 +76,7 @@ const STEP_LABELS = {
 function makeSteps(skipDnsTls = false) {
   return Object.keys(STEP_LABELS)
     .filter((k) => !(skipDnsTls && (k === 'dns' || k === 'tls')))
-    .map((name) => ({ name, label: STEP_LABELS[name], status: 'pending', detail: '', updatedAt: null }));
+    .map((name) => ({ name, label: STEP_LABELS[name], status: 'pending', detail: '', startedAt: null, elapsedMs: null, updatedAt: null }));
 }
 
 // ── Compose generator ─────────────────────────────────────────────────────────
@@ -132,8 +142,32 @@ CMD node dist/server/entry.mjs 2>/dev/null || node server.js 2>/dev/null || npm 
 `;
 }
 
+// IDs de deploys solicitados para terminar por el administrador (en memoria)
+const killedDeploys = new Set();
+
+export function killDeploy(deployId) {
+  const dep = getDeploy(deployId);
+  if (dep.status !== 'running') throw new HttpError(400, 'Solo se puede terminar un deploy en estado running');
+  killedDeploys.add(deployId);
+  const list = readDeploys();
+  const d = list.find((d) => d.id === deployId);
+  if (d) {
+    d.status = 'error';
+    d.updatedAt = new Date().toISOString();
+    const runningStep = d.steps.find((s) => s.status === 'running');
+    if (runningStep) {
+      runningStep.status = 'error';
+      runningStep.detail = 'Terminado por el administrador';
+      runningStep.updatedAt = new Date().toISOString();
+      if (runningStep.startedAt) runningStep.elapsedMs = Date.now() - new Date(runningStep.startedAt).getTime();
+    }
+    saveDeploys(list);
+  }
+}
+
 // ── Ejecutor principal ────────────────────────────────────────────────────────
 async function runStep(deployId, stepName, fn) {
+  if (killedDeploys.has(deployId)) throw new Error('Deploy terminado por el administrador');
   setStepStatus(deployId, stepName, 'running');
   try {
     const result = await fn();
@@ -501,7 +535,10 @@ async function pipeline(deployId, resources, nodeName) {
     return { detail: `${url} → HTTP ${code}` };
   });
 
-  patchDeploy(deployId, { status: 'done', updatedAt: new Date().toISOString() });
+  if (!killedDeploys.has(deployId)) {
+    patchDeploy(deployId, { status: 'done', updatedAt: new Date().toISOString() });
+  }
+  killedDeploys.delete(deployId);
 }
 
 // ── Reintentar deploy fallido ─────────────────────────────────────────────────

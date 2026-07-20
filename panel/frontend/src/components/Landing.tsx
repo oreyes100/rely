@@ -1,5 +1,88 @@
 const FOSSBILLING_URL = '/fossbilling/';
 
+const AI_FEATURES = [
+  {
+    icon: '🔍',
+    titulo: 'Detección automática de stack',
+    desc: 'Analiza tu repositorio y elige la configuración Docker óptima. Node, PHP, Python, estático — sin escribir un Dockerfile.',
+  },
+  {
+    icon: '🔒',
+    titulo: 'HTTPS automático',
+    desc: 'Certificados SSL gratuitos emitidos y renovados solos. Nunca más una advertencia de seguridad en tu sitio.',
+  },
+  {
+    icon: '🗄️',
+    titulo: 'Base de datos en un clic',
+    desc: 'PostgreSQL, MySQL o MongoDB listos en segundos. URL de conexión configurada automáticamente en tu app.',
+  },
+  {
+    icon: '♻️',
+    titulo: 'Recuperación inteligente',
+    desc: 'Si el build falla, el sistema detecta el problema exacto y te muestra el log real para que lo corrijas.',
+  },
+];
+
+// Terminal animada — simula un deploy en vivo
+function TerminalDeploy() {
+  const lines = [
+    { text: '$ git push origin main', delay: 0, color: '#b8a8f0' },
+    { text: 'Pushing to github.com/tú/mi-app...', delay: 0.6, color: '#94a3b8' },
+    { text: '✓ Push completado', delay: 1.2, color: '#4ade80' },
+    { text: '', delay: 1.6, color: '' },
+    { text: '▦ CapuVPS — Deploy automático iniciado', delay: 1.8, color: '#673de6' },
+    { text: '[1/5] Clonando repositorio...  ✓ (3s)', delay: 2.8, color: '#94a3b8' },
+    { text: '[2/5] Creando servidor VPS...  ✓ (4m 12s)', delay: 4.2, color: '#94a3b8' },
+    { text: '[3/5] Instalando Docker...     ✓ (48s)', delay: 5.2, color: '#94a3b8' },
+    { text: '[4/5] Construyendo imagen...   ✓ (1m 20s)', delay: 6.4, color: '#94a3b8' },
+    { text: '[5/5] Activando HTTPS...       ✓ (8s)', delay: 7.4, color: '#94a3b8' },
+    { text: '', delay: 7.8, color: '' },
+    { text: '✓ ¡Tu app está en línea!', delay: 8.0, color: '#4ade80' },
+    { text: '  https://mi-tienda.capuvps.duckdns.org', delay: 8.5, color: '#818cf8' },
+    { text: '  Deploy completado en 6m 31s', delay: 9.0, color: '#64748b' },
+  ];
+
+  return (
+    <div className="rounded-2xl border border-[#3d2d8a] bg-[#0f0a2a] p-5 shadow-2xl shadow-[#673de6]/20 font-mono text-sm overflow-hidden">
+      {/* Barra de título */}
+      <div className="flex items-center gap-2 mb-4 pb-3 border-b border-[#3d2d8a]">
+        <span className="h-3 w-3 rounded-full bg-[#fc5185]" />
+        <span className="h-3 w-3 rounded-full bg-[#ffcd35]" />
+        <span className="h-3 w-3 rounded-full bg-[#4ade80]" />
+        <span className="ml-2 text-xs text-[#673de6]">terminal — CapuVPS Deploy</span>
+      </div>
+      {/* Líneas animadas */}
+      <div className="space-y-1.5 min-h-[260px]">
+        {lines.map((line, i) => (
+          <div
+            key={i}
+            style={{
+              color: line.color || 'transparent',
+              opacity: 0,
+              animation: `termLine 0.3s ease forwards`,
+              animationDelay: `${line.delay}s`,
+            }}
+            className="leading-snug whitespace-pre">
+            {line.text || ' '}
+          </div>
+        ))}
+      </div>
+      {/* Cursor parpadeante */}
+      <div style={{ color: '#673de6', animation: 'blink 1s step-end infinite', animationDelay: '9.5s', opacity: 0 }}>▋</div>
+      <style>{`
+        @keyframes termLine {
+          from { opacity: 0; transform: translateX(-4px); }
+          to   { opacity: 1; transform: translateX(0); }
+        }
+        @keyframes blink {
+          0%, 100% { opacity: 1; }
+          50%       { opacity: 0; }
+        }
+      `}</style>
+    </div>
+  );
+}
+
 const PLANS = [
   {
     id: 'basico',
@@ -148,38 +231,10 @@ export default function Landing({ onLogin }: { onLogin: () => void }) {
             </div>
           </div>
 
-          {/* Mockup panel */}
+          {/* Terminal animada (demo deploy en vivo) */}
           <div className="hidden lg:block">
-            <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-xl shadow-[#673de6]/10">
-              <div className="flex items-center justify-between border-b border-gray-100 pb-4">
-                <div className="flex items-center gap-2">
-                  <span className="h-3 w-3 rounded-full bg-[#fc5185]" />
-                  <span className="h-3 w-3 rounded-full bg-[#ffcd35]" />
-                  <span className="h-3 w-3 rounded-full bg-[#00b090]" />
-                </div>
-                <span className="text-xs text-gray-400">panel.capuvps</span>
-              </div>
-              <div className="mt-4 space-y-3">
-                <div className="flex items-center justify-between rounded-lg bg-[#f4f0ff] p-4">
-                  <div>
-                    <p className="font-semibold text-[#2f1c6a]">mi-tienda</p>
-                    <p className="text-xs text-gray-500">mi-tienda.capuvps.duckdns.org</p>
-                  </div>
-                  <span className="rounded-full bg-[#00b090]/10 px-3 py-1 text-xs font-semibold text-[#00b090]">● En línea</span>
-                </div>
-                <div className="flex items-center justify-between rounded-lg border border-gray-100 p-4">
-                  <div>
-                    <p className="font-semibold text-[#1d1e20]">api-clientes</p>
-                    <p className="text-xs text-gray-500">Desplegando desde GitHub…</p>
-                  </div>
-                  <span className="rounded-full bg-[#673de6]/10 px-3 py-1 text-xs font-semibold text-[#673de6]">◌ 74%</span>
-                </div>
-                <div className="rounded-lg border border-gray-100 p-4">
-                  <p className="text-xs font-semibold uppercase tracking-wide text-gray-400">Base de datos</p>
-                  <p className="mt-1 font-mono text-sm text-[#1d1e20]">mysql://app:•••@db:3306/app</p>
-                </div>
-              </div>
-            </div>
+            <TerminalDeploy />
+            <p className="mt-3 text-center text-xs text-gray-400">Deploy real · de git push a HTTPS en minutos</p>
           </div>
         </div>
       </section>
@@ -270,6 +325,60 @@ export default function Landing({ onLogin }: { onLogin: () => void }) {
                 <p className="mt-2 text-sm leading-relaxed text-gray-500">{f.desc}</p>
               </div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Automatización inteligente */}
+      <section className="bg-[#2f1c6a] px-6 py-20">
+        <div className="mx-auto max-w-6xl">
+          <div className="mb-12 text-center">
+            <span className="inline-block rounded-full bg-[#673de6]/30 px-4 py-1.5 text-xs font-semibold uppercase tracking-widest text-[#b8a8f0] mb-4">
+              Automatización inteligente
+            </span>
+            <h2 className="text-3xl font-extrabold tracking-tight text-white md:text-4xl">
+              Tu infraestructura,<br />en piloto automático
+            </h2>
+            <p className="mt-3 text-[#b8a8f0]">
+              El sistema hace el trabajo pesado. Tú solo subes tu código.
+            </p>
+          </div>
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            {AI_FEATURES.map((f) => (
+              <div key={f.titulo} className="rounded-2xl border border-[#673de6]/30 bg-white/5 p-6 hover:bg-white/10 transition-all">
+                <div className="mb-4 text-3xl">{f.icon}</div>
+                <h3 className="font-bold text-white">{f.titulo}</h3>
+                <p className="mt-2 text-sm leading-relaxed text-[#b8a8f0]">{f.desc}</p>
+              </div>
+            ))}
+          </div>
+          {/* Mini demo interactiva */}
+          <div className="mt-12 rounded-2xl border border-[#673de6]/40 bg-black/30 p-6">
+            <div className="flex flex-wrap items-center gap-4">
+              <div className="flex-1 min-w-[200px]">
+                <p className="text-xs font-semibold uppercase tracking-wide text-[#b8a8f0] mb-1">Stack detectado automáticamente</p>
+                <div className="flex flex-wrap gap-2 mt-2">
+                  {['Node.js', 'React', 'Next.js', 'PHP', 'Python', 'Static'].map((t) => (
+                    <span key={t} className="rounded-full border border-[#673de6]/40 px-3 py-1 text-xs text-[#b8a8f0]">{t}</span>
+                  ))}
+                </div>
+              </div>
+              <div className="flex-1 min-w-[200px]">
+                <p className="text-xs font-semibold uppercase tracking-wide text-[#b8a8f0] mb-1">Base de datos automática</p>
+                <div className="flex flex-wrap gap-2 mt-2">
+                  {['PostgreSQL', 'MySQL', 'MongoDB'].map((db) => (
+                    <span key={db} className="rounded-full bg-[#673de6]/20 px-3 py-1 text-xs text-[#b8a8f0]">{db}</span>
+                  ))}
+                </div>
+              </div>
+              <div className="flex-1 min-w-[200px]">
+                <p className="text-xs font-semibold uppercase tracking-wide text-[#b8a8f0] mb-1">HTTPS en segundos</p>
+                <div className="mt-2 flex items-center gap-2">
+                  <span className="text-[#4ade80] text-sm">🔒</span>
+                  <span className="font-mono text-xs text-[#4ade80]">https://tuapp.capuvps.duckdns.org</span>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </section>

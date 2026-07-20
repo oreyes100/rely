@@ -1,11 +1,13 @@
 import type { ReactNode } from 'react';
 import { clearToken } from '../api/client';
 
-export type Page = 'dashboard' | 'provision' | 'services' | 'credentials' | 'history' | 'console';
+export type Page = 'dashboard' | 'provision' | 'services' | 'credentials' | 'history' | 'console' | 'herramientas' | 'clientes';
 
 const NAV: { id: Page; label: string; icon: string }[] = [
   { id: 'dashboard', label: 'Dashboard', icon: '▦' },
   { id: 'provision', label: 'Crear VPS', icon: '＋' },
+  { id: 'herramientas', label: 'Herramientas', icon: '🛠' },
+  { id: 'clientes', label: 'Clientes', icon: '👥' },
   { id: 'services', label: 'Servicios', icon: '⚙' },
   { id: 'credentials', label: 'Credenciales', icon: '🔑' },
   { id: 'history', label: 'Historial', icon: '☰' },

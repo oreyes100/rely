@@ -6,7 +6,7 @@ import { mkdirSync, writeFileSync } from 'fs';
 import { config } from '../config.js';
 import { HttpError } from '../errors.js';
 import { clientOnly } from './auth.js';
-import { getClient, getClientQuota } from '../services/clients.js';
+import { getClient, getClientQuota, isClientApproved } from '../services/clients.js';
 import { startDeploy, getDeploy, listDeploys, deleteDeploy, retryDeploy } from '../services/deploy.js';
 import { buildLandingZip } from '../services/sitegen.js';
 
@@ -88,7 +88,10 @@ portalRouter.post('/projects', clientOnly, deployLimiter, async (req, res, next)
     if (!nombre || !validProjectName(nombre)) throw new HttpError(400, 'El nombre del proyecto debe tener 3-30 letras minúsculas, números o guiones');
     if (!['plantilla', 'git'].includes(tipo)) throw new HttpError(400, 'tipo debe ser "plantilla" o "git"');
 
-    // Verificar cupo
+    // Verificar aprobación y cupo
+    if (!isClientApproved(req.clientId)) {
+      throw new HttpError(403, 'Tu cuenta está pendiente de aprobación. El equipo de CapuVPS revisará tu solicitud en breve. Recibirás un correo cuando esté lista.');
+    }
     const quota = getClientQuota(req.clientId);
     const active = listDeploys(req.clientId).filter((d) => !['deleted', 'error'].includes(d.status)).length;
     if (active >= quota) throw new HttpError(429, `Ya tienes ${active} proyecto(s) activo(s). Tu plan permite ${quota}. Elimina uno para crear otro.`);
@@ -144,6 +147,9 @@ portalRouter.post('/uploads', clientOnly, async (req, res, next) => {
 // ── Reintentar proyecto fallido ───────────────────────────────────────────────
 portalRouter.post('/projects/:id/retry', clientOnly, deployLimiter, async (req, res, next) => {
   try {
+    if (!isClientApproved(req.clientId)) {
+      throw new HttpError(403, 'Tu cuenta está pendiente de aprobación. Contacta al administrador.');
+    }
     const dep = getDeploy(req.params.id);
     if (dep.clientId !== req.clientId) throw new HttpError(404, 'Proyecto no encontrado');
     if (dep.status !== 'error') throw new HttpError(400, 'Solo se pueden reintentar proyectos en estado de error');

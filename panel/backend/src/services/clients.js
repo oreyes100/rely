@@ -20,10 +20,10 @@ function readInvites() {
 }
 function saveInvites(list) { writeFileSync(invitesFile, JSON.stringify(list, null, 2)); }
 
-export function createInvite() {
+export function createInvite({ plan = 'basico', quota = 1, promo = false } = {}) {
   const code = crypto.randomBytes(6).toString('hex').toUpperCase(); // 12 chars
   const invites = readInvites();
-  invites.push({ code, createdAt: new Date().toISOString(), usedBy: null });
+  invites.push({ code, plan, quota, promo, createdAt: new Date().toISOString(), usedBy: null });
   saveInvites(invites);
   return code;
 }
@@ -45,7 +45,21 @@ export async function registerClient({ email, password, inviteCode, name }) {
 
   const id = crypto.randomUUID();
   const passwordHash = await bcrypt.hash(password, 10);
-  const client = { id, email: email.toLowerCase(), passwordHash, name: name || email.split('@')[0], quota: 1, createdAt: new Date().toISOString() };
+
+  // Invitaciones de promo o con plan definido → auto-aprobadas.
+  // Invitaciones genéricas → pendientes de aprobación del admin.
+  const autoApproved = !!invite.promo || !!(invite.plan && invite.quota);
+  const client = {
+    id,
+    email: email.toLowerCase(),
+    passwordHash,
+    name: name || email.split('@')[0],
+    quota: autoApproved ? (invite.quota ?? 1) : 0,
+    plan: invite.plan ?? 'basico',
+    approved: autoApproved,
+    approvedAt: autoApproved ? new Date().toISOString() : null,
+    createdAt: new Date().toISOString(),
+  };
 
   clients.push(client);
   saveClients(clients);
@@ -76,6 +90,43 @@ export function listClients() {
   return readClients().map(({ passwordHash: _, ...c }) => c);
 }
 
+// Backward compat: clientes sin campo 'approved' (creados antes del sistema de aprobación)
+// se consideran aprobados. Solo los que tienen approved===false explícitamente están bloqueados.
+export function isClientApproved(clientId) {
+  const c = readClients().find((c) => c.id === clientId);
+  if (!c) return false;
+  return c.approved !== false; // undefined (legacy) → true; false → bloqueado
+}
+
 export function getClientQuota(clientId) {
-  return readClients().find((c) => c.id === clientId)?.quota ?? 1;
+  const c = readClients().find((c) => c.id === clientId);
+  if (!c) return 0;
+  if (c.approved === false) return 0; // no aprobado
+  return c.quota ?? 1;
+}
+
+export function approveClient(clientId, { quota = 1, plan = 'basico', approved = true } = {}) {
+  const clients = readClients();
+  const idx = clients.findIndex((c) => c.id === clientId);
+  if (idx === -1) throw new HttpError(404, 'Cliente no encontrado');
+  clients[idx] = {
+    ...clients[idx],
+    approved,
+    quota: approved ? Math.max(1, quota) : 0,
+    plan: plan || clients[idx].plan,
+    approvedAt: approved ? new Date().toISOString() : null,
+  };
+  saveClients(clients);
+  const { passwordHash: _, ...safe } = clients[idx];
+  return safe;
+}
+
+export function updateClientQuota(clientId, quota) {
+  const clients = readClients();
+  const idx = clients.findIndex((c) => c.id === clientId);
+  if (idx === -1) throw new HttpError(404, 'Cliente no encontrado');
+  clients[idx] = { ...clients[idx], quota: Math.max(0, quota) };
+  saveClients(clients);
+  const { passwordHash: _, ...safe } = clients[idx];
+  return safe;
 }

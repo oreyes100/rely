@@ -4,7 +4,7 @@ import path from 'path';
 import crypto from 'crypto';
 import { config } from '../config.js';
 import { HttpError } from '../errors.js';
-import { startDeploy, getDeploy, listDeploys, deleteDeploy, retryDeploy } from '../services/deploy.js';
+import { startDeploy, getDeploy, listDeploys, deleteDeploy, retryDeploy, killDeploy } from '../services/deploy.js';
 
 export const deploysRouter = Router();
 
@@ -32,6 +32,14 @@ deploysRouter.post('/', async (req, res, next) => {
 // Estado de un deploy
 deploysRouter.get('/:id', (req, res, next) => {
   try { res.json(getDeploy(req.params.id)); } catch (e) { next(e); }
+});
+
+// Terminar pipeline en ejecución (admin)
+deploysRouter.post('/:id/kill', (req, res, next) => {
+  try {
+    killDeploy(req.params.id);
+    res.json({ ok: true, mensaje: 'Deploy marcado como error. Limpia la VM huérfana si es necesario.' });
+  } catch (e) { next(e); }
 });
 
 // Reintentar deploy fallido (admin)

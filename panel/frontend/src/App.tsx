@@ -13,6 +13,8 @@ import Services from './components/Services';
 import PortalLayout from './components/portal/PortalLayout';
 import MisProyectos from './components/portal/MisProyectos';
 import NuevoProyecto from './components/portal/NuevoProyecto';
+import AdminTools from './components/AdminTools';
+import ClientManagement from './components/ClientManagement';
 
 type PortalPage = 'proyectos' | 'nuevo';
 
@@ -27,6 +29,20 @@ function AdminPanel() {
         </div>
       )}
       {page === 'provision' && <ProvisioningForm />}
+      {page === 'herramientas' && (
+        <div className="space-y-2">
+          <h2 className="text-lg font-semibold text-slate-100">Herramientas de sistema</h2>
+          <p className="text-sm text-slate-500 mb-4">Monitor de deploys, diagnóstico de tiempos y herramientas de recuperación.</p>
+          <AdminTools />
+        </div>
+      )}
+      {page === 'clientes' && (
+        <div className="space-y-2">
+          <h2 className="text-lg font-semibold text-slate-100">Gestión de clientes</h2>
+          <p className="text-sm text-slate-500 mb-4">Aprobar cuentas nuevas, asignar planes y cuotas, generar invitaciones.</p>
+          <ClientManagement />
+        </div>
+      )}
       {page === 'services' && <Services />}
       {page === 'credentials' && <CredentialManager />}
       {page === 'history' && <HistoryLog />}
