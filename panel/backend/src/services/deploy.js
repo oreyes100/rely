@@ -9,6 +9,7 @@ import { provisionVm, stopAndDestroy } from './provision.js';
 import { selectBestNode } from './node-selector.js';
 import { HttpError } from '../errors.js';
 import { sendAdminAlert } from './mailer.js';
+import { upsertCredential } from './credentials.js';
 
 const execFileAsync = promisify(execFile);
 const deploysFile = path.join(config.dataDir, 'deploys.json');
@@ -74,10 +75,19 @@ const STEP_LABELS = {
   verify:      'Verificación final',
 };
 
-function makeSteps(skipDnsTls = false) {
-  return Object.keys(STEP_LABELS)
-    .filter((k) => !(skipDnsTls && (k === 'dns' || k === 'tls')))
-    .map((name) => ({ name, label: STEP_LABELS[name], status: 'pending', detail: '', startedAt: null, elapsedMs: null, updatedAt: null }));
+function makeSteps({ skipDnsTls = false, vpsOnly = false, dbOnly = false } = {}) {
+  const all = Object.keys(STEP_LABELS);
+  let keys;
+  if (vpsOnly) {
+    keys = ['provision', 'wait_ip'];
+  } else if (dbOnly) {
+    keys = ['provision', 'wait_ip', 'prepare', 'run', 'ufw', 'nat'];
+  } else if (skipDnsTls) {
+    keys = all.filter((k) => k !== 'dns' && k !== 'tls');
+  } else {
+    keys = all;
+  }
+  return keys.map((name) => ({ name, label: STEP_LABELS[name], status: 'pending', detail: '', startedAt: null, elapsedMs: null, updatedAt: null }));
 }
 
 // ── Compose generator ─────────────────────────────────────────────────────────
@@ -102,9 +112,14 @@ function dbService(dbType, password) {
     info: { tipo: 'mongo', urlInterna: `mongodb://db:27017/app` },
   };
   if (dbType === 'mysql') return {
-    yml: `  db:\n    image: mysql:8\n    restart: unless-stopped\n    environment:\n      MYSQL_USER: app\n      MYSQL_PASSWORD: "${password}"\n      MYSQL_DATABASE: app\n      MYSQL_RANDOM_ROOT_PASSWORD: "yes"\n    volumes:\n      - db-data:/var/lib/mysql`,
+    yml: `  db:\n    image: mysql:8\n    restart: unless-stopped\n    environment:\n      MYSQL_USER: app\n      MYSQL_PASSWORD: "${password}"\n      MYSQL_DATABASE: app\n      MYSQL_RANDOM_ROOT_PASSWORD: "yes"\n    ports:\n      - "3306:3306"\n    volumes:\n      - db-data:/var/lib/mysql`,
     env: `DATABASE_URL=mysql://app:${password}@db:3306/app\nMYSQL_USER=app\nMYSQL_PASSWORD=${password}\nMYSQL_DATABASE=app\nMYSQL_HOST=db`,
-    info: { tipo: 'mysql', usuario: 'app', password, dbName: 'app', urlInterna: `mysql://app:${password}@db:3306/app` },
+    info: { tipo: 'mysql', usuario: 'app', password, dbName: 'app', port: 3306, urlInterna: `mysql://app:${password}@db:3306/app` },
+  };
+  if (dbType === 'redis') return {
+    yml: `  db:\n    image: redis:7-alpine\n    restart: unless-stopped\n    command: redis-server --requirepass "${password}"\n    ports:\n      - "6379:6379"\n    volumes:\n      - db-data:/data`,
+    env: `REDIS_URL=redis://:${password}@db:6379`,
+    info: { tipo: 'redis', password, port: 6379, urlInterna: `redis://:${password}@db:6379` },
   };
   return null;
 }
@@ -215,6 +230,67 @@ async function sshNode(nodeHost, command) {
   ], { timeout: 60000 });
 }
 
+// Asegura egress TCP 443/22 de la subred de VMs hacia internet (NO hacia redes
+// privadas — el aislamiento inter-VLAN se preserva con los RETURN). El gateway
+// de la VLAN de clientes es el propio nodo (dnsmasq + NAT iptables); sin esto,
+// docker pull y git clone por HTTPS mueren con "no route to host".
+async function ensureEgress(cfg) {
+  if (cfg.type === 'hyperv' || !cfg.subnetPrefix) return;
+  const subnet = `${cfg.subnetPrefix}0/24`;
+  const cmd = [
+    `iptables -N VPS-EGRESS 2>/dev/null || true`,
+    `iptables -F VPS-EGRESS`,
+    `iptables -A VPS-EGRESS -d 192.168.0.0/16 -j RETURN`,
+    `iptables -A VPS-EGRESS -d 10.0.0.0/8 -j RETURN`,
+    `iptables -A VPS-EGRESS -d 172.16.0.0/12 -j RETURN`,
+    `iptables -A VPS-EGRESS -p tcp -m multiport --dports 443,22 -j ACCEPT`,
+    `iptables -C FORWARD -s ${subnet} -j VPS-EGRESS 2>/dev/null || iptables -I FORWARD 1 -s ${subnet} -j VPS-EGRESS`,
+    `iptables -C FORWARD -d ${subnet} -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT 2>/dev/null || iptables -I FORWARD 2 -d ${subnet} -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT`,
+    `mkdir -p /etc/iptables && iptables-save > /etc/iptables/rules.v4`,
+  ].join('\n');
+  try {
+    await sshNode(cfg.host, cmd);
+  } catch (e) {
+    // No fatal: si el egress ya funciona el deploy sigue; si no, build/run lo reportará
+    console.warn(`[egress] No se pudo asegurar egress en ${cfg.host}: ${e.message}`);
+  }
+}
+
+// Override de DNS público en la VM — el DNS upstream de la red devuelve
+// A-records envenenados para docker.io (100.60.x, rango del ISP). Puerto 53
+// directo a resolvers públicos está abierto (verificado desde VLAN 6).
+const DNS_FIX_CMD =
+  `mkdir -p /etc/systemd/resolved.conf.d && ` +
+  `printf '[Resolve]\\nDNS=1.1.1.1 8.8.8.8\\n' > /etc/systemd/resolved.conf.d/panel.conf && ` +
+  `systemctl restart systemd-resolved 2>/dev/null || ` +
+  `{ rm -f /etc/resolv.conf; printf 'nameserver 1.1.1.1\\nnameserver 8.8.8.8\\n' > /etc/resolv.conf; }; `;
+
+// Habilita login SSH por contraseña en la VM (las imágenes cloud de Ubuntu
+// traen PasswordAuthentication no en sshd_config.d) y abre 22 en ufw.
+const SSH_PWAUTH_CMD =
+  `sed -i 's/^#\\?PasswordAuthentication.*/PasswordAuthentication yes/' /etc/ssh/sshd_config 2>/dev/null; ` +
+  `grep -rl 'PasswordAuthentication no' /etc/ssh/sshd_config.d/ 2>/dev/null | xargs -r sed -i 's/PasswordAuthentication no/PasswordAuthentication yes/'; ` +
+  `systemctl reload ssh 2>/dev/null || systemctl reload sshd 2>/dev/null || true; ` +
+  `ufw allow 22/tcp 2>/dev/null || true; echo SSH-READY`;
+
+// DNAT de SSH en el nodo: puerto 22000+vmid del nodo → guestIP:22. La VM está
+// en una VLAN aislada — sin esto el cliente no puede alcanzar su servidor.
+// Mismo patrón probado que usa el paso nat para las apps (8000+vmid → 80).
+async function ensureSshNat(cfg, vmid, guestIP) {
+  if (cfg.type === 'hyperv' || !guestIP) return null;
+  const port = 22000 + Number(vmid);
+  const cmd = [
+    `iptables -t nat -C PREROUTING -p tcp --dport ${port} -j DNAT --to-destination ${guestIP}:22 2>/dev/null || {`,
+    `  iptables -t nat -A PREROUTING -p tcp --dport ${port} -j DNAT --to-destination ${guestIP}:22`,
+    `  iptables -t nat -A POSTROUTING -p tcp -d ${guestIP} --dport 22 -j MASQUERADE`,
+    `  iptables -A FORWARD -p tcp -d ${guestIP} --dport 22 -j ACCEPT`,
+    `  mkdir -p /etc/iptables && iptables-save > /etc/iptables/rules.v4`,
+    `}`,
+  ].join('\n');
+  await sshNode(cfg.host, cmd);
+  return port;
+}
+
 export async function startDeploy(deploySpec) {
   const {
     hostname,           // nombre del proyecto / subdominio
@@ -240,20 +316,25 @@ export async function startDeploy(deploySpec) {
     nodeName = await selectBestNode(resources, `plan:${plan} db:${db}`);
   }
 
-  const skipDnsTls = domain.type === 'wildcard';
+  const vpsOnly = source.type === 'vps-only';
+  const dbOnly = source.type === 'db-only';
+  const skipDnsTls = !vpsOnly && !dbOnly && domain?.type === 'wildcard';
   const id = crypto.randomUUID();
-  const url = skipDnsTls
-    ? `https://${hostname}.${config.appsDomain}/`
-    : domain.type === 'duckdns'
-      ? `https://${domain.name}.duckdns.org/`
-      : `https://${domain.fqdn}/`;
+  const url = (vpsOnly || dbOnly)
+    ? null
+    : skipDnsTls
+      ? `https://${hostname}.${config.appsDomain}/`
+      : domain?.type === 'duckdns'
+        ? `https://${domain.name}.duckdns.org/`
+        : `https://${domain?.fqdn}/`;
 
   const deploy = {
-    id, hostname, source, appPort, db, domain, plan, clientId, envVars,
+    id, hostname, source, appPort, db, domain: domain ?? null, plan, clientId, envVars,
     node: nodeName, vmid: null, guestIP: null, url,
     status: 'running',
-    steps: makeSteps(skipDnsTls),
+    steps: makeSteps({ skipDnsTls, vpsOnly, dbOnly }),
     dbInfo: null,
+    sshUser: null, sshPassword: null, sshHost: null, sshPort: null,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   };
@@ -278,12 +359,15 @@ export async function startDeploy(deploySpec) {
 async function pipeline(deployId, resources, nodeName) {
   const dep = getDeploy(deployId);
   const { cfg, client } = getNode(nodeName);
-  let vmid, guestIP, dbPass;
-  const dbType = dep.db !== 'ninguna' ? dep.db : null;
-  if (dbType) dbPass = crypto.randomBytes(12).toString('hex');
+  let vmid, guestIP, dbPass, vmResult;
+  const vpsOnly = dep.source?.type === 'vps-only';
+  const dbOnly = dep.source?.type === 'db-only';
+  const dbType = dbOnly
+    ? (dep.source?.dbType ?? dep.db)
+    : (dep.db !== 'ninguna' ? dep.db : null);
+  if (dbType && dbType !== 'ninguna') dbPass = crypto.randomBytes(12).toString('hex');
 
   // 1. provision
-  let vmResult;
   await runStep(deployId, 'provision', async () => {
     // Proxmox no permite ':' en tags — usar guion
     vmResult = await provisionVm({ node: nodeName, hostname: dep.hostname, ...resources, tags: dep.clientId ? [`client-${dep.clientId}`] : [] });
@@ -313,10 +397,112 @@ async function pipeline(deployId, resources, nodeName) {
     }
   });
 
+  // Credenciales SSH SIEMPRE disponibles desde este punto — si el deploy falla
+  // más adelante, el cliente puede implementar manualmente vía SSH.
+  // El acceso va por DNAT del nodo (22000+vmid) porque la VLAN de VMs está aislada.
+  let sshHost = guestIP, sshPort = 22;
+  try {
+    const natPort = await ensureSshNat(cfg, vmid, guestIP);
+    if (natPort) { sshHost = cfg.sshWanHost || cfg.host; sshPort = natPort; }
+  } catch (e) {
+    console.warn(`[deploy:${deployId}] SSH DNAT no disponible: ${e.message}`);
+  }
+  try { await client.agentExecWait(nodeName, vmid, SSH_PWAUTH_CMD, 30_000); }
+  catch (e) { console.warn(`[deploy:${deployId}] SSH pwauth: ${e.message}`); }
+  patchDeploy(deployId, {
+    sshUser: vmResult?.user ?? 'devops',
+    sshPassword: vmResult?.password ?? '',
+    sshHost,
+    sshPort,
+    updatedAt: new Date().toISOString(),
+  });
+
+  // ── Modo VPS Solo: servidor + SSH y terminar ─────────────────────────────────
+  if (vpsOnly) {
+    patchDeploy(deployId, { status: 'done', updatedAt: new Date().toISOString() });
+    return;
+  }
+
+  // ── Modo DB Solo: instalar Docker + levantar contenedor de BD ────────────────
+  if (dbOnly) {
+    const db = dbService(dbType, dbPass);
+    if (!db) throw new Error(`Tipo de BD no soportado: ${dbType}`);
+    const dbPort = { postgres: 5432, mysql: 3306, mongo: 27017, redis: 6379 }[dbType] ?? 5432;
+
+    await runStep(deployId, 'prepare', async () => {
+      await ensureEgress(cfg);
+      const r = await client.agentExecWait(nodeName, vmid,
+        DNS_FIX_CMD +
+        'export DEBIAN_FRONTEND=noninteractive; ' +
+        'if ! command -v docker >/dev/null 2>&1; then ' +
+        '  apt-get -o DPkg::Lock::Timeout=600 update -qq >/tmp/prep.log 2>&1; ' +
+        '  apt-get -o DPkg::Lock::Timeout=600 install -y docker.io docker-compose-v2 >>/tmp/prep.log 2>&1; ' +
+        'fi; ' +
+        'systemctl enable --now docker >/dev/null 2>&1 || true; ' +
+        'command -v docker >/dev/null 2>&1 || { echo PREP-FAIL; exit 1; }; echo PREP-OK',
+        600_000
+      );
+      if (!r.out.includes('PREP-OK')) throw new Error(`prepare falló: ${r.out.slice(-200)}`);
+      return { detail: 'Docker listo' };
+    });
+
+    await runStep(deployId, 'run', async () => {
+      const composeYml = `services:\n${db.yml}\nvolumes:\n  db-data:`;
+      await client.agentWriteFile(nodeName, vmid, '/opt/app/compose.yaml', composeYml);
+      const r = await client.agentExecWait(nodeName, vmid,
+        'cd /opt/app && { docker compose pull -q && docker compose up -d; } > /tmp/up.log 2>&1; ' +
+        'echo UP_EXIT=$?; tail -c 500 /tmp/up.log',
+        300_000
+      );
+      const upExit = r.out.match(/UP_EXIT=(\d+)/)?.[1] ?? '1';
+      if (upExit !== '0') {
+        throw new Error(`BD no arrancó: ${sanitizeBuildOutput(r.out.replace(/UP_EXIT=\d+/, '')).slice(-300)}`);
+      }
+      return { detail: `${dbType} corriendo` };
+    });
+
+    await runStep(deployId, 'ufw', async () => {
+      await client.agentExecWait(nodeName, vmid, `ufw allow ${dbPort}/tcp comment db && echo OK`, 10_000);
+      return { detail: `Puerto ${dbPort} abierto` };
+    });
+
+    await runStep(deployId, 'nat', async () => {
+      const wanPort = 15000 + vmid;
+      await sshNode(cfg.host, [
+        `iptables -t nat -C PREROUTING -p tcp --dport ${wanPort} -j DNAT --to-destination ${guestIP}:${dbPort} 2>/dev/null || {`,
+        `  iptables -t nat -A PREROUTING -p tcp --dport ${wanPort} -j DNAT --to-destination ${guestIP}:${dbPort}`,
+        `  iptables -t nat -A POSTROUTING -p tcp -d ${guestIP} --dport ${dbPort} -j MASQUERADE`,
+        `  iptables -A FORWARD -p tcp -d ${guestIP} --dport ${dbPort} -j ACCEPT`,
+        `  mkdir -p /etc/iptables && iptables-save > /etc/iptables/rules.v4`,
+        `}`,
+      ].join('\n'));
+      let dbSshHost = guestIP, dbSshPort = 22;
+      try {
+        const natPort = await ensureSshNat(cfg, vmid, guestIP);
+        if (natPort) { dbSshHost = cfg.sshWanHost || cfg.host; dbSshPort = natPort; }
+      } catch (e) { console.warn(`[deploy:${deployId}] SSH DNAT db-only: ${e.message}`); }
+      patchDeploy(deployId, {
+        dbInfo: { ...db.info, host: guestIP, externalHost: cfg.host, externalPort: wanPort },
+        sshUser: vmResult?.user ?? 'devops',
+        sshPassword: vmResult?.password ?? '',
+        sshHost: dbSshHost,
+        sshPort: dbSshPort,
+        wanPort,
+        updatedAt: new Date().toISOString(),
+      });
+      return { detail: `Puerto WAN ${wanPort} → ${guestIP}:${dbPort}` };
+    });
+
+    patchDeploy(deployId, { status: 'done', updatedAt: new Date().toISOString() });
+    return;
+  }
+
   // 3. prepare_guest — instala Docker esperando el lock de apt (primer boot puede
   // tenerlo tomado por cloud-init/unattended-upgrades) y VERIFICA el resultado.
   await runStep(deployId, 'prepare', async () => {
+    await ensureEgress(cfg);
     const r = await client.agentExecWait(nodeName, vmid,
+      DNS_FIX_CMD +
       'export DEBIAN_FRONTEND=noninteractive; ' +
       'if ! command -v docker >/dev/null 2>&1; then ' +
       '  apt-get -o DPkg::Lock::Timeout=600 update -qq >/tmp/prep.log 2>&1; ' +
@@ -352,13 +538,16 @@ async function pipeline(deployId, resources, nodeName) {
       detail = 'Plantilla generada';
     }
     if (source.type === 'zip') {
-      const sig = crypto.createHmac('sha256', config.jwtSecret).update(source.uploadId).digest('hex').slice(0, 16);
-      const url = `${config.panelPublicUrl}/api/deploys/upload/${source.uploadId}?sig=${sig}`;
+      // Push directo vía QEMU guest agent — sin conexión HTTP desde la VM (VLAN 6 aislada)
+      const zipPath = path.join(config.dataDir, 'uploads', `${source.uploadId}.zip`);
+      if (!existsSync(zipPath)) throw new Error('El archivo subido ya no está disponible. Crea un nuevo deploy y sube el proyecto de nuevo.');
+      const zipBuffer = readFileSync(zipPath);
+      await client.agentWriteBinaryFile(nodeName, vmid, '/tmp/app.zip', zipBuffer);
       const r = await client.agentExecWait(nodeName, vmid,
-        `curl -fL '${url}' -o /tmp/app.zip 2>&1 && rm -rf /opt/app && mkdir -p /opt/app && unzip -o /tmp/app.zip -d /opt/app && echo OK`,
-        120000
+        'rm -rf /opt/app && mkdir -p /opt/app && unzip -o /tmp/app.zip -d /opt/app && rm -f /tmp/app.zip && echo OK',
+        60_000
       );
-      if (r.exitcode !== 0) throw new Error(`Descarga falló: ${r.err || r.out}`);
+      if (r.exitcode !== 0) throw new Error(`Descompresión falló: ${r.err || r.out}`);
       detail = detail ?? 'Archivos subidos';
     }
     return { detail };
@@ -450,17 +639,40 @@ async function pipeline(deployId, resources, nodeName) {
     return { detail: 'Imagen construida' };
   });
 
-  // 7. run
+  // 7. run — separar up de la verificación HTTP para NO tragarse el error real
+  // de compose (pull de imágenes, puertos ocupados…), y dar tiempo al primer
+  // arranque (MySQL 8 tarda 30-60 s en inicializar; apps Node 10-30 s).
   await runStep(deployId, 'run', async () => {
-    const r = await client.agentExecWait(nodeName, vmid,
-      'cd /opt/app && docker compose up -d 2>&1 && sleep 8 && ' +
-      "curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:80/ 2>/dev/null || echo 000",
-      120000
+    const up = await client.agentExecWait(nodeName, vmid,
+      'cd /opt/app && docker compose up -d > /tmp/up.log 2>&1; echo UP_EXIT=$?; tail -c 600 /tmp/up.log',
+      300000
     );
-    const code = r.out.match(/\d{3}$/)?.[0] ?? '000';
+    const upExit = up.out.match(/UP_EXIT=(\d+)/)?.[1] ?? '1';
+    if (upExit !== '0') {
+      throw new Error(`docker compose up falló: ${sanitizeBuildOutput(up.out.replace(/UP_EXIT=\d+/, '')).slice(-350)}`);
+    }
+
+    // Poll HTTP hasta 90 s
+    const deadline = Date.now() + 90_000;
+    let code = '000';
+    for (;;) {
+      const r = await client.agentExecWait(nodeName, vmid,
+        "curl -s -o /dev/null -w '%{http_code}' --max-time 5 http://127.0.0.1:80/ 2>/dev/null || echo 000",
+        20000
+      );
+      code = r.out.match(/\d{3}/)?.[0] ?? '000';
+      if (code !== '000' && !code.startsWith('5')) break;
+      if (Date.now() > deadline) break;
+      await new Promise((res) => setTimeout(res, 6000));
+    }
+
     if (code === '000' || code.startsWith('5')) {
-      const logs = await client.agentExecWait(nodeName, vmid, 'cd /opt/app && docker compose logs --tail 20 2>&1');
-      throw new Error(`App no responde (HTTP ${code}). Logs: ${logs.out.slice(-300)}`);
+      const diag = await client.agentExecWait(nodeName, vmid,
+        'cd /opt/app && docker compose ps -a --format "{{.Service}}: {{.Status}}" 2>&1; ' +
+        'echo "--- logs ---"; docker compose logs --tail 15 --no-color 2>&1 | tail -c 500',
+        30000
+      );
+      throw new Error(`App no responde (HTTP ${code}). ${sanitizeBuildOutput(diag.out).slice(-380)}`);
     }
     return { detail: `Aplicación corriendo (HTTP ${code})` };
   });
@@ -598,6 +810,9 @@ export async function retryDeploy(deployId, envVars) {
     if (dep.wanPort) {
       try { await sshNode(cfg.host, `iptables -t nat -D PREROUTING -p tcp --dport ${dep.wanPort} -j DNAT --to-destination ${dep.guestIP}:80 2>/dev/null || true`); } catch { /* continuar */ }
     }
+    if (dep.sshPort && dep.sshPort >= 22000 && dep.guestIP) {
+      try { await sshNode(cfg.host, `iptables -t nat -D PREROUTING -p tcp --dport ${dep.sshPort} -j DNAT --to-destination ${dep.guestIP}:22 2>/dev/null || true`); } catch { /* continuar */ }
+    }
   }
 
   // Reset de pasos y estado
@@ -619,7 +834,13 @@ export async function retryDeploy(deployId, envVars) {
     vmid: null,
     guestIP: null,
     wanPort: undefined,
-    steps: makeSteps(dep.domain?.type === 'wildcard'),
+    // La VM anterior se destruyó — sus credenciales SSH ya no valen
+    sshUser: null, sshPassword: null, sshHost: null, sshPort: null,
+    steps: makeSteps({
+      skipDnsTls: dep.domain?.type === 'wildcard',
+      vpsOnly: dep.source?.type === 'vps-only',
+      dbOnly: dep.source?.type === 'db-only',
+    }),
     updatedAt: new Date().toISOString(),
   });
 
@@ -633,6 +854,71 @@ export async function retryDeploy(deployId, envVars) {
   });
 }
 
+// ── Rotar/generar contraseña SSH del servidor ─────────────────────────────────
+// Funciona incluso con el deploy en estado error (implementación manual) y
+// cuando la contraseña original se perdió — chpasswd vía guest agent.
+export async function rotateSsh(deployId) {
+  const dep = getDeploy(deployId);
+  if (!dep.vmid || !dep.node) throw new HttpError(400, 'El proyecto no tiene servidor creado');
+  if (dep.status === 'deleted') throw new HttpError(400, 'El proyecto fue eliminado');
+  if (dep.status === 'running') throw new HttpError(409, 'Espera a que termine el despliegue en curso');
+
+  const { client, cfg } = getNode(dep.node);
+  const user = dep.sshUser || 'devops';
+  // base64url: solo [A-Za-z0-9_-] — seguro entre comillas simples del shell
+  const newPass = crypto.randomBytes(12).toString('base64url');
+  const r = await client.agentExecWait(dep.node, dep.vmid,
+    SSH_PWAUTH_CMD + `; echo '${user}:${newPass}' | chpasswd && echo ROTATE-OK`, 30_000);
+  if (!r.out.includes('ROTATE-OK')) {
+    throw new HttpError(502, `No se pudo rotar la contraseña SSH: ${(r.err || r.out).slice(0, 150)}`);
+  }
+
+  // Asegurar acceso: DNAT 22000+vmid en el nodo (repara deploys previos al fix
+  // que guardaron la IP interna inalcanzable de la VLAN)
+  let sshHost = dep.sshHost ?? dep.guestIP ?? null;
+  let sshPort = dep.sshPort ?? 22;
+  try {
+    const natPort = await ensureSshNat(cfg, dep.vmid, dep.guestIP);
+    if (natPort) { sshHost = cfg.sshWanHost || cfg.host; sshPort = natPort; }
+  } catch (e) {
+    console.warn(`[rotate-ssh:${deployId}] SSH DNAT no disponible: ${e.message}`);
+  }
+
+  upsertCredential({ node: dep.node, vmid: dep.vmid, hostname: dep.hostname, user, password: newPass });
+  const ssh = { sshUser: user, sshPassword: newPass, sshHost, sshPort };
+  patchDeploy(deployId, { ...ssh, updatedAt: new Date().toISOString() });
+  return ssh;
+}
+
+// ── Rotar contraseña de BD ────────────────────────────────────────────────────
+export async function rotateDb(deployId) {
+  const dep = getDeploy(deployId);
+  if (!dep.dbInfo || dep.status !== 'done') throw new HttpError(400, 'El deploy no tiene BD activa');
+  const { client } = getNode(dep.node);
+  const dbType = dep.dbInfo.tipo;
+  const oldPass = dep.dbInfo.password;
+  const newPass = crypto.randomBytes(12).toString('hex');
+
+  const rotateCmd = {
+    postgres: `docker exec $(cd /opt/app && docker compose ps -q db 2>/dev/null) psql -U app -c "ALTER USER app PASSWORD '${newPass}'" 2>&1`,
+    mysql: `docker exec $(cd /opt/app && docker compose ps -q db 2>/dev/null) mysql -u app -p"${oldPass}" app -e "ALTER USER 'app'@'%' IDENTIFIED BY '${newPass}'; FLUSH PRIVILEGES;" 2>&1`,
+    redis: `docker exec $(cd /opt/app && docker compose ps -q db 2>/dev/null) redis-cli -a "${oldPass}" CONFIG SET requirepass "${newPass}" 2>&1`,
+  }[dbType];
+
+  if (rotateCmd) {
+    const r = await client.agentExecWait(dep.node, dep.vmid, rotateCmd, 30_000);
+    if (r.exitcode !== 0) throw new Error(`Error rotando contraseña de ${dbType}: ${r.out.slice(-200)}`);
+  }
+
+  const newDbInfo = {
+    ...dep.dbInfo,
+    password: newPass,
+    urlInterna: dep.dbInfo.urlInterna?.replace(oldPass, newPass),
+  };
+  patchDeploy(deployId, { dbInfo: newDbInfo, updatedAt: new Date().toISOString() });
+  return newDbInfo;
+}
+
 // ── Limpieza al borrar un deploy ──────────────────────────────────────────────
 export async function deleteDeploy(deployId) {
   const dep = getDeploy(deployId);
@@ -642,15 +928,26 @@ export async function deleteDeploy(deployId) {
     try {
       const { client } = getNode(dep.node);
       const { cfg } = getNode(dep.node);
-      // Eliminar DNAT
-      if (dep.wanPort) {
+      // Eliminar DNAT (app y SSH)
+      if (dep.wanPort || (dep.sshPort && dep.sshPort >= 22000)) {
         try {
-          await sshNode(cfg.host,
-            `iptables -t nat -D PREROUTING -p tcp --dport ${dep.wanPort} -j DNAT --to-destination ${dep.guestIP}:80 2>/dev/null || true\n` +
-            `iptables -t nat -D POSTROUTING -p tcp -d ${dep.guestIP} --dport 80 -j MASQUERADE 2>/dev/null || true\n` +
-            `iptables -D FORWARD -p tcp -d ${dep.guestIP} --dport 80 2>/dev/null || true\n` +
-            `iptables-save > /etc/iptables/rules.v4`
-          );
+          const rules = [];
+          if (dep.wanPort) {
+            rules.push(
+              `iptables -t nat -D PREROUTING -p tcp --dport ${dep.wanPort} -j DNAT --to-destination ${dep.guestIP}:80 2>/dev/null || true`,
+              `iptables -t nat -D POSTROUTING -p tcp -d ${dep.guestIP} --dport 80 -j MASQUERADE 2>/dev/null || true`,
+              `iptables -D FORWARD -p tcp -d ${dep.guestIP} --dport 80 2>/dev/null || true`
+            );
+          }
+          if (dep.sshPort && dep.sshPort >= 22000) {
+            rules.push(
+              `iptables -t nat -D PREROUTING -p tcp --dport ${dep.sshPort} -j DNAT --to-destination ${dep.guestIP}:22 2>/dev/null || true`,
+              `iptables -t nat -D POSTROUTING -p tcp -d ${dep.guestIP} --dport 22 -j MASQUERADE 2>/dev/null || true`,
+              `iptables -D FORWARD -p tcp -d ${dep.guestIP} --dport 22 2>/dev/null || true`
+            );
+          }
+          rules.push(`iptables-save > /etc/iptables/rules.v4`);
+          await sshNode(cfg.host, rules.join('\n'));
         } catch (e) { errors.push(`DNAT: ${e.message}`); }
       }
       // Detener y eliminar VM (espera stop real antes de destroy)
@@ -658,7 +955,7 @@ export async function deleteDeploy(deployId) {
     } catch (e) { errors.push(`VM: ${e.message}`); }
   }
 
-  // Eliminar vhost
+  // Eliminar vhost principal
   if (dep.domain) {
     try {
       const fqdn = dep.domain.type === 'wildcard'
@@ -669,8 +966,45 @@ export async function deleteDeploy(deployId) {
       await execFileAsync('sudo', ['/usr/local/sbin/panel-vhost', 'remove', fqdn]).catch(() => {});
     } catch { /* continuar */ }
   }
+  // Eliminar dominios personalizados
+  for (const cd of dep.customDomains ?? []) {
+    await execFileAsync('sudo', ['/usr/local/sbin/panel-vhost', 'remove', cd.fqdn]).catch(() => {});
+  }
 
   // Marcar como eliminado (no borrar del JSON para auditoría)
   patchDeploy(deployId, { status: 'deleted', updatedAt: new Date().toISOString() });
   if (errors.length) throw new Error(`Deploy eliminado con errores parciales: ${errors.join('; ')}`);
+}
+
+// ── Gestión de dominios personalizados ───────────────────────────────────────
+
+export async function addCustomDomain(deployId, fqdn) {
+  const dep = getDeploy(deployId);
+  if (!dep.wanPort || !dep.node) throw new HttpError(400, 'El servidor aún no tiene puerto web configurado');
+  const { cfg } = getNode(dep.node);
+  const existing = (dep.customDomains ?? []).find((d) => d.fqdn === fqdn);
+  if (existing) throw new HttpError(409, `El dominio ${fqdn} ya está registrado en este proyecto`);
+  await execFileAsync('sudo', ['/usr/local/sbin/panel-vhost', 'add', fqdn, cfg.host, String(dep.wanPort)]);
+  const entry = { fqdn, addedAt: new Date().toISOString(), certStatus: 'self-signed', status: 'active' };
+  patchDeploy(deployId, { customDomains: [...(dep.customDomains ?? []), entry] });
+  return entry;
+}
+
+export async function removeCustomDomain(deployId, fqdn) {
+  await execFileAsync('sudo', ['/usr/local/sbin/panel-vhost', 'remove', fqdn]).catch(() => {});
+  const dep = getDeploy(deployId);
+  patchDeploy(deployId, { customDomains: (dep.customDomains ?? []).filter((d) => d.fqdn !== fqdn) });
+}
+
+export async function issueDomainSsl(deployId, fqdn) {
+  const dep = getDeploy(deployId);
+  const domain = (dep.customDomains ?? []).find((d) => d.fqdn === fqdn);
+  if (!domain) throw new HttpError(404, 'Dominio no encontrado');
+  await execFileAsync('sudo', ['/usr/local/sbin/panel-vhost', 'issue-cert', fqdn], { timeout: 120000 });
+  patchDeploy(deployId, {
+    customDomains: (dep.customDomains ?? []).map((d) =>
+      d.fqdn === fqdn ? { ...d, certStatus: 'valid', certIssuedAt: new Date().toISOString() } : d
+    ),
+  });
+  return { fqdn, certStatus: 'valid' };
 }

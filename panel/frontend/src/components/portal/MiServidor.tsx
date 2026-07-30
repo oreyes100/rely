@@ -19,9 +19,17 @@ interface DbInfo {
   nota?: string;
 }
 
+interface CustomDomain {
+  fqdn: string;
+  addedAt: string;
+  certStatus: 'self-signed' | 'valid' | 'error';
+  status: 'active' | 'pending';
+}
+
 interface ServerStatus {
   available: boolean;
   reason?: string;
+  deployFailed?: boolean;
   containers: Container[];
   disk: DiskInfo | null;
   mem: MemInfo | null;
@@ -31,6 +39,12 @@ interface ServerStatus {
   url: string;
   usesSupabase: boolean;
   dbInfo: DbInfo | null;
+  sshUser: string | null;
+  sshPassword: string | null;
+  sshHost: string | null;
+  sshPort: number;
+  vpsOnly: boolean;
+  customDomains: CustomDomain[];
 }
 
 interface LogData {
@@ -39,7 +53,7 @@ interface LogData {
   reason?: string;
 }
 
-type Tab = 'estado' | 'logs' | 'db';
+type Tab = 'estado' | 'logs' | 'db' | 'ssh' | 'dominios';
 
 export default function MiServidor({ proyectoId, url }: { proyectoId: string; url?: string }) {
   const [tab, setTab] = useState<Tab>('estado');
@@ -48,12 +62,19 @@ export default function MiServidor({ proyectoId, url }: { proyectoId: string; ur
   const [restarting, setRestarting] = useState(false);
   const [restartMsg, setRestartMsg] = useState<string | null>(null);
 
+  const tabInicial = useRef(false);
+
   const cargar = useCallback(async () => {
     try {
       const data = await api<ServerStatus>(`/portal/projects/${proyectoId}/server`);
       setStatus(data);
+      // Primera carga: si es vps-only o el deploy falló, ir directo a la pestaña SSH
+      if (!tabInicial.current && (data.vpsOnly || data.deployFailed)) {
+        tabInicial.current = true;
+        setTab('ssh');
+      }
     } catch (e) {
-      setStatus({ available: false, reason: e instanceof Error ? e.message : 'Error', containers: [], disk: null, mem: null, uptime: '', ip: '', vmid: 0, url: url ?? '', usesSupabase: false, dbInfo: null });
+      setStatus({ available: false, reason: e instanceof Error ? e.message : 'Error', containers: [], disk: null, mem: null, uptime: '', ip: '', vmid: 0, url: url ?? '', usesSupabase: false, dbInfo: null, sshUser: null, sshPassword: null, sshHost: null, sshPort: 22, vpsOnly: false, customDomains: [] });
     } finally {
       setLoading(false);
     }
@@ -77,8 +98,10 @@ export default function MiServidor({ proyectoId, url }: { proyectoId: string; ur
 
   const tabs: { id: Tab; label: string; icon: string }[] = [
     { id: 'estado', label: 'Estado', icon: '⬡' },
-    { id: 'logs',   label: 'Registros', icon: '📋' },
-    { id: 'db',     label: 'Base de datos', icon: '🗄' },
+    ...(!status?.vpsOnly ? [{ id: 'logs' as Tab, label: 'Registros', icon: '📋' }] : []),
+    ...(!status?.vpsOnly ? [{ id: 'db' as Tab, label: 'Base de datos', icon: '🗄' }] : []),
+    { id: 'ssh', label: 'Acceso SSH', icon: '🔑' },
+    ...(!status?.vpsOnly && !status?.deployFailed ? [{ id: 'dominios' as Tab, label: 'Dominios', icon: '🌐' }] : []),
   ];
 
   if (loading) return <div className="py-8 text-center text-slate-500 text-sm">Conectando con tu servidor...</div>;
@@ -98,30 +121,44 @@ export default function MiServidor({ proyectoId, url }: { proyectoId: string; ur
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <div className="flex items-center gap-2">
-            <span className="h-2 w-2 rounded-full bg-emerald-500" />
-            <span className="text-sm font-semibold text-slate-200">Servidor activo</span>
+            <span className={`h-2 w-2 rounded-full ${status.deployFailed ? 'bg-amber-500' : 'bg-emerald-500'}`} />
+            <span className="text-sm font-semibold text-slate-200">
+              {status.deployFailed ? 'Servidor en modo manual' : 'Servidor activo'}
+            </span>
           </div>
           <p className="text-xs text-slate-500 mt-0.5">
             VMID {status.vmid} · {status.ip} · {status.uptime}
           </p>
         </div>
         <div className="flex items-center gap-2">
-          {status.url && (
+          {status.url && !status.deployFailed && (
             <a href={status.url} target="_blank" rel="noopener noreferrer"
               className="rounded-lg border border-indigo-700/50 px-3 py-1.5 text-xs text-indigo-400 hover:bg-indigo-900/20 transition-colors">
               Abrir app ↗
             </a>
           )}
-          <button
-            onClick={reiniciar}
-            disabled={restarting}
-            className="rounded-lg border border-amber-700/50 px-3 py-1.5 text-xs text-amber-400 hover:bg-amber-900/20 disabled:opacity-50 transition-colors"
-          >
-            {restarting ? 'Reiniciando...' : '↺ Reiniciar app'}
-          </button>
+          {!status.deployFailed && !status.vpsOnly && (
+            <button
+              onClick={reiniciar}
+              disabled={restarting}
+              className="rounded-lg border border-amber-700/50 px-3 py-1.5 text-xs text-amber-400 hover:bg-amber-900/20 disabled:opacity-50 transition-colors"
+            >
+              {restarting ? 'Reiniciando...' : '↺ Reiniciar app'}
+            </button>
+          )}
           <button onClick={cargar} className="text-xs text-slate-500 hover:text-slate-300">↻</button>
         </div>
       </div>
+
+      {status.deployFailed && (
+        <div className="rounded-xl border border-amber-700/40 bg-amber-950/20 p-3 text-sm space-y-1">
+          <p className="font-medium text-amber-300">El despliegue automático falló — tu servidor sigue vivo</p>
+          <p className="text-xs text-amber-400/80">
+            Puedes conectarte por SSH con las credenciales de la pestaña "Acceso SSH" y subir tu proyecto manualmente,
+            o volver a "Mis proyectos" y usar "Reintentar despliegue".
+          </p>
+        </div>
+      )}
 
       {restartMsg && (
         <div className="rounded-lg border border-emerald-800/40 bg-emerald-950/30 p-2 text-xs text-emerald-300">{restartMsg}</div>
@@ -153,9 +190,11 @@ export default function MiServidor({ proyectoId, url }: { proyectoId: string; ur
       </div>
 
       <div className="pt-1">
-        {tab === 'estado' && <EstadoTab status={status} />}
-        {tab === 'logs'   && <LogsTab proyectoId={proyectoId} />}
-        {tab === 'db'     && <DbTab dbInfo={status.dbInfo} usesSupabase={status.usesSupabase} />}
+        {tab === 'estado'   && <EstadoTab status={status} />}
+        {tab === 'logs'     && <LogsTab proyectoId={proyectoId} />}
+        {tab === 'db'       && <DbTab proyectoId={proyectoId} dbInfo={status.dbInfo} usesSupabase={status.usesSupabase} onRotate={cargar} />}
+        {tab === 'ssh'      && <SshTab proyectoId={proyectoId} status={status} onRotate={cargar} />}
+        {tab === 'dominios' && <DominiosTab proyectoId={proyectoId} domains={status.customDomains} onRefresh={cargar} />}
       </div>
     </div>
   );
@@ -283,17 +322,60 @@ function LogsTab({ proyectoId }: { proyectoId: string }) {
   );
 }
 
-// ── Base de datos ─────────────────────────────────────────────────────────────
-function DbTab({ dbInfo, usesSupabase }: { dbInfo: DbInfo | null; usesSupabase: boolean }) {
-  const [copied, setCopied] = useState<string | null>(null);
+// ── Helper fila de credencial ─────────────────────────────────────────────────
+function CredRow({ label, value, secret = false }: { label: string; value: string; secret?: boolean }) {
+  const [revealed, setRevealed] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const copy = async () => {
+    try { await navigator.clipboard.writeText(value); } catch { /* skip */ }
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1800);
+  };
+  return (
+    <div className="flex items-center gap-2 py-2 border-b border-slate-700/40 last:border-0">
+      <span className="text-xs text-slate-500 w-28 shrink-0">{label}</span>
+      <span className="font-mono text-xs text-slate-200 flex-1 break-all select-all">
+        {secret && !revealed ? '••••••••••••' : value}
+      </span>
+      {secret && (
+        <button onClick={() => setRevealed(v => !v)} className="text-[10px] text-slate-500 hover:text-slate-300 shrink-0">
+          {revealed ? 'Ocultar' : 'Ver'}
+        </button>
+      )}
+      <button onClick={copy} className="text-[10px] text-indigo-400 hover:text-indigo-300 shrink-0 w-12 text-right">
+        {copied ? '✓ Copiado' : 'Copiar'}
+      </button>
+    </div>
+  );
+}
 
-  async function copy(text: string, k: string) {
-    try { await navigator.clipboard.writeText(text); } catch { /* skip */ }
-    setCopied(k);
-    setTimeout(() => setCopied(null), 2000);
+// ── Base de datos ─────────────────────────────────────────────────────────────
+function DbTab({ proyectoId, dbInfo, usesSupabase, onRotate }: {
+  proyectoId: string;
+  dbInfo: DbInfo | null;
+  usesSupabase: boolean;
+  onRotate: () => void;
+}) {
+  const [rotating, setRotating] = useState(false);
+  const [rotateMsg, setRotateMsg] = useState<string | null>(null);
+  const [localDb, setLocalDb] = useState<DbInfo | null>(dbInfo);
+
+  async function handleRotate() {
+    setRotating(true);
+    setRotateMsg(null);
+    try {
+      const r = await api<{ ok: boolean; dbInfo: DbInfo }>(`/portal/projects/${proyectoId}/rotate-db`, { method: 'POST', body: '{}' });
+      if (r.ok) { setLocalDb(r.dbInfo); setRotateMsg('Contraseña rotada con éxito'); onRotate(); }
+    } catch (e: any) {
+      setRotateMsg(`Error: ${e.message ?? 'No se pudo rotar la contraseña'}`);
+    } finally {
+      setRotating(false);
+    }
   }
 
-  if (!dbInfo) {
+  const db = localDb ?? dbInfo;
+
+  if (!db) {
     return (
       <div className="space-y-3">
         {usesSupabase && (
@@ -304,7 +386,6 @@ function DbTab({ dbInfo, usesSupabase }: { dbInfo: DbInfo | null; usesSupabase: 
               <ol className="mt-2 space-y-1 list-decimal list-inside">
                 <li>Elimina este proyecto y crea uno nuevo</li>
                 <li>En "Motor de base de datos" elige <strong className="text-indigo-300">Supabase compatible (PostgreSQL + PostgREST)</strong></li>
-                <li>Agrega tus migraciones SQL en el retry o mediante la consola de DB</li>
               </ol>
             </div>
           </div>
@@ -316,36 +397,243 @@ function DbTab({ dbInfo, usesSupabase }: { dbInfo: DbInfo | null; usesSupabase: 
     );
   }
 
-  const fields: { label: string; value: string; key: string }[] = [
-    { label: 'Motor', value: dbInfo.tipo, key: 'tipo' },
-    dbInfo.usuario ? { label: 'Usuario', value: dbInfo.usuario, key: 'user' } : null,
-    dbInfo.password ? { label: 'Contraseña', value: dbInfo.password, key: 'pass' } : null,
-    dbInfo.nombre ? { label: 'Base de datos', value: dbInfo.nombre, key: 'db' } : null,
-    dbInfo.urlConexion ? { label: 'URL de conexión', value: dbInfo.urlConexion, key: 'url' } : null,
-  ].filter(Boolean) as { label: string; value: string; key: string }[];
-
   return (
     <div className="space-y-3">
-      <div className="rounded-xl border border-slate-700 bg-slate-900/60 p-4 space-y-2">
-        <p className="text-xs font-medium text-slate-400 mb-3">Credenciales de base de datos</p>
-        {fields.map((f) => (
-          <div key={f.key} className="flex items-center justify-between rounded-lg bg-slate-800/60 px-3 py-2">
-            <div>
-              <div className="text-xs text-slate-500">{f.label}</div>
-              <div className="font-mono text-sm text-slate-200 break-all">{f.value}</div>
-            </div>
-            {f.key !== 'tipo' && (
-              <button onClick={() => copy(f.value, f.key)} className="shrink-0 ml-2 text-xs text-indigo-400 hover:text-indigo-300">
-                {copied === f.key ? '✓' : 'Copiar'}
-              </button>
-            )}
-          </div>
-        ))}
+      <div className="rounded-xl border border-slate-700 bg-slate-900/60 p-4">
+        <p className="text-xs font-medium text-slate-400 mb-2">Credenciales · {db.tipo}</p>
+        {db.usuario && <CredRow label="Usuario" value={db.usuario} />}
+        {db.password && <CredRow label="Contraseña" value={db.password} secret />}
+        {db.nombre && <CredRow label="Base de datos" value={db.nombre} />}
+        {db.urlConexion && <CredRow label="URL interna" value={db.urlConexion} secret />}
       </div>
-      {dbInfo.nota && <p className="text-xs text-slate-600 px-1">{dbInfo.nota}</p>}
+      {db.nota && <p className="text-xs text-slate-600 px-1">{db.nota}</p>}
+      <div className="flex items-center gap-3">
+        <button
+          onClick={handleRotate}
+          disabled={rotating}
+          className="text-xs rounded-lg border border-amber-700/50 px-3 py-1.5 text-amber-400 hover:bg-amber-900/20 disabled:opacity-50 transition-colors"
+        >
+          {rotating ? 'Rotando...' : '↺ Rotar contraseña'}
+        </button>
+        {rotateMsg && <span className={`text-xs ${rotateMsg.startsWith('Error') ? 'text-red-400' : 'text-emerald-400'}`}>{rotateMsg}</span>}
+      </div>
       <div className="rounded-lg border border-slate-800 bg-slate-900/30 p-3 text-xs text-slate-500">
-        La base de datos solo es accesible desde tu aplicación (red interna del servidor). No está expuesta a internet.
+        La BD está accesible internamente desde tu app. Si elegiste "Solo BD", también tienes acceso externo vía SSH.
       </div>
+    </div>
+  );
+}
+
+// ── Acceso SSH ────────────────────────────────────────────────────────────────
+function SshTab({ proyectoId, status, onRotate }: { proyectoId: string; status: ServerStatus; onRotate: () => void }) {
+  const [rotating, setRotating] = useState(false);
+  const [rotateMsg, setRotateMsg] = useState<string | null>(null);
+  const [localSsh, setLocalSsh] = useState<{ sshUser: string; sshPassword: string; sshHost: string | null; sshPort: number } | null>(null);
+
+  async function handleRotateSsh() {
+    setRotating(true);
+    setRotateMsg(null);
+    try {
+      const r = await api<{ ok: boolean; ssh: { sshUser: string; sshPassword: string; sshHost: string | null; sshPort: number } }>(
+        `/portal/projects/${proyectoId}/rotate-ssh`, { method: 'POST', body: '{}' }
+      );
+      if (r.ok) { setLocalSsh(r.ssh); setRotateMsg('Contraseña SSH actualizada'); onRotate(); }
+    } catch (e) {
+      setRotateMsg(`Error: ${e instanceof Error ? e.message : 'No se pudo rotar la contraseña SSH'}`);
+    } finally {
+      setRotating(false);
+    }
+  }
+
+  const sshUser = localSsh?.sshUser ?? status.sshUser;
+  const sshPassword = localSsh?.sshPassword ?? status.sshPassword;
+  const sshHost = localSsh?.sshHost ?? status.sshHost;
+  const sshPort = localSsh?.sshPort ?? status.sshPort;
+
+  if (!sshUser || !sshHost) {
+    return (
+      <div className="rounded-xl border border-slate-700 bg-slate-900/40 p-6 text-center space-y-3">
+        <p className="text-slate-500 text-sm">Las credenciales SSH no están registradas para este proyecto.</p>
+        <button
+          onClick={handleRotateSsh}
+          disabled={rotating}
+          className="rounded-lg border border-indigo-700/50 px-4 py-2 text-xs text-indigo-400 hover:bg-indigo-900/20 disabled:opacity-50 transition-colors"
+        >
+          {rotating ? 'Generando...' : '🔑 Generar credenciales SSH'}
+        </button>
+        {rotateMsg && <p className={`text-xs ${rotateMsg.startsWith('Error') ? 'text-red-400' : 'text-emerald-400'}`}>{rotateMsg}</p>}
+      </div>
+    );
+  }
+
+  const sshCmd = `ssh ${sshUser}@${sshHost}${sshPort !== 22 ? ` -p ${sshPort}` : ''}`;
+  const scpExample = `scp -r ./mi-proyecto ${sshUser}@${sshHost}:/opt/app/`;
+
+  return (
+    <div className="space-y-4">
+      <div className="rounded-xl border border-slate-700 bg-slate-900/60 p-4">
+        <p className="text-xs font-medium text-slate-400 mb-2">Credenciales de acceso SSH</p>
+        <CredRow label="Host / IP" value={sshHost} />
+        <CredRow label="Puerto" value={String(sshPort ?? 22)} />
+        <CredRow label="Usuario" value={sshUser} />
+        {sshPassword && <CredRow label="Contraseña" value={sshPassword} secret />}
+        <CredRow label="Comando SSH" value={sshCmd} />
+        <div className="flex items-center gap-3 mt-3 pt-3 border-t border-slate-700/40">
+          <button
+            onClick={handleRotateSsh}
+            disabled={rotating}
+            className="text-xs rounded-lg border border-amber-700/50 px-3 py-1.5 text-amber-400 hover:bg-amber-900/20 disabled:opacity-50 transition-colors"
+          >
+            {rotating ? 'Rotando...' : sshPassword ? '↺ Rotar contraseña SSH' : '🔑 Generar contraseña SSH'}
+          </button>
+          {rotateMsg && <span className={`text-xs ${rotateMsg.startsWith('Error') ? 'text-red-400' : 'text-emerald-400'}`}>{rotateMsg}</span>}
+        </div>
+      </div>
+
+      <div className="rounded-xl border border-slate-700 bg-slate-900/40 p-4 space-y-3">
+        <p className="text-xs font-semibold text-slate-300">Cómo desplegar tu proyecto vía SSH</p>
+        <div className="space-y-2 text-xs text-slate-400">
+          <p>1. Conéctate a tu servidor:</p>
+          <pre className="bg-black/50 rounded-lg p-2 font-mono text-emerald-400 text-[11px] overflow-x-auto">{sshCmd}</pre>
+          <p>2. Sube tu proyecto con SCP:</p>
+          <pre className="bg-black/50 rounded-lg p-2 font-mono text-emerald-400 text-[11px] overflow-x-auto">{scpExample}</pre>
+          <p>3. Dentro del servidor, instala Docker y levanta tu app con <code className="text-slate-300">docker compose up -d</code></p>
+        </div>
+      </div>
+
+      <div className="rounded-lg border border-amber-800/30 bg-amber-950/20 p-3 text-xs text-amber-300/80">
+        Guarda estas credenciales de forma segura. Solo aparecen aquí — no se enviarán por email.
+      </div>
+    </div>
+  );
+}
+
+// ── Dominios personalizados ───────────────────────────────────────────────────
+function DominiosTab({ proyectoId, domains, onRefresh }: {
+  proyectoId: string;
+  domains: CustomDomain[];
+  onRefresh: () => void;
+}) {
+  const [list, setList] = useState<CustomDomain[]>(domains);
+  const [fqdn, setFqdn] = useState('');
+  const [adding, setAdding] = useState(false);
+  const [addMsg, setAddMsg] = useState<string | null>(null);
+  const [sslStatus, setSslStatus] = useState<Record<string, string>>({});
+
+  async function handleAdd() {
+    const d = fqdn.trim().toLowerCase();
+    if (!d) return;
+    setAdding(true);
+    setAddMsg(null);
+    try {
+      const r = await api<{ ok: boolean; domain: CustomDomain }>(`/portal/projects/${proyectoId}/domains`, {
+        method: 'POST',
+        body: JSON.stringify({ fqdn: d }),
+      });
+      if (r.ok) { setList(l => [...l, r.domain]); setFqdn(''); onRefresh(); }
+    } catch (e: any) {
+      setAddMsg(e.message ?? 'Error al agregar dominio');
+    } finally {
+      setAdding(false);
+    }
+  }
+
+  async function handleRemove(domain: string) {
+    try {
+      await api(`/portal/projects/${proyectoId}/domains/${encodeURIComponent(domain)}`, { method: 'DELETE' });
+      setList(l => l.filter(d => d.fqdn !== domain));
+      onRefresh();
+    } catch (e: any) {
+      setSslStatus(s => ({ ...s, [domain]: `Error: ${e.message}` }));
+    }
+  }
+
+  async function handleSsl(domain: string) {
+    setSslStatus(s => ({ ...s, [domain]: 'Activando SSL...' }));
+    try {
+      await api(`/portal/projects/${proyectoId}/domains/${encodeURIComponent(domain)}/ssl`, { method: 'POST', body: '{}' });
+      setList(l => l.map(d => d.fqdn === domain ? { ...d, certStatus: 'valid' } : d));
+      setSslStatus(s => ({ ...s, [domain]: 'SSL activado' }));
+      onRefresh();
+    } catch (e: any) {
+      setSslStatus(s => ({ ...s, [domain]: `Error: ${e.message}` }));
+    }
+  }
+
+  return (
+    <div className="space-y-4">
+      {/* Instrucciones DNS */}
+      <div className="rounded-xl border border-indigo-700/40 bg-indigo-950/20 p-4 text-xs text-slate-400 space-y-1">
+        <p className="font-semibold text-indigo-300 mb-2">Cómo conectar tu dominio</p>
+        <p>1. En tu proveedor de DNS, crea un registro tipo <strong className="text-slate-200">A</strong> apuntando a:</p>
+        <pre className="bg-black/40 rounded p-2 font-mono text-emerald-400">207.248.113.8</pre>
+        <p>2. Agrega el dominio aquí. Se configurará automáticamente con un certificado temporal.</p>
+        <p>3. Una vez que el DNS propague (5–60 min), pulsa <strong className="text-slate-200">Activar SSL</strong> para obtener el certificado real.</p>
+      </div>
+
+      {/* Lista de dominios */}
+      {list.length > 0 && (
+        <div className="space-y-2">
+          {list.map((d) => (
+            <div key={d.fqdn} className="flex flex-wrap items-center gap-2 rounded-lg border border-slate-700 bg-slate-900/60 px-3 py-2">
+              <span className="font-mono text-sm text-slate-200 flex-1 min-w-0 break-all">{d.fqdn}</span>
+              <span className={`rounded-full px-2 py-0.5 text-[10px] font-medium shrink-0 ${
+                d.certStatus === 'valid' ? 'bg-emerald-900/40 text-emerald-300' :
+                d.certStatus === 'error' ? 'bg-red-900/40 text-red-300' :
+                'bg-amber-900/40 text-amber-300'
+              }`}>
+                {d.certStatus === 'valid' ? 'SSL activo' : d.certStatus === 'error' ? 'Error SSL' : 'Cert temporal'}
+              </span>
+              {d.certStatus !== 'valid' && (
+                <button
+                  onClick={() => handleSsl(d.fqdn)}
+                  disabled={sslStatus[d.fqdn] === 'Activando SSL...'}
+                  className="text-[10px] rounded border border-indigo-700/50 px-2 py-0.5 text-indigo-400 hover:bg-indigo-900/20 disabled:opacity-50 shrink-0"
+                >
+                  {sslStatus[d.fqdn] === 'Activando SSL...' ? 'Activando...' : 'Activar SSL'}
+                </button>
+              )}
+              {sslStatus[d.fqdn] && sslStatus[d.fqdn] !== 'Activando SSL...' && (
+                <span className={`text-[10px] shrink-0 ${sslStatus[d.fqdn].startsWith('Error') ? 'text-red-400' : 'text-emerald-400'}`}>
+                  {sslStatus[d.fqdn]}
+                </span>
+              )}
+              <button
+                onClick={() => handleRemove(d.fqdn)}
+                className="text-[10px] text-slate-600 hover:text-red-400 shrink-0 ml-1"
+                title="Eliminar dominio"
+              >
+                ✕
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Formulario agregar */}
+      {list.length < 5 && (
+        <div className="flex gap-2 items-start">
+          <input
+            type="text"
+            value={fqdn}
+            onChange={(e) => setFqdn(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && handleAdd()}
+            placeholder="mi-dominio.com"
+            className="flex-1 rounded-lg border border-slate-700 bg-slate-900 px-3 py-1.5 text-sm text-slate-200 placeholder-slate-600 focus:border-indigo-500 focus:outline-none"
+          />
+          <button
+            onClick={handleAdd}
+            disabled={adding || !fqdn.trim()}
+            className="rounded-lg border border-indigo-700/50 px-3 py-1.5 text-xs text-indigo-400 hover:bg-indigo-900/20 disabled:opacity-50 transition-colors shrink-0"
+          >
+            {adding ? 'Agregando...' : 'Agregar'}
+          </button>
+        </div>
+      )}
+      {addMsg && <p className="text-xs text-red-400">{addMsg}</p>}
+      {list.length >= 5 && (
+        <p className="text-xs text-slate-600">Máximo 5 dominios por proyecto.</p>
+      )}
     </div>
   );
 }

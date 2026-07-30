@@ -120,6 +120,12 @@ export default function MisProyectos({ onNuevo, onGestionarServidor }: { onNuevo
                     ⬡ Mi servidor
                   </button>
                 )}
+                {p.estado === 'error' && onGestionarServidor && (
+                  <button onClick={() => onGestionarServidor({ id: p.id, nombre: p.nombre, url: p.url, estado: p.estado })}
+                    className="rounded-lg border border-indigo-700/50 px-3 py-1.5 text-xs text-indigo-400 hover:text-indigo-300 hover:bg-indigo-900/20 transition-colors">
+                    🔑 Implementación manual
+                  </button>
+                )}
                 <button onClick={() => setExpandido(expandido === p.id ? null : p.id)}
                   className="rounded-lg px-3 py-1.5 text-xs text-slate-400 hover:text-slate-200 hover:bg-slate-700 transition-colors">
                   {expandido === p.id ? 'Ocultar' : 'Detalles'}
@@ -149,10 +155,21 @@ export default function MisProyectos({ onNuevo, onGestionarServidor }: { onNuevo
                     <textarea className="input resize-none font-mono text-xs" rows={3} value={retryVars}
                       onChange={(e) => setRetryVars(e.target.value)}
                       placeholder={'NOMBRE=valor (una por línea)\nNEXT_PUBLIC_SUPABASE_URL=https://xxxx.supabase.co'} />
-                    <button onClick={() => reintentar(p.id)} disabled={retrying === p.id}
-                      className="btn-primary text-xs disabled:opacity-50">
-                      {retrying === p.id ? 'Reintentando…' : 'Reintentar despliegue'}
-                    </button>
+                    <div className="flex flex-wrap items-center gap-3">
+                      <button onClick={() => reintentar(p.id)} disabled={retrying === p.id}
+                        className="btn-primary text-xs disabled:opacity-50">
+                        {retrying === p.id ? 'Reintentando…' : 'Reintentar despliegue'}
+                      </button>
+                      {onGestionarServidor && (
+                        <button onClick={() => onGestionarServidor({ id: p.id, nombre: p.nombre, url: p.url, estado: p.estado })}
+                          className="text-xs text-indigo-400 hover:text-indigo-300 underline underline-offset-2">
+                          o impleméntalo tú mismo vía SSH →
+                        </button>
+                      )}
+                    </div>
+                    <p className="text-[11px] text-slate-500">
+                      Tu servidor sigue creado aunque el despliegue automático haya fallado: puedes conectarte por SSH y subir tu proyecto manualmente.
+                    </p>
                   </div>
                 )}
               </div>

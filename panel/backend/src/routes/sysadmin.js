@@ -162,6 +162,40 @@ sysadminRouter.get('/logs/:service', async (req, res, next) => {
   } catch (e) { next(e); }
 });
 
+// ── Modelos gratuitos de OpenRouter (caché 1h en memoria) ────────────────────
+let _orCache = null;
+let _orCacheAt = 0;
+const OR_TTL = 3_600_000;
+
+sysadminRouter.get('/openrouter-models', async (_req, res, next) => {
+  try {
+    const now = Date.now();
+    if (_orCache && now - _orCacheAt < OR_TTL) {
+      return res.json({ models: _orCache, cached: true });
+    }
+    const r = await fetch('https://openrouter.ai/api/v1/models', {
+      signal: AbortSignal.timeout(10_000),
+      headers: { 'HTTP-Referer': 'https://capuvps.duckdns.org', 'X-Title': 'VPS Panel' },
+    });
+    if (!r.ok) throw new HttpError(502, `OpenRouter models API: HTTP ${r.status}`);
+    const data = await r.json();
+    const free = (data.data ?? [])
+      .filter(m => String(m.id).endsWith(':free'))
+      .map(m => ({
+        id: m.id,
+        name: (m.name ?? m.id).replace(/\s*\(free\)\s*/i, '').trim(),
+        context: m.context_length ?? null,
+      }))
+      .sort((a, b) => a.name.localeCompare(b.name));
+    _orCache = free;
+    _orCacheAt = now;
+    res.json({ models: free, cached: false });
+  } catch (e) {
+    if (e instanceof HttpError) return next(e);
+    next(new HttpError(502, e.message));
+  }
+});
+
 // ── Configuración de IA para selección de nodo ───────────────────────────────
 sysadminRouter.get('/ai-settings', (_req, res) => {
   const s = readAiSettings();
@@ -204,7 +238,11 @@ sysadminRouter.post('/ai-settings/test', async (req, res, next) => {
       new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout 12s')), 12000)),
     ]);
     res.json({ ok: true, provider: s.provider, model: s.model, response: text.slice(0, 300), ms: Date.now() - t0 });
-  } catch (e) { next(e); }
+  } catch (e) {
+    if (e instanceof HttpError) return next(e);
+    // Errores de la IA (modelo inválido, sin cuota, timeout) → 502 con mensaje real
+    next(new HttpError(502, e.message));
+  }
 });
 
 // ── Info de sistema (uptime, kernel) ─────────────────────────────────────────

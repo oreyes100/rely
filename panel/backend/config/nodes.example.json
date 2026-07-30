@@ -9,6 +9,7 @@
     "templateVmid": 9000,
     "vmidRange": [200, 299],
     "subnetPrefix": "192.168.6.",
+    "sshWanHost": "207.248.113.8",
     "verifyTls": false
   },
   {
@@ -21,6 +22,19 @@
     "templateVmid": 9000,
     "vmidRange": [300, 399],
     "subnetPrefix": "192.168.7.",
+    "verifyTls": false
+  },
+  {
+    "name": "pvelenovo",
+    "host": "192.168.1.15",
+    "port": 8006,
+    "tokenId": "panel@pve!panel",
+    "tokenSecret": "PEGA-AQUI-EL-UUID-DEL-TOKEN",
+    "storage": "local-lvm",
+    "storageBulk": "hdd1tb",
+    "templateVmid": 9000,
+    "vmidRange": [400, 499],
+    "subnetPrefix": "192.168.1.",
     "verifyTls": false
   },
   {

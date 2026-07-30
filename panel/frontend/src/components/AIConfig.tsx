@@ -80,17 +80,16 @@ const PROVIDERS: ProviderDef[] = [
     placeholder: 'sk-or-v1-...',
     models: [
       // ── Gratuitos ──
-      { id: 'google/gemini-2.0-flash-exp:free', name: 'Gemini 2.0 Flash', tier: FREE, note: 'Google · Sin costo' },
-      { id: 'deepseek/deepseek-v3:free', name: 'DeepSeek V3', tier: FREE, note: 'Alta calidad · Sin costo' },
+      { id: 'google/gemma-3-27b-it:free', name: 'Gemma 3 27B', tier: FREE, note: 'Google · Recomendado · Sin costo' },
+      { id: 'meta-llama/llama-4-scout:free', name: 'Llama 4 Scout', tier: FREE, note: 'Meta · Sin costo' },
+      { id: 'meta-llama/llama-4-maverick:free', name: 'Llama 4 Maverick', tier: FREE, note: 'Meta · Más potente · Sin costo' },
       { id: 'deepseek/deepseek-r1:free', name: 'DeepSeek R1', tier: FREE, note: 'Razonamiento · Sin costo' },
-      { id: 'meta-llama/llama-3.3-70b-instruct:free', name: 'Llama 3.3 70B', tier: FREE, note: 'Meta · Sin costo' },
-      { id: 'meta-llama/llama-3.1-8b-instruct:free', name: 'Llama 3.1 8B', tier: FREE, note: 'Meta · Sin costo · Ligero' },
-      { id: 'google/gemma-3-27b-it:free', name: 'Gemma 3 27B', tier: FREE, note: 'Google · Sin costo' },
-      { id: 'microsoft/phi-4:free', name: 'Microsoft Phi-4', tier: FREE, note: 'Microsoft · Sin costo' },
-      { id: 'mistralai/mistral-7b-instruct:free', name: 'Mistral 7B', tier: FREE, note: 'Mistral · Sin costo' },
-      { id: 'qwen/qwen-2.5-7b-instruct:free', name: 'Qwen 2.5 7B', tier: FREE, note: 'Alibaba · Sin costo' },
+      { id: 'deepseek/deepseek-chat-v3-0324:free', name: 'DeepSeek V3', tier: FREE, note: 'Alta calidad · Sin costo' },
+      { id: 'qwen/qwen3-14b:free', name: 'Qwen 3 14B', tier: FREE, note: 'Alibaba · Sin costo' },
+      { id: 'microsoft/phi-4-reasoning-plus:free', name: 'Phi-4 Reasoning+', tier: FREE, note: 'Microsoft · Sin costo' },
+      { id: 'mistralai/mistral-7b-instruct:free', name: 'Mistral 7B', tier: FREE, note: 'Mistral · Ligero · Sin costo' },
       // ── De pago ──
-      { id: 'anthropic/claude-3-5-haiku', name: 'Claude 3.5 Haiku', tier: PAID, note: 'Anthropic · Rápido' },
+      { id: 'anthropic/claude-haiku-4-5', name: 'Claude Haiku 4.5', tier: PAID, note: 'Anthropic · Rápido' },
       { id: 'openai/gpt-4o-mini', name: 'GPT-4o Mini', tier: PAID, note: 'OpenAI · Económico' },
       { id: 'meta-llama/llama-3.1-70b-instruct', name: 'Llama 3.1 70B', tier: PAID, note: 'Meta · Alta calidad' },
     ],
@@ -130,6 +129,12 @@ interface TestResult {
   response?: string;
   ms?: number;
   error?: string;
+}
+
+interface OrModel {
+  id: string;
+  name: string;
+  context: number | null;
 }
 
 // ── Componentes auxiliares ────────────────────────────────────────────────────
@@ -183,6 +188,26 @@ export default function AIConfig() {
   const [testResult, setTestResult] = useState<TestResult | null>(null);
   const [saveMsg, setSaveMsg] = useState('');
 
+  // Modelos dinámicos de OpenRouter (cargados desde la API real)
+  const [orModels, setOrModels] = useState<OrModel[] | null>(null);
+  const [orLoading, setOrLoading] = useState(false);
+  const [orError, setOrError] = useState<string | null>(null);
+
+  async function loadOrModels() {
+    setOrLoading(true);
+    setOrError(null);
+    try {
+      const r = await api<{ models: OrModel[]; cached: boolean }>('/sysadmin/openrouter-models');
+      setOrModels(r.models);
+      // Si el modelo seleccionado no existe en la lista real, auto-seleccionar el primero
+      setSelectedModel((prev) => r.models.some((m) => m.id === prev) ? prev : (r.models[0]?.id ?? prev));
+    } catch (e: any) {
+      setOrError(e.message ?? 'No se pudo cargar la lista');
+    } finally {
+      setOrLoading(false);
+    }
+  }
+
   useEffect(() => {
     api<AiSettings>('/sysadmin/ai-settings')
       .then((s) => {
@@ -190,6 +215,7 @@ export default function AIConfig() {
         if (s.provider) setSelectedProvider(s.provider);
         if (s.model) setSelectedModel(s.model);
         setEnabled(s.enabled);
+        if (s.provider === 'openrouter') loadOrModels();
       })
       .catch(() => {});
   }, []);
@@ -197,10 +223,15 @@ export default function AIConfig() {
   // Al cambiar de proveedor, auto-seleccionar el primer modelo gratuito (o el primero)
   function handleSelectProvider(id: string) {
     setSelectedProvider(id);
+    setTestResult(null);
+    if (id === 'openrouter') {
+      if (!orModels && !orLoading) loadOrModels();
+      // Mantener o seleccionar primero de OR cuando cargue
+      return;
+    }
     const prov = PROVIDERS.find((p) => p.id === id)!;
     const firstFree = prov.models.find((m) => m.tier === FREE);
     setSelectedModel((firstFree ?? prov.models[0]).id);
-    setTestResult(null);
   }
 
   async function persist() {
@@ -253,8 +284,17 @@ export default function AIConfig() {
   }
 
   const prov = PROVIDERS.find((p) => p.id === selectedProvider)!;
-  const freeModels = prov.models.filter((m) => m.tier === FREE);
-  const paidModels = prov.models.filter((m) => m.tier === PAID);
+  // Para OpenRouter usamos la lista dinámica de la API; para el resto, la lista estática
+  const isOR = selectedProvider === 'openrouter';
+  const freeModels: ModelDef[] = isOR && orModels
+    ? orModels.map((m) => ({
+        id: m.id,
+        name: m.name,
+        tier: FREE,
+        note: m.context ? `${Math.round(m.context / 1000)}k ctx` : '',
+      }))
+    : prov.models.filter((m) => m.tier === FREE);
+  const paidModels = isOR && orModels ? [] : prov.models.filter((m) => m.tier === PAID);
   const hasChanges = selectedProvider !== settings?.provider
     || selectedModel !== settings?.model
     || enabled !== settings?.enabled
@@ -333,45 +373,91 @@ export default function AIConfig() {
 
       {/* ── 2. Modelo ── */}
       <section className="space-y-3">
-        <h3 className="text-xs font-semibold uppercase tracking-widest text-slate-500">
-          2 · Modelo
-        </h3>
-        <div className="rounded-xl border border-slate-700 bg-slate-800/40 overflow-hidden">
-          {freeModels.length > 0 && (
-            <>
-              <div className="px-4 py-2 text-[11px] font-semibold uppercase tracking-widest text-emerald-500/70 bg-emerald-500/5 border-b border-slate-700/50">
-                Gratuitos
-              </div>
-              {freeModels.map((m, i) => (
-                <ModelRow
-                  key={m.id}
-                  model={m}
-                  selected={selectedModel === m.id}
-                  onClick={() => setSelectedModel(m.id)}
-                  last={i === freeModels.length - 1 && paidModels.length === 0}
-                  provColor={prov.textColor}
-                />
-              ))}
-            </>
-          )}
-          {paidModels.length > 0 && (
-            <>
-              <div className="px-4 py-2 text-[11px] font-semibold uppercase tracking-widest text-amber-500/60 bg-amber-500/5 border-y border-slate-700/50">
-                De pago
-              </div>
-              {paidModels.map((m, i) => (
-                <ModelRow
-                  key={m.id}
-                  model={m}
-                  selected={selectedModel === m.id}
-                  onClick={() => setSelectedModel(m.id)}
-                  last={i === paidModels.length - 1}
-                  provColor={prov.textColor}
-                />
-              ))}
-            </>
+        <div className="flex items-center justify-between">
+          <h3 className="text-xs font-semibold uppercase tracking-widest text-slate-500">
+            2 · Modelo
+          </h3>
+          {isOR && (
+            <button
+              onClick={loadOrModels}
+              disabled={orLoading}
+              className="flex items-center gap-1.5 text-xs text-orange-400 hover:text-orange-300 disabled:opacity-40 transition-colors"
+              title="Recargar lista de modelos gratuitos desde OpenRouter"
+            >
+              {orLoading ? <Spinner /> : '↻'} Actualizar lista
+            </button>
           )}
         </div>
+
+        {/* Estado de carga / error para OpenRouter */}
+        {isOR && orLoading && !orModels && (
+          <div className="flex items-center gap-2 rounded-lg border border-slate-700 bg-slate-800/40 px-4 py-6 text-sm text-slate-400">
+            <Spinner /> Cargando modelos gratuitos desde OpenRouter…
+          </div>
+        )}
+        {isOR && orError && !orModels && (
+          <div className="rounded-lg border border-red-800/50 bg-red-900/20 px-4 py-3 text-xs text-red-300 space-y-1">
+            <p className="font-medium">No se pudo cargar la lista de modelos</p>
+            <p className="text-red-400/80 break-all">{orError}</p>
+            <button onClick={loadOrModels} className="mt-1 text-red-300 underline hover:no-underline">Reintentar</button>
+          </div>
+        )}
+
+        {/* Lista de modelos */}
+        {(!isOR || orModels || (!orLoading && !orError)) && (
+          <div className="rounded-xl border border-slate-700 bg-slate-800/40 overflow-hidden">
+            {/* Header informativo para OpenRouter dinámico */}
+            {isOR && orModels && (
+              <div className="flex items-center justify-between px-4 py-2 bg-slate-800/60 border-b border-slate-700/50">
+                <span className="text-[11px] text-slate-400">
+                  <span className="font-semibold text-emerald-400">{freeModels.length}</span> modelos gratuitos disponibles ahora en OpenRouter
+                </span>
+                {orLoading && <Spinner />}
+              </div>
+            )}
+            {freeModels.length > 0 && (
+              <>
+                {!isOR && (
+                  <div className="px-4 py-2 text-[11px] font-semibold uppercase tracking-widest text-emerald-500/70 bg-emerald-500/5 border-b border-slate-700/50">
+                    Gratuitos
+                  </div>
+                )}
+                {freeModels.map((m, i) => (
+                  <ModelRow
+                    key={m.id}
+                    model={m}
+                    selected={selectedModel === m.id}
+                    onClick={() => setSelectedModel(m.id)}
+                    last={i === freeModels.length - 1 && paidModels.length === 0}
+                    provColor={prov.textColor}
+                  />
+                ))}
+              </>
+            )}
+            {paidModels.length > 0 && (
+              <>
+                <div className="px-4 py-2 text-[11px] font-semibold uppercase tracking-widest text-amber-500/60 bg-amber-500/5 border-y border-slate-700/50">
+                  De pago
+                </div>
+                {paidModels.map((m, i) => (
+                  <ModelRow
+                    key={m.id}
+                    model={m}
+                    selected={selectedModel === m.id}
+                    onClick={() => setSelectedModel(m.id)}
+                    last={i === paidModels.length - 1}
+                    provColor={prov.textColor}
+                  />
+                ))}
+              </>
+            )}
+            {freeModels.length === 0 && paidModels.length === 0 && !orLoading && (
+              <div className="px-4 py-6 text-center text-xs text-slate-500">
+                No hay modelos disponibles
+              </div>
+            )}
+          </div>
+        )}
       </section>
 
       {/* ── 3. API Key ── */}

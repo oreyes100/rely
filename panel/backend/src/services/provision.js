@@ -5,7 +5,8 @@ import { upsertCredential } from './credentials.js';
 import { logOp } from './history.js';
 
 const GiB = 1024 ** 3;
-const RAM_HEADROOM_BYTES = 2 * GiB; // no dejar el nodo sin aire
+const RAM_HEADROOM_BYTES = 2 * GiB;
+const SSD_GUARDRAIL_PCT = 0.70; // no aprovisionar OS nuevos si el pool rápido supera 70%
 
 // Proxmox solo acepta [a-z0-9_.-] en tags
 function sanitizeTag(t) { return String(t).toLowerCase().replace(/[^a-z0-9_.-]/g, '-'); }
@@ -33,12 +34,15 @@ function nextFreeVmid(cfg, existing) {
 }
 
 // Valida recursos disponibles ANTES de clonar (RAM del nodo y espacio del storage).
-export async function checkCapacity(nodeName, { memoryMb, diskGb }) {
+export async function checkCapacity(nodeName, { memoryMb, diskGb, dataDiskGb = 0 }) {
   const { cfg, client } = getNode(nodeName);
-  const [status, storage] = await Promise.all([
-    client.get(`/nodes/${cfg.name}/status`),
-    client.get(`/nodes/${cfg.name}/storage/${cfg.storage}/status`),
-  ]);
+  const storageNames = [cfg.storage];
+  if (dataDiskGb > 0) {
+    if (!cfg.storageBulk) throw new HttpError(409, `Nodo ${cfg.name} no tiene almacenamiento bulk (storageBulk)`);
+    storageNames.push(cfg.storageBulk);
+  }
+  // RAM
+  const status = await client.get(`/nodes/${cfg.name}/status`);
   const memFree = status.memory.total - status.memory.used;
   const memNeeded = memoryMb * 1024 * 1024 + RAM_HEADROOM_BYTES;
   if (memNeeded > memFree) {
@@ -48,16 +52,40 @@ export async function checkCapacity(nodeName, { memoryMb, diskGb }) {
         `se requieren ${(memNeeded / GiB).toFixed(1)} GB (incluye 2 GB de margen)`
     );
   }
-  if (diskGb * GiB > storage.avail) {
+  // Storages
+  const storages = await Promise.all(
+    storageNames.map((s) => client.get(`/nodes/${cfg.name}/storage/${s}/status`))
+  );
+  const fast = storages[0];
+  if (diskGb * GiB > fast.avail) {
     throw new HttpError(
       409,
       `Almacenamiento insuficiente en ${cfg.name}/${cfg.storage}: ` +
-        `libres ${(storage.avail / GiB).toFixed(1)} GB, se requieren ${diskGb} GB`
+        `libres ${(fast.avail / GiB).toFixed(1)} GB, se requieren ${diskGb} GB`
     );
+  }
+  // Guardrail: pool SSD no debe superar 70% de uso real
+  const fastUsedPct = fast.used / fast.total;
+  if (fastUsedPct > SSD_GUARDRAIL_PCT) {
+    throw new HttpError(
+      409,
+      `Tier rápido saturado en ${cfg.name}/${cfg.storage}: ${(fastUsedPct * 100).toFixed(0)}% usado ` +
+        `(máximo ${SSD_GUARDRAIL_PCT * 100}%). Libera espacio o usa otro nodo.`
+    );
+  }
+  if (dataDiskGb > 0) {
+    const bulk = storages[1];
+    if (dataDiskGb * GiB > bulk.avail) {
+      throw new HttpError(
+        409,
+        `Almacenamiento insuficiente en ${cfg.name}/${cfg.storageBulk}: ` +
+          `libres ${(bulk.avail / GiB).toFixed(1)} GB, se requieren ${dataDiskGb} GB`
+      );
+    }
   }
 }
 
-export async function provisionVm({ node: nodeName, hostname, cores, memoryMb, diskGb, tags }) {
+export async function provisionVm({ node: nodeName, hostname, cores, memoryMb, diskGb, dataDiskGb = 0, tags }) {
   const { cfg, client } = getNode(nodeName);
 
   // Nodo Hyper-V: flujo diferente (agente REST en lugar de Proxmox API)
@@ -89,7 +117,7 @@ export async function provisionVm({ node: nodeName, hostname, cores, memoryMb, d
       throw new HttpError(409, `Ya existe un VPS llamado "${hostname}" en ${cfg.name}`);
     }
   }
-  await checkCapacity(nodeName, { memoryMb, diskGb });
+  await checkCapacity(nodeName, { memoryMb, diskGb, dataDiskGb });
   const vmid = nextFreeVmid(cfg, vms);
 
   // 1. Clon completo del template (storage requerido en lvmthin para full clone)
@@ -117,12 +145,22 @@ export async function provisionVm({ node: nodeName, hostname, cores, memoryMb, d
       description: `Creado por el panel el ${new Date().toISOString()}`,
     });
 
-    // 3. Disco (el template trae 20G; solo se puede crecer)
+    // 3. Disco OS (el template trae 20G; solo se puede crecer)
     if (diskGb > 20) {
       await client.put(`/nodes/${cfg.name}/qemu/${vmid}/resize`, { disk: 'scsi0', size: `${diskGb}G` });
     }
 
-    // 4. Arrancar (cloud-init aplica password y stack en el primer boot)
+    // 4. Disco de datos (scsi1) en storage bulk + cloud-init snippet
+    if (dataDiskGb > 0) {
+      if (!cfg.storageBulk) {
+        throw new Error(`Nodo ${cfg.name} no tiene storageBulk — no puede provisionar disco de datos`);
+      }
+      await client.put(`/nodes/${cfg.name}/qemu/${vmid}/config`, {
+        scsi1: `${cfg.storageBulk}:${dataDiskGb}`,
+      });
+    }
+
+    // 5. Arrancar (cloud-init aplica password y stack en el primer boot)
     await client.post(`/nodes/${cfg.name}/qemu/${vmid}/status/start`, {});
 
     upsertCredential({ node: cfg.name, vmid, hostname, user: 'devops', password });

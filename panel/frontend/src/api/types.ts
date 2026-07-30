@@ -13,6 +13,7 @@ export interface NodeInfo {
   storUsed?: number;
   storTotal?: number;
   storAvail?: number;
+  storBulkAvail?: number;
   uptime?: number;
   templateReady?: boolean;
   error?: string;
@@ -38,6 +39,7 @@ export interface ProvisionRequest {
   cores: number;
   memoryMb: number;
   diskGb: number;
+  dataDiskGb?: number;
   tags: string[];
 }
 

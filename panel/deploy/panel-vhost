@@ -3,6 +3,7 @@
 # Uso: panel-vhost add <fqdn> <nodeIP> <port>
 #      panel-vhost add-app <nombre> <nodeIP> <port>    (usa wildcard cert)
 #      panel-vhost update-cert <fqdn>                   (actualiza SSL path tras emitir cert)
+#      panel-vhost issue-cert <fqdn>                    (emite cert Let's Encrypt HTTP-01)
 #      panel-vhost remove <fqdn>
 # Solo ejecutable por root o via sudo (entry en sudoers).
 
@@ -78,6 +79,20 @@ add)
       -days 1 -nodes -subj "/CN=${FQDN}" 2>/dev/null
   fi
   write_vhost "$FQDN" "$NODE_IP" "$PORT" "$CERT_BASE"
+  # Bloque port 80: ACME challenge + redirect HTTPS (permite issue-cert via HTTP-01)
+  cat >> "${NGINX_AVAIL}/${FQDN}" <<NGINX80
+
+server {
+    listen 80;
+    server_name ${FQDN};
+    location /.well-known/acme-challenge/ {
+        root ${ACME_WEBROOT};
+    }
+    location / {
+        return 301 https://\$host\$request_uri;
+    }
+}
+NGINX80
   ln -sf "${NGINX_AVAIL}/${FQDN}" "${NGINX_ENABLED}/${FQDN}"
   nginx -t 2>&1 && systemctl reload nginx && echo "VHOST-OK: $FQDN"
   ;;
@@ -105,6 +120,21 @@ update-cert)
   [ -f "${CERT_BASE}/fullchain.pem" ] || die "Cert no encontrado en ${CERT_BASE}"
   # El vhost ya tiene la ruta correcta; solo recargar nginx
   nginx -t 2>&1 && systemctl reload nginx && echo "CERT-UPDATED: $FQDN"
+  ;;
+
+issue-cert)
+  # Emitir cert Let's Encrypt via HTTP-01 webroot (requiere DNS → esta IP)
+  FQDN="${2:-}"
+  [ -z "$FQDN" ] && die "Uso: panel-vhost issue-cert <fqdn>"
+  validate_domain "$FQDN"
+  CERT_BASE="/etc/nginx/ssl/${FQDN}"
+  mkdir -p "$ACME_WEBROOT" "$CERT_BASE"
+  /root/.acme.sh/acme.sh --issue -w "$ACME_WEBROOT" -d "$FQDN" --server letsencrypt --force 2>&1 | tail -10 || die "acme.sh falló — verifica que el DNS apunte a este servidor"
+  /root/.acme.sh/acme.sh --install-cert -d "$FQDN" \
+    --fullchain-file "${CERT_BASE}/fullchain.pem" \
+    --key-file "${CERT_BASE}/key.pem" \
+    --reloadcmd "systemctl reload nginx" 2>&1 | tail -5
+  nginx -t 2>&1 && systemctl reload nginx && echo "CERT-ISSUED: $FQDN"
   ;;
 
 remove)

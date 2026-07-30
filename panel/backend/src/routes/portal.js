@@ -7,9 +7,10 @@ import { config } from '../config.js';
 import { HttpError } from '../errors.js';
 import { clientOnly } from './auth.js';
 import { getClient, getClientQuota, isClientApproved } from '../services/clients.js';
-import { startDeploy, getDeploy, listDeploys, deleteDeploy, retryDeploy } from '../services/deploy.js';
+import { startDeploy, getDeploy, listDeploys, deleteDeploy, retryDeploy, rotateDb, rotateSsh, addCustomDomain, removeCustomDomain, issueDomainSsl } from '../services/deploy.js';
 import { buildLandingZip } from '../services/sitegen.js';
 import { getNode } from '../proxmox.js';
+import { listCredentials } from '../services/credentials.js';
 
 export const portalRouter = Router();
 
@@ -38,11 +39,16 @@ function toPortalView(dep) {
     pasos: (dep.steps ?? []).map((s) => ({
       etiqueta: stepLabels[s.name] ?? s.name,
       estado: s.status === 'ok' ? 'listo' : s.status === 'running' ? 'en progreso' : s.status === 'error' ? 'error' : 'pendiente',
-      // Solo exponer detalle en error (truncado, sin IPs ni rutas internas)
+      // Solo exponer detalle en error (truncado, sin IPs ni rutas internas del sistema)
       ...(s.status === 'error' && {
-        mensaje: s.detail?.replace(/192\.168\.\d+\.\d+/g, '(servidor)').replace(/\/[a-z/]+/g, '').slice(0, 200),
+        mensaje: s.detail
+          ?.replace(/192\.168\.\d+\.\d+/g, '(servidor)')
+          .replace(/\/(opt|tmp|usr|var|home|root|etc)[\w./-]*/g, '…')
+          .slice(0, 400),
       }),
     })),
+    // El cliente puede implementar manualmente vía SSH si el servidor existe
+    servidorDisponible: !!(dep.vmid && dep.node && dep.status !== 'deleted' && dep.status !== 'running'),
     db: dep.dbInfo ? {
       tipo: dep.dbInfo.tipo,
       usuario: dep.dbInfo.usuario ?? undefined,
@@ -182,6 +188,29 @@ portalRouter.delete('/projects/:id', clientOnly, async (req, res, next) => {
   } catch (e) { next(e); }
 });
 
+// ── Rotar contraseña de BD ────────────────────────────────────────────────────
+const rotateLimiter = rateLimit({ windowMs: 60 * 60 * 1000, max: 5,
+  message: { error: 'Máximo 5 rotaciones de contraseña por hora' } });
+
+portalRouter.post('/projects/:id/rotate-db', clientOnly, rotateLimiter, async (req, res, next) => {
+  try {
+    const dep = getDeploy(req.params.id);
+    if (dep.clientId !== req.clientId) throw new HttpError(404, 'Proyecto no encontrado');
+    const newDbInfo = await rotateDb(req.params.id);
+    res.json({ ok: true, dbInfo: { ...newDbInfo, tipo: newDbInfo.tipo, password: newDbInfo.password, urlInterna: newDbInfo.urlInterna } });
+  } catch (e) { next(e); }
+});
+
+// ── Rotar/generar contraseña SSH ──────────────────────────────────────────────
+portalRouter.post('/projects/:id/rotate-ssh', clientOnly, rotateLimiter, async (req, res, next) => {
+  try {
+    const dep = getDeploy(req.params.id);
+    if (dep.clientId !== req.clientId) throw new HttpError(404, 'Proyecto no encontrado');
+    const ssh = await rotateSsh(req.params.id);
+    res.json({ ok: true, ssh });
+  } catch (e) { next(e); }
+});
+
 // ── Info del cliente ──────────────────────────────────────────────────────────
 portalRouter.get('/me', clientOnly, (req, res, next) => {
   try {
@@ -205,9 +234,14 @@ function requireDeployOwner(req) {
   return dep;
 }
 
+// Disponible con deploy exitoso O fallido (modo manual) — la VM existe igual.
+// Solo se bloquea durante un despliegue en curso o si el proyecto fue eliminado.
 function getDeployNode(dep) {
-  if (dep.status !== 'done' || !dep.vmid || !dep.node) {
-    throw new HttpError(503, 'Servidor no disponible: el proyecto no está activo');
+  if (dep.status === 'running') {
+    throw new HttpError(503, 'El despliegue está en curso — espera a que termine');
+  }
+  if (dep.status === 'deleted' || !dep.vmid || !dep.node) {
+    throw new HttpError(503, 'Servidor no disponible: el proyecto no tiene servidor');
   }
   return getNode(dep.node);
 }
@@ -243,8 +277,20 @@ portalRouter.get('/projects/:id/server', clientOnly, async (req, res, next) => {
       return m ? { total: m[1], used: m[2], free: m[3] } : null;
     };
 
+    // Credenciales SSH: el registro del deploy primero; si faltan (deploys
+    // anteriores al fix) usar el almacén cifrado que provisionVm siempre llena.
+    let sshUser = dep.sshUser ?? null;
+    let sshPassword = dep.sshPassword ?? null;
+    if (!sshUser || !sshPassword) {
+      try {
+        const cred = listCredentials().find((c) => c.node === dep.node && c.vmid === dep.vmid);
+        if (cred?.password) { sshUser = cred.user; sshPassword = cred.password; }
+      } catch { /* el botón "Generar credenciales" cubre este caso */ }
+    }
+
     res.json({
       available: true,
+      deployFailed: dep.status === 'error',
       containers: parseContainers(sections[1]),
       disk: parseDisk(sections[2]),
       mem: parseMem(sections[3]),
@@ -254,10 +300,17 @@ portalRouter.get('/projects/:id/server', clientOnly, async (req, res, next) => {
       url: dep.url,
       usesSupabase: dep.usesSupabase ?? false,
       dbInfo: dep.dbInfo ?? null,
+      sshUser,
+      sshPassword,
+      sshHost: dep.sshHost ?? dep.guestIP ?? null,
+      sshPort: dep.sshPort ?? 22,
+      vpsOnly: dep.source?.type === 'vps-only',
+      customDomains: dep.customDomains ?? [],
     });
   } catch (e) {
     if (e instanceof HttpError && e.status === 503) return res.json({ available: false, reason: e.message });
-    next(e);
+    // Agente caído / VM apagada — responder degradado, nunca 500 al portal
+    return res.json({ available: false, reason: 'No se pudo contactar tu servidor. Intenta de nuevo en unos minutos.' });
   }
 });
 
@@ -298,4 +351,51 @@ portalRouter.post('/projects/:id/server/restart', clientOnly, restartLimiter, as
     if (e instanceof HttpError && e.status === 503) return res.json({ ok: false, reason: e.message });
     next(e);
   }
+});
+
+// ── Dominios personalizados ───────────────────────────────────────────────────
+const domainLimiter = rateLimit({ windowMs: 60 * 60 * 1000, max: 10,
+  message: { error: 'Máximo 10 operaciones de dominio por hora' } });
+
+function validateFqdn(fqdn) {
+  if (!fqdn || typeof fqdn !== 'string') throw new HttpError(400, 'FQDN requerido');
+  if (!/^[a-z0-9][a-z0-9._-]{1,60}[a-z0-9]$/.test(fqdn)) throw new HttpError(400, 'Dominio inválido');
+  const blocked = ['capuvps.duckdns.org', 'pachucacv.duckdns.org'];
+  if (blocked.includes(fqdn)) throw new HttpError(403, 'Dominio protegido');
+}
+
+portalRouter.get('/projects/:id/domains', clientOnly, (req, res, next) => {
+  try {
+    const dep = requireDeployOwner(req);
+    res.json(dep.customDomains ?? []);
+  } catch (e) { next(e); }
+});
+
+portalRouter.post('/projects/:id/domains', clientOnly, domainLimiter, async (req, res, next) => {
+  try {
+    const dep = requireDeployOwner(req);
+    const { fqdn } = req.body ?? {};
+    validateFqdn(fqdn);
+    if ((dep.customDomains ?? []).length >= 5) throw new HttpError(429, 'Máximo 5 dominios por proyecto');
+    const entry = await addCustomDomain(dep.id, fqdn);
+    res.status(201).json({ ok: true, domain: entry });
+  } catch (e) { next(e); }
+});
+
+portalRouter.delete('/projects/:id/domains/:fqdn', clientOnly, async (req, res, next) => {
+  try {
+    const dep = requireDeployOwner(req);
+    validateFqdn(req.params.fqdn);
+    await removeCustomDomain(dep.id, req.params.fqdn);
+    res.json({ ok: true });
+  } catch (e) { next(e); }
+});
+
+portalRouter.post('/projects/:id/domains/:fqdn/ssl', clientOnly, domainLimiter, async (req, res, next) => {
+  try {
+    const dep = requireDeployOwner(req);
+    validateFqdn(req.params.fqdn);
+    const result = await issueDomainSsl(dep.id, req.params.fqdn);
+    res.json({ ok: true, ...result });
+  } catch (e) { next(e); }
 });

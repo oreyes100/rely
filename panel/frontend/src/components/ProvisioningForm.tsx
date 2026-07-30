@@ -69,6 +69,7 @@ export default function ProvisioningForm() {
   const [cores, setCores] = useState(2);
   const [memoryMb, setMemoryMb] = useState(4096);
   const [diskGb, setDiskGb] = useState(40);
+  const [dataDiskGb, setDataDiskGb] = useState(0);
   const [tagsRaw, setTagsRaw] = useState('');
   const [result, setResult] = useState<ProvisionResult | null>(null);
 
@@ -77,6 +78,8 @@ export default function ProvisioningForm() {
   const effectiveNode = selected?.name ?? '';
   const isHyperV = selected?.nodeType === 'hyperv';
   const templateReady = isHyperV ? !!(selected as any)?.templateReady : true;
+  const hasBulk = !isHyperV && (selected as any)?.storBulkAvail != null;
+  const diskMax = hasBulk ? 60 : 200;
 
   const tags = useMemo(
     () => tagsRaw.split(',').map((t) => t.trim().toLowerCase()).filter(Boolean),
@@ -100,14 +103,17 @@ export default function ProvisioningForm() {
         );
       }
       if (!isHyperV && diskGb * GiB > (selected.storAvail ?? 0)) {
-        errors.push(`Disco insuficiente en ${selected.name}: libres ${formatBytes(selected.storAvail)}.`);
+        errors.push(`Disco SSD insuficiente en ${selected.name}: libres ${formatBytes(selected.storAvail)}.`);
+      }
+      if (dataDiskGb > 0 && !isHyperV && dataDiskGb * GiB > (selected.storBulkAvail ?? 0)) {
+        errors.push(`Disco de datos insuficiente en ${selected.name}: libres ${formatBytes(selected.storBulkAvail)}.`);
       }
       if (isHyperV && !templateReady) {
         errors.push('La plantilla Hyper-V aún no está lista. Espera unos minutos.');
       }
     }
     return errors;
-  }, [hostname, tags, selected, memoryMb, diskGb]);
+  }, [hostname, tags, selected, memoryMb, diskGb, dataDiskGb]);
 
   if (result) return <ResultView result={result} onReset={() => { setResult(null); setHostname(''); provision.reset(); }} />;
 
@@ -118,7 +124,7 @@ export default function ProvisioningForm() {
         e.preventDefault();
         if (validation.length) return;
         provision.mutate(
-          { node: effectiveNode, hostname, cores, memoryMb, diskGb, tags },
+          { node: effectiveNode, hostname, cores, memoryMb, diskGb, ...(dataDiskGb > 0 ? { dataDiskGb } : {}), tags },
           { onSuccess: setResult }
         );
       }}
@@ -154,10 +160,10 @@ export default function ProvisioningForm() {
       <div className="grid gap-4 sm:grid-cols-2">
         <div>
           <label className="label" htmlFor="node">Nodo destino</label>
-          <select id="node" className="input" value={effectiveNode} onChange={(e) => setNode(e.target.value)}>
+            <select id="node" className="input" value={effectiveNode} onChange={(e) => setNode(e.target.value)}>
             {onlineNodes.map((n) => (
               <option key={n.name} value={n.name}>
-                {n.name}{n.nodeType === 'hyperv' ? ' [Hyper-V]' : ''} — RAM libre {formatBytes((n.memTotal ?? 0) - (n.memUsed ?? 0))}{n.nodeType !== 'hyperv' ? ` · disco libre ${formatBytes(n.storAvail)}` : ''}
+                {n.name}{n.nodeType === 'hyperv' ? ' [Hyper-V]' : ''} — RAM libre {formatBytes((n.memTotal ?? 0) - (n.memUsed ?? 0))}{n.nodeType !== 'hyperv' ? ` · SSD ${formatBytes(n.storAvail)}` : ''}{(n as any).storBulkAvail != null ? ` · HDD ${formatBytes((n as any).storBulkAvail)}` : ''}
               </option>
             ))}
           </select>
@@ -186,7 +192,7 @@ export default function ProvisioningForm() {
         </div>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-3">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <div>
           <label className="label" htmlFor="cores">vCPU: {cores}</label>
           <input id="cores" type="range" min={1} max={8} value={cores} onChange={(e) => setCores(+e.target.value)} className="w-full" />
@@ -196,10 +202,25 @@ export default function ProvisioningForm() {
           <input id="ram" type="range" min={1024} max={16384} step={1024} value={memoryMb} onChange={(e) => setMemoryMb(+e.target.value)} className="w-full" />
         </div>
         <div>
-          <label className="label" htmlFor="disk">Disco: {diskGb} GB</label>
-          <input id="disk" type="range" min={20} max={200} step={10} value={diskGb} onChange={(e) => setDiskGb(+e.target.value)} className="w-full" />
+          <label className="label" htmlFor="disk">
+            Disco SSD (OS): {diskGb} GB
+            {dataDiskGb > 0 && selected?.storBulkAvail != null && <span className="text-xs text-slate-500"> · SSD libre {formatBytes(selected.storAvail)}</span>}
+          </label>
+          <input id="disk" type="range" min={10} max={diskMax} step={5} value={diskGb} onChange={(e) => setDiskGb(+e.target.value)} className="w-full" />
+        </div>
+        <div>
+          <label className="label" htmlFor="dataDisk">
+            <span>Disco datos (HDD): {dataDiskGb} GB</span>
+            {selected?.storBulkAvail != null && <span className="text-xs text-slate-500"> · HDD libre {formatBytes(selected.storBulkAvail)}</span>}
+          </label>
+          <input id="dataDisk" type="range" min={0} max={800} step={10} value={dataDiskGb} onChange={(e) => setDataDiskGb(+e.target.value)} className="w-full" />
         </div>
       </div>
+      {dataDiskGb > 0 && (
+        <p className="text-xs text-slate-400 -mt-3">
+          Perfil DATOS — OS en SSD ({diskGb} GB) + datos en HDD ({dataDiskGb} GB montado en /data)
+        </p>
+      )}
 
       <div>
         <label className="label" htmlFor="tags">Etiquetas (separadas por comas, opcional)</label>

@@ -35,11 +35,14 @@ nodesRouter.get('/', async (_req, res) => {
             templateReady: st.templateReady ?? false,
           };
         }
-        const [status, storage] = await Promise.all([
+        const storageNames = [cfg.storage];
+        if (cfg.storageBulk) storageNames.push(cfg.storageBulk);
+        const [status, ...storages] = await Promise.all([
           client.get(`/nodes/${cfg.name}/status`, undefined, 5000),
-          client.get(`/nodes/${cfg.name}/storage/${cfg.storage}/status`, undefined, 5000),
+          ...storageNames.map((s) => client.get(`/nodes/${cfg.name}/storage/${s}/status`, undefined, 5000)),
         ]);
-        return {
+        const fast = storages[0];
+        const result = {
           name: cfg.name,
           host: cfg.host,
           subnet: `${cfg.subnetPrefix}0/24`,
@@ -51,11 +54,13 @@ nodesRouter.get('/', async (_req, res) => {
           loadavg: status.loadavg,
           memUsed: status.memory.used,
           memTotal: status.memory.total,
-          storUsed: storage.used,
-          storTotal: storage.total,
-          storAvail: storage.avail,
+          storUsed: fast.used,
+          storTotal: fast.total,
+          storAvail: fast.avail,
           uptime: status.uptime,
         };
+        if (storages.length > 1) result.storBulkAvail = storages[1].avail;
+        return result;
       } catch (e) {
         let error = e.message;
         if (e.isAxiosError) {

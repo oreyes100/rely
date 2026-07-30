@@ -28,6 +28,8 @@ export function validateProvision(req, _res, next) {
   if (memoryMb === null) errors.push('memoryMb debe ser entero entre 512 y 16384');
   const diskGb = intIn(b.diskGb, 20, 200);
   if (diskGb === null) errors.push('diskGb debe ser entero entre 20 y 200');
+  const dataDiskGb = b.dataDiskGb === undefined || b.dataDiskGb === 0 ? 0 : intIn(b.dataDiskGb, 10, 800);
+  if (dataDiskGb === null) errors.push('dataDiskGb debe ser entero entre 10 y 800, o ausente');
 
   let tags = [];
   if (b.tags !== undefined) {
@@ -39,7 +41,7 @@ export function validateProvision(req, _res, next) {
   }
 
   if (errors.length) return next(new HttpError(400, errors.join('; ')));
-  req.provision = { node: b.node, hostname: b.hostname, cores, memoryMb, diskGb, tags };
+  req.provision = { node: b.node, hostname: b.hostname, cores, memoryMb, diskGb, dataDiskGb, tags };
   next();
 }
 

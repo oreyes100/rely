@@ -68,14 +68,30 @@ class ProxmoxClient {
     }
   }
 
-  // Escribe un archivo en el guest vía base64 (para archivos pequeños <256KB)
+  // Escribe un archivo de texto en el guest vía base64 (para archivos pequeños <256 KB)
   async agentWriteFile(nodeName, vmid, filePath, content) {
     const b64 = Buffer.from(content).toString('base64');
     const dir = filePath.replace(/\/[^/]+$/, '');
     const r = await this.agentExecWait(nodeName, vmid,
-      `mkdir -p ${dir} && echo '${b64}' | base64 -d > ${filePath} && echo OK`
+      `mkdir -p ${dir} && printf '%s' '${b64}' | base64 -d > ${filePath} && echo OK`
     );
     if (r.exitcode !== 0) throw new HttpError(500, `No se pudo escribir ${filePath}: ${r.err}`);
+  }
+
+  // Escribe un Buffer binario (ej. zip) en el guest en chunks via QEMU guest agent.
+  // No requiere conexión TCP desde la VM — usa el socket Unix de qemu-agent.
+  // CHUNK = 375 KB raw → 500 KB base64, múltiplo exacto de 3 bytes (sin padding issues).
+  async agentWriteBinaryFile(nodeName, vmid, filePath, buffer) {
+    const CHUNK = 375 * 1024;
+    const dir = filePath.replace(/\/[^/]+$/, '');
+    for (let i = 0; i < buffer.length; i += CHUNK) {
+      const chunk = buffer.subarray(i, i + CHUNK);
+      const b64 = chunk.toString('base64');
+      const redir = i === 0 ? '>' : '>>';
+      const cmd = `${i === 0 ? `mkdir -p ${dir} && ` : ''}printf '%s' '${b64}' | base64 -d ${redir} ${filePath}`;
+      const r = await this.agentExecWait(nodeName, vmid, cmd, 30_000);
+      if (r.exitcode !== 0) throw new HttpError(500, `agentWriteBinaryFile chunk@${i}: ${r.err}`);
+    }
   }
 
   // Obtiene MAC del adaptador net0 de la VM
