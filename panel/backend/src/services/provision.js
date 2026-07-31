@@ -136,11 +136,15 @@ export async function provisionVm({ node: nodeName, hostname, cores, memoryMb, d
 
   try {
     // 2. Recursos + credenciales cloud-init + etiquetas
+    //    cicustom vendor= se aplica siempre: data variant instala devstack + formatea /dev/sdb;
+    //    base variant solo instala devstack. vendor= preserva el user-data auto-generado (cipassword).
     const password = generatePassword();
+    const ciSnippet = dataDiskGb > 0 ? 'vps-devstack-data.yaml' : 'vps-devstack.yaml';
     await client.put(`/nodes/${cfg.name}/qemu/${vmid}/config`, {
       cores,
       memory: memoryMb,
       cipassword: password,
+      cicustom: `vendor=local:snippets/${ciSnippet}`,
       tags: tags?.length ? tags.map(sanitizeTag).join(';') : undefined,
       description: `Creado por el panel el ${new Date().toISOString()}`,
     });
@@ -150,7 +154,7 @@ export async function provisionVm({ node: nodeName, hostname, cores, memoryMb, d
       await client.put(`/nodes/${cfg.name}/qemu/${vmid}/resize`, { disk: 'scsi0', size: `${diskGb}G` });
     }
 
-    // 4. Disco de datos (scsi1) en storage bulk + cloud-init snippet
+    // 4. Disco de datos (scsi1) en storage bulk
     if (dataDiskGb > 0) {
       if (!cfg.storageBulk) {
         throw new Error(`Nodo ${cfg.name} no tiene storageBulk — no puede provisionar disco de datos`);

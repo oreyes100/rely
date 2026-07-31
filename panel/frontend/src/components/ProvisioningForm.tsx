@@ -206,7 +206,7 @@ export default function ProvisioningForm() {
             Disco SSD (OS): {diskGb} GB
             {dataDiskGb > 0 && selected?.storBulkAvail != null && <span className="text-xs text-slate-500"> · SSD libre {formatBytes(selected.storAvail)}</span>}
           </label>
-          <input id="disk" type="range" min={10} max={diskMax} step={5} value={diskGb} onChange={(e) => setDiskGb(+e.target.value)} className="w-full" />
+          <input id="disk" type="range" min={20} max={diskMax} step={5} value={diskGb} onChange={(e) => setDiskGb(+e.target.value)} className="w-full" />
         </div>
         <div>
           <label className="label" htmlFor="dataDisk">

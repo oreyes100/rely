@@ -38,6 +38,19 @@
     "verifyTls": false
   },
   {
+    "name": "pvelenovo",
+    "host": "192.168.1.15",
+    "port": 8006,
+    "tokenId": "panel@pve!panel",
+    "tokenSecret": "PEGA-AQUI-EL-UUID-DEL-TOKEN",
+    "storage": "local-lvm",
+    "storageBulk": "hdd1tb",
+    "templateVmid": 9000,
+    "vmidRange": [400, 499],
+    "subnetPrefix": "192.168.1.",
+    "verifyTls": false
+  },
+  {
     "name": "aulamedios",
     "type": "hyperv",
     "host": "192.168.1.229",

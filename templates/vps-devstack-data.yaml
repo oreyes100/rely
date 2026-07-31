@@ -1,0 +1,98 @@
+#cloud-config
+# Variante del snippet para VMs con disco de datos en HDD (scsi1 = /dev/sdb)
+# Igual que vps-devstack.yaml + runcmd para formatear y montar /data
+ssh_pwauth: true
+package_update: true
+packages:
+  - qemu-guest-agent
+  - python3-pip
+  - python3-venv
+  - build-essential
+  - git
+  - curl
+  - ca-certificates
+  - ufw
+  - openssl
+
+write_files:
+  - path: /usr/local/bin/install-supabase
+    permissions: '0755'
+    content: |
+      #!/bin/bash
+      # Instalador 1-click de Supabase self-hosted (Docker Compose)
+      set -euo pipefail
+      command -v docker >/dev/null || { echo "Docker no esta instalado"; exit 1; }
+      DIR=/opt/supabase
+      if [ -d "$DIR/docker" ]; then echo "Supabase ya esta instalado en $DIR"; exit 0; fi
+      git clone --depth 1 https://github.com/supabase/supabase "$DIR"
+      cd "$DIR/docker"
+      cp .env.example .env
+
+      PG_PASS=$(openssl rand -hex 16)
+      JWT_SECRET=$(openssl rand -hex 20)
+      DASH_PASS=$(openssl rand -hex 10)
+
+      gen_jwt() {
+        node -e '
+        const crypto=require("crypto");
+        const b64=o=>Buffer.from(JSON.stringify(o)).toString("base64url");
+        const secret=process.argv[1], role=process.argv[2];
+        const now=Math.floor(Date.now()/1000);
+        const h=b64({alg:"HS256",typ:"JWT"});
+        const p=b64({role:role, iss:"supabase", iat:now, exp:now+5*365*24*3600});
+        const s=crypto.createHmac("sha256",secret).update(h+"."+p).digest("base64url");
+        console.log(h+"."+p+"."+s);' "$1" "$2"
+      }
+      ANON_KEY=$(gen_jwt "$JWT_SECRET" anon)
+      SERVICE_KEY=$(gen_jwt "$JWT_SECRET" service_role)
+
+      sed -i "s|^POSTGRES_PASSWORD=.*|POSTGRES_PASSWORD=$PG_PASS|" .env
+      sed -i "s|^JWT_SECRET=.*|JWT_SECRET=$JWT_SECRET|" .env
+      sed -i "s|^ANON_KEY=.*|ANON_KEY=$ANON_KEY|" .env
+      sed -i "s|^SERVICE_ROLE_KEY=.*|SERVICE_ROLE_KEY=$SERVICE_KEY|" .env
+      sed -i "s|^DASHBOARD_PASSWORD=.*|DASHBOARD_PASSWORD=$DASH_PASS|" .env
+
+      docker compose pull
+      docker compose up -d
+      IP=$(hostname -I | awk '{print $1}')
+      echo "=============================================="
+      echo " Supabase self-hosted desplegado"
+      echo " Studio:   http://$IP:8000"
+      echo " Usuario:  supabase   Password: $DASH_PASS"
+      echo " API URL:  http://$IP:8000"
+      echo " Credenciales completas en $DIR/docker/.env"
+      echo "=============================================="
+
+  - path: /etc/motd
+    content: |
+      ==========================================================
+        VPS DevStack + Disco de Datos - Ubuntu 24.04
+        Node.js 22 + PM2 | Python 3 + venv | Docker CE
+        Disco de datos montado en /data (HDD)
+        Supabase self-hosted:  sudo install-supabase
+      ==========================================================
+
+runcmd:
+  - systemctl enable --now qemu-guest-agent
+  # Docker CE
+  - curl -fsSL https://get.docker.com | sh
+  - usermod -aG docker devops || true
+  # Node.js 22 LTS (NodeSource) + PM2 global
+  - curl -fsSL https://deb.nodesource.com/setup_22.x | bash -
+  - apt-get install -y nodejs
+  - npm install -g pm2
+  # NVM para el usuario devops (gestion flexible de versiones de Node)
+  - su - devops -c 'curl -fsSL https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | bash' || true
+  # Firewall basico dentro del VPS: SSH abierto, resto lo abre el cliente
+  - ufw allow OpenSSH
+  - ufw --force enable
+  # Disco de datos en /dev/sdb — formatear y montar solo si es virgen
+  - |
+    DEV=/dev/sdb
+    if [ -b "$DEV" ] && [ -z "$(blkid -o value -s TYPE $DEV 2>/dev/null)" ]; then
+      mkfs.ext4 -L datos "$DEV"
+      mkdir -p /data
+      echo "LABEL=datos /data ext4 defaults,nofail 0 2" >> /etc/fstab
+      mount /data
+      chown devops:devops /data
+    fi

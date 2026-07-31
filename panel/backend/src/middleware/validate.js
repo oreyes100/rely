@@ -31,6 +31,16 @@ export function validateProvision(req, _res, next) {
   const dataDiskGb = b.dataDiskGb === undefined || b.dataDiskGb === 0 ? 0 : intIn(b.dataDiskGb, 10, 800);
   if (dataDiskGb === null) errors.push('dataDiskGb debe ser entero entre 10 y 800, o ausente');
 
+  // Guardrail: en nodos con tier HDD el disco OS se limita a 60 GB (el resto va en dataDiskGb)
+  if (diskGb !== null && typeof b.node === 'string') {
+    try {
+      const { cfg } = getNode(b.node);
+      if (cfg.storageBulk && diskGb > 60) {
+        errors.push('Este nodo tiene tier SSD+HDD: el disco OS no puede superar 60 GB; usa dataDiskGb para almacenamiento adicional en HDD');
+      }
+    } catch { /* nodo no encontrado: se reportará como error en la operación */ }
+  }
+
   let tags = [];
   if (b.tags !== undefined) {
     if (!Array.isArray(b.tags) || b.tags.length > 5 || b.tags.some((t) => typeof t !== 'string' || !TAG_RE.test(t))) {
