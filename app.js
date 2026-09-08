@@ -147,7 +147,7 @@ async function saveDb() {
                 dailySales,
                 activeTickets,
                 notifications: serverNotifications,
-                users,
+                // users: managed via /api/users/save and /api/users/delete
                 products,
                 clients
             })
@@ -235,19 +235,32 @@ window.addEventListener('keydown', (e) => {
     }
 });
 
-function verifyPin() {
-    if(!targetUserForPin) return;
-    // Look up latest user record in case it was updated by sync
-    const current = users.find(u => u.id === targetUserForPin.id || u.name.toLowerCase() === targetUserForPin.name.toLowerCase()) || targetUserForPin;
-    const userPin = String(current.pin || '').trim();
+let isVerifyingPin = false;
+async function verifyPin() {
+    if(!targetUserForPin || isVerifyingPin) return;
+    isVerifyingPin = true;
+    const current = users.find(u => u.id === targetUserForPin.id) || targetUserForPin;
     
-    // Accept either the user's specific PIN, or master PIN '1234' so no one is locked out
-    if(userPin === pinBuffer || pinBuffer === '1234') {
-        login(current);
-    } else {
-        alert(`PIN Incorrecto. Ingresa el PIN asignado a ${current.name} o el PIN maestro 1234.`);
+    try {
+        const res = await fetch('/api/login', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ userId: current.id, pin: pinBuffer })
+        });
+        const result = await res.json();
+        if (result.success) {
+            login(result.user || current);
+        } else {
+            alert(`PIN Incorrecto. Ingresa el PIN asignado a ${current.name} o el PIN maestro 1234.`);
+            pinBuffer = '';
+            updatePinDots();
+        }
+    } catch(e) {
+        alert('Error de conexión. El servidor debe estar activo para verificar el PIN.');
         pinBuffer = '';
         updatePinDots();
+    } finally {
+        isVerifyingPin = false;
     }
 }
 
@@ -1402,7 +1415,7 @@ function renderUsersTable() {
         row.innerHTML = `
             <td style="padding:12px;"><strong>${u.name}</strong></td>
             <td>${u.role}</td>
-            <td><code style="background:#f1f5f9; padding:2px 5px; border-radius:4px;">${currentUser && currentUser.role === 'administrador' ? u.pin : '****'}</code></td>
+            <td><code style="background:#f1f5f9; padding:2px 5px; border-radius:4px;">**** (Encriptado)</code></td>
             <td>
                 <div style="display:flex; gap:10px;">
                     <button class="action-btn" style="width:auto; padding:5px 10px;" onclick="editUser(${u.id})"><i class="fa-solid fa-edit"></i></button>
@@ -1974,13 +1987,15 @@ window.openUserModal = function(user = null) {
         document.getElementById('user-form-id').value = user.id;
         document.getElementById('user-form-name').value = user.name;
         document.getElementById('user-form-role').value = user.role;
-        document.getElementById('user-form-pin').value = user.pin;
+        document.getElementById('user-form-pin').value = ''; // Never show old PIN
+        document.getElementById('user-form-pin').placeholder = 'Dejar vacío para no cambiar';
     } else {
         document.getElementById('user-form-title').textContent = 'Nuevo Usuario';
         document.getElementById('user-form-id').value = '';
         document.getElementById('user-form-name').value = '';
         document.getElementById('user-form-role').value = 'mesero';
         document.getElementById('user-form-pin').value = '';
+        document.getElementById('user-form-pin').placeholder = '****';
     }
     modal.classList.add('active');
 };
@@ -1989,10 +2004,24 @@ window.editUser = function(id) { const u = users.find(x => x.id === id); if(u) w
 
 window.deleteUser = async function(id) {
     if(confirm('¿Seguro de eliminar este usuario?')) {
-        await loadDb();
-        users = users.filter(u => u.id !== id);
-        await saveDb();
-        renderUsersTable(); renderLoginUsers();
+        try {
+            const res = await fetch('/api/users/delete', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ id })
+            });
+            const result = await res.json();
+            if (result.success) {
+                await loadDb();
+                renderUsersTable(); 
+                renderLoginUsers();
+                showToast('🗑️ Usuario eliminado', 'info');
+            } else {
+                alert(result.error || 'Error al eliminar usuario');
+            }
+        } catch(e) {
+            alert('Error de conexión al eliminar usuario');
+        }
     }
 };
 
@@ -2001,18 +2030,31 @@ window.saveUser = async function() {
     const name = document.getElementById('user-form-name').value;
     const role = document.getElementById('user-form-role').value;
     const pin = document.getElementById('user-form-pin').value;
-    if(!name || pin.length < 4) return alert("Hacen falta datos (PIN 4 dígitos).");
     
-    await loadDb();
-    if(id) {
-        const idx = users.findIndex(u => u.id == id);
-        if(idx !== -1) users[idx] = { ...users[idx], name, role, pin };
-    } else {
-        users.push({ id: Date.now(), name, role, pin });
+    // For new users, PIN is required. For existing users, PIN can be empty (no change).
+    if(!name) return alert("El nombre es obligatorio.");
+    if(!id && pin.length < 4) return alert("Para nuevos usuarios, el PIN de 4 dígitos es obligatorio.");
+    if(id && pin && pin.length < 4) return alert("El PIN debe tener 4 dígitos o dejarse vacío para no cambiarlo.");
+    
+    try {
+        const res = await fetch('/api/users/save', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ id, name, role, pin })
+        });
+        const result = await res.json();
+        if (result.success) {
+            document.getElementById('user-form-modal').classList.remove('active');
+            await loadDb(); // Reload state to get updated users
+            renderUsersTable(); 
+            renderLoginUsers();
+            showToast('✅ Usuario guardado correctamente', 'success');
+        } else {
+            alert(result.error || 'Error al guardar usuario');
+        }
+    } catch(e) {
+        alert('Error de conexión al guardar usuario');
     }
-    await saveDb();
-    document.getElementById('user-form-modal').classList.remove('active');
-    renderUsersTable(); renderLoginUsers();
 };
 
 // --- MENU MANAGEMENT (ADMIN ONLY) ---
