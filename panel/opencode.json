@@ -1,0 +1,23 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "mcp": {
+    "pfsense": {
+      "type": "local",
+      "command": [
+        "uvx",
+        "--from",
+        "git+https://github.com/gensecaihq/pfsense-mcp-server",
+        "pfsense-mcp-server"
+      ],
+      "environment": {
+        "PFSENSE_URL": "https://192.168.1.1:8444",
+        "AUTH_METHOD": "api_key",
+        "PFSENSE_API_KEY": "4c913ee6dc5c18f1601245b4ea5d4508f2d9648f0f68695d",
+        "PFSENSE_VERSION": "CE_2_8_1",
+        "VERIFY_SSL": "true",
+        "PFSENSE_CA_FILE": "C:\\Users\\User\\.config\\opencode\\certs\\opencode-internal-ca.pem",
+        "MCP_READ_ONLY": "false"
+      }
+    }
+  }
+}

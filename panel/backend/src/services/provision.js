@@ -120,14 +120,15 @@ export async function provisionVm({ node: nodeName, hostname, cores, memoryMb, d
   await checkCapacity(nodeName, { memoryMb, diskGb, dataDiskGb });
   const vmid = nextFreeVmid(cfg, vms);
 
-  // 1. Clon completo del template (storage requerido en lvmthin para full clone)
+  // 1. Clon completo del template (usa storageBulk si existe, si no storage)
+  const cloneStorage = cfg.storageBulk || cfg.storage;
   let upid;
   try {
     upid = await client.post(`/nodes/${cfg.name}/qemu/${cfg.templateVmid}/clone`, {
       newid: vmid,
       name: hostname,
       full: 1,
-      storage: cfg.storage,
+      storage: cloneStorage,
     });
   } catch (err) {
     throw new Error(ProxmoxClient.extractError(err));

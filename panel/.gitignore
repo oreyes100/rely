@@ -6,3 +6,4 @@ backend/data/
 hyperv-agent/data/
 hyperv-agent/config.json
 *.log
+.opencode/

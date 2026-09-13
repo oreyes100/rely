@@ -1,0 +1,1 @@
+USE fossbilling; SHOW TABLES;

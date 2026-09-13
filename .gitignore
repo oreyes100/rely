@@ -1,3 +1,9 @@
+# === Repositorios embebidos (NO commitear como submodulos) ===
+.codex/
+mis-finanzas/
+obsidian-vault/
+spec-kit/
+
 # === Secretos / notas de trabajo (NO commitear) ===
 # Estos archivos contienen credenciales e IPs reales de infraestructura.
 # Se mantienen localmente como notas, pero NUNCA deben entrar a git.
@@ -8,6 +14,13 @@ sacsa.txt
 nuevo frontend.txt
 token.txt
 manual-vps-cecytem.docx
+credenciales ntopng.txt
+nvidia api key.txt
+telegram-agent-cuentas.md
+
+# === Backups grandes (NO commitear) ===
+*.vma.zst
+*.zip
 
 # === Artefactos de build ===
 node_modules/

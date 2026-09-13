@@ -67,6 +67,35 @@ qm terminal 210                # consola serie de emergencia
 
 ---
 
+## VPS #3 — `pachucacv`  (nodo pvececyte)
+
+| Dato | Valor |
+|---|---|
+| Nodo | **pvececyte** (192.168.1.254) |
+| VMID | 300 |
+| IP interna | **192.168.7.186** |
+| Usuario | `devops` |
+| Password | `cloud-init` |
+| Puerto WAN SSH | **2300** (DNAT regla existente ✅ — `2300→192.168.7.186:22`) |
+| Stack | Node.js, Python 3.12, Docker, `install-supabase` |
+
+**Acceso SSH desde internet:**
+```bash
+ssh -p 2300 devops@207.248.113.8
+# password: cloud-init
+```
+
+**Acceso desde la consola del nodo pvececyte:**
+```bash
+ssh devops@192.168.7.186       # password: cloud-init
+qm terminal 300                  # consola serie de emergencia
+```
+
+**Reserva DHCP nueva MAC:**
+La VM 300 usa la MAC `BC:24:11:93:8C:35` reservada para `192.168.7.186`.
+
+---
+
 ## Ejemplos de uso (aplican a cualquier VPS)
 
 Una vez dentro (`ssh -p 2202 devops@207.248.113.8`):
@@ -132,5 +161,6 @@ Luego el cliente entra sin contraseña: `ssh -p <puerto> devops@207.248.113.8`.
 ```
 VPS vps-demo    -> ssh -p 2202 devops@207.248.113.8   pass: VpsDemo-2026!
 VPS vps-demo-n2 -> ssh -p 2210 devops@207.248.113.8   pass: VpsDemo2-2026!  (falta regla pfSense 2210)
+VPS pachucacv   -> ssh -p 2300 devops@207.248.113.8   pass: cloud-init  (MAC BC:24:11:93:8C:35)
 Usuario: devops (sudo)  |  Stack: Node+Python+Docker  |  BaaS: sudo install-supabase
 ```
