@@ -77,8 +77,16 @@ let cart = [];
 let activeTickets = []; 
 let dailySales = [];
 let cocinaQueue = []; 
+let barQueue = []; 
 let serverNotifications = [];
-let clients = []; // NEW: Customer DB
+let clients = []; // Customer DB
+let restaurantInfo = {
+    name: 'RELY',
+    subtitle: 'Pozolería, Tacos y Enchiladas',
+    address: '',
+    phone: '123-456-7890',
+    footer: '¡GRACIAS POR SU PREFERENCIA!'
+};
 let lastProcessedNotif = Date.now();
 
 let unreadNotifications = 0;
@@ -99,6 +107,7 @@ async function loadDb() {
         const stringify = (obj) => JSON.stringify(obj || []);
         
         let needsRenderKds = stringify(data.cocinaQueue) !== stringify(cocinaQueue);
+        let needsRenderBar = stringify(data.barQueue) !== stringify(barQueue);
         let needsRenderConta = stringify(data.dailySales) !== stringify(dailySales);
         let needsRenderCobros = stringify(data.activeTickets) !== stringify(activeTickets);
         let needsRenderUsers = data.users && stringify(data.users) !== stringify(users) && data.users.length > 0;
@@ -106,14 +115,17 @@ async function loadDb() {
         let needsRenderClients = stringify(data.clients) !== stringify(clients);
         
         cocinaQueue = data.cocinaQueue || [];
+        barQueue = data.barQueue || [];
         dailySales = data.dailySales || [];
         if(data.activeTickets) activeTickets = data.activeTickets;
         if(data.users && data.users.length > 0) users = data.users;
         if(data.products && data.products.length > 0) products = data.products;
         if(data.clients) clients = data.clients;
+        if(data.restaurantInfo) restaurantInfo = Object.assign({}, restaurantInfo, data.restaurantInfo);
         serverNotifications = data.notifications || [];
         
         if(needsRenderKds) renderKDS();
+        if(needsRenderBar) renderBar();
         if(needsRenderConta) renderContabilidad();
         if(needsRenderCobros) { renderMesas(); renderLlevar(); renderPedidos(); renderCobros(); }
         
@@ -144,12 +156,14 @@ async function saveDb() {
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({
                 cocinaQueue,
+                barQueue,
                 dailySales,
                 activeTickets,
                 notifications: serverNotifications,
                 // users: managed via /api/users/save and /api/users/delete
                 products,
-                clients
+                clients,
+                restaurantInfo
             })
         });
     } catch(e) { }
@@ -547,6 +561,7 @@ window.switchView = function(viewName) {
     if(targetView) targetView.classList.add('active');
     
     if (viewName === 'kds') renderKDS();
+    if (viewName === 'bar') renderBar();
     if (viewName === 'mesas') renderMesas();
     if (viewName === 'llevar') renderLlevar();
     if (viewName === 'pedidos') renderPedidos();
@@ -980,16 +995,36 @@ window.comandarCocina = async function() {
     ticket.items.push(...cart);
 
     const getOrderTitle = (t) => String(t).startsWith('Llevar') || String(t).startsWith('Pedido') ? t : 'Mesa ' + t;
-    const kdsOrder = {
-        id: 'O-' + Math.floor(Math.random() * 1000).toString().padStart(3, '0'),
-        time: new Date().toLocaleTimeString(),
-        table: getOrderTitle(currentTable),
-        items: [...cart],
-        waiter: currentUser ? currentUser.name : 'Mesa ' + currentTable
-    };
+    const orderTitle = getOrderTitle(currentTable);
+    const waiterName = currentUser ? currentUser.name : 'Mesa ' + currentTable;
     
-    cocinaQueue.push(kdsOrder);
-    renderKDS(); 
+    // Separar comida para cocina y bebidas para bar
+    const drinkItems = cart.filter(i => i.product && i.product.category === 'BEBIDAS');
+    const foodItems = cart.filter(i => !i.product || i.product.category !== 'BEBIDAS');
+
+    if (foodItems.length > 0) {
+        const kdsOrder = {
+            id: 'C-' + Math.floor(Math.random() * 1000).toString().padStart(3, '0'),
+            time: new Date().toLocaleTimeString(),
+            table: orderTitle,
+            items: [...foodItems],
+            waiter: waiterName
+        };
+        cocinaQueue.push(kdsOrder);
+        renderKDS();
+    }
+
+    if (drinkItems.length > 0) {
+        const barOrder = {
+            id: 'B-' + Math.floor(Math.random() * 1000).toString().padStart(3, '0'),
+            time: new Date().toLocaleTimeString(),
+            table: orderTitle,
+            items: [...drinkItems],
+            waiter: waiterName
+        };
+        barQueue.push(barOrder);
+        renderBar();
+    }
     
     await saveDb();
     
@@ -1000,7 +1035,7 @@ window.comandarCocina = async function() {
     if (backdrop) backdrop.classList.remove('active');
     
     // Show toast instead of alert
-    showToast(`✅ Comanda enviada para: ${getOrderTitle(currentTable)}`, 'success');
+    showToast(`✅ Comanda enviada para: ${orderTitle}`, 'success');
     
     cart = [];
     let targetView = 'mesas';
@@ -1079,7 +1114,7 @@ window.marcarListo = async function(ticketId) {
         waiter: readyTicket ? readyTicket.waiter : '',
         items: readyTicket ? readyTicket.items : [],
         time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        msg: readyTicket ? `🍽️ <strong>${readyTicket.table}</strong>: ¡Orden ${ticketId} lista para servir!` : `La orden <strong>${ticketId}</strong> ya está preparada y lista.`,
+        msg: readyTicket ? `🍽️ <strong>${readyTicket.table}</strong>: ¡Orden de Cocina ${ticketId} lista!` : `La orden de cocina <strong>${ticketId}</strong> ya está preparada y lista.`,
         status: 'ready'
     };
     serverNotifications.unshift(notif);
@@ -1090,6 +1125,85 @@ window.marcarListo = async function(ticketId) {
     renderMesas();
     checkServerNotifications();
     showToast(`👨‍🍳 Comanda ${ticketId} lista para servir`, 'success');
+};
+
+// Bar Screen Rendering (Drinks KDS)
+function renderBar() {
+    const grid = document.getElementById('bar-grid');
+    if(!grid) return;
+    grid.innerHTML = '';
+    
+    const countBadge = document.getElementById('bar-order-count');
+    if (countBadge) countBadge.textContent = `${barQueue.length} ${barQueue.length === 1 ? 'orden' : 'órdenes'}`;
+    
+    if(barQueue.length === 0) {
+        grid.innerHTML = `<div style="grid-column: 1 / -1; text-align:center; padding: 40px; color: var(--text-muted); font-size:1.2rem;">🍹 No hay bebidas pendientes en el bar. ¡Todo servido!</div>`;
+        return;
+    }
+
+    barQueue.forEach(ticket => {
+        const card = document.createElement('div');
+        card.className = 'kds-ticket bar-ticket';
+        
+        let itemsHtml = '';
+        ticket.items.forEach(item => {
+            const mods = item.modifiers && item.modifiers.length > 0
+                ? `<span class="kds-modifiers">📌 ${item.modifiers.join(' | ')}</span>`
+                : '';
+            const notesEl = item.notes
+                ? `<div class="kds-item-notes">💬 ${item.notes}</div>`
+                : '';
+            itemsHtml += `
+            <div class="kds-item">
+                <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                    <span><strong style="color:#0284C7; font-size:1.3rem;">${item.qty}x</strong> <strong>${item.product.name}</strong></span>
+                </div>
+                ${mods}
+                ${notesEl}
+            </div>`;
+        });
+
+        const tableDisplay = ticket.table || '';
+        card.innerHTML = `
+            <div class="kds-header" style="background: linear-gradient(135deg, #0284C7, #0369A1);">
+                <span style="font-weight:800; font-size:1rem;">🍹 ${tableDisplay}</span>
+                <span style="font-size:0.85rem; color:rgba(255,255,255,0.85);">${ticket.time}</span>
+            </div>
+            <div style="background:#F0F9FF; font-weight:700; color:var(--text-muted); padding:5px 15px; font-size:0.8rem;">🍸 ${ticket.waiter} &nbsp;|&nbsp; <span style="color:#0369A1;">Folio: ${ticket.id}</span></div>
+            <div class="kds-body">
+                ${itemsHtml}
+            </div>
+            <div class="kds-footer">
+                <button class="btn-listo" style="background: linear-gradient(135deg, #0EA5E9, #0284C7);" onclick="marcarBarListo('${ticket.id}')"><i class="fa-solid fa-check-double"></i> ¡BEBIDAS LISTAS!</button>
+            </div>
+        `;
+        grid.appendChild(card);
+    });
+}
+
+window.marcarBarListo = async function(ticketId) {
+    await loadDb();
+    const readyTicket = barQueue.find(t => t.id === ticketId);
+    barQueue = barQueue.filter(t => t.id !== ticketId);
+    
+    const notif = {
+        id: Date.now(),
+        orderId: ticketId,
+        table: readyTicket ? readyTicket.table : '',
+        waiter: readyTicket ? readyTicket.waiter : '',
+        items: readyTicket ? readyTicket.items : [],
+        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        msg: readyTicket ? `🍹 <strong>${readyTicket.table}</strong>: ¡Bebidas de orden ${ticketId} listas para servir!` : `Las bebidas de la orden <strong>${ticketId}</strong> están listas.`,
+        status: 'ready'
+    };
+    serverNotifications.unshift(notif);
+    if(serverNotifications.length > 50) serverNotifications.pop();
+
+    await saveDb();
+    renderBar();
+    renderMesas();
+    checkServerNotifications();
+    showToast(`🍹 Bebidas ${ticketId} listas para servir`, 'success');
 };
 
 // --- TABLE MANAGEMENT ---
@@ -1719,9 +1833,64 @@ if(cartToggleBtn) {
     cartToggleBtn.addEventListener('click', () => toggleCart());
 }
 
-// --- THERMAL PRINT FUNCTIONS ---
+// --- THERMAL PRINT & PAYMENT (ARQUEO) FUNCTIONS ---
 let currentPrintTicketId = null;
 let isReprintMode = false;
+let currentPaymentMethod = 'Efectivo';
+let currentPaymentTotal = 0;
+
+window.setPaymentMethod = function(method) {
+    currentPaymentMethod = method;
+    const btnEf = document.getElementById('btn-pay-efectivo');
+    const btnTar = document.getElementById('btn-pay-tarjeta');
+    const btnTr = document.getElementById('btn-pay-transf');
+    if (btnEf) btnEf.classList.toggle('active', method === 'Efectivo');
+    if (btnTar) btnTar.classList.toggle('active', method === 'Tarjeta');
+    if (btnTr) btnTr.classList.toggle('active', method === 'Transferencia');
+
+    const cashContainer = document.getElementById('arqueo-efectivo-container');
+    if (cashContainer) {
+        cashContainer.style.display = (method === 'Efectivo') ? 'block' : 'none';
+    }
+    calcularCambioCobro();
+};
+
+window.calcularCambioCobro = function() {
+    const input = document.getElementById('arqueo-monto-recibido');
+    const display = document.getElementById('arqueo-cambio-display');
+    if (!display) return;
+    
+    if (currentPaymentMethod !== 'Efectivo') {
+        display.textContent = '$0.00';
+        display.style.color = '#166534';
+        return;
+    }
+    
+    const recibido = parseFloat(input ? input.value : 0) || 0;
+    const cambio = recibido - currentPaymentTotal;
+    
+    if (recibido === 0) {
+        display.textContent = '$0.00';
+        display.style.color = '#166534';
+    } else if (cambio < 0) {
+        display.textContent = `Faltan: $${Math.abs(cambio).toFixed(2)}`;
+        display.style.color = '#DC2626';
+    } else {
+        display.textContent = `$${cambio.toFixed(2)}`;
+        display.style.color = '#166534';
+    }
+};
+
+window.setMontoRapido = function(val) {
+    const input = document.getElementById('arqueo-monto-recibido');
+    if (!input) return;
+    if (val === 'exacto') {
+        input.value = currentPaymentTotal > 0 ? currentPaymentTotal.toFixed(2) : '0.00';
+    } else {
+        input.value = Number(val).toFixed(2);
+    }
+    calcularCambioCobro();
+};
 
 // Print bill preview (without finalizing the table)
 window.imprimirCuentaActual = function() {
@@ -1750,6 +1919,9 @@ window.imprimirCuentaActual = function() {
     currentPrintTicketId = null; // preview only, no finalize
     isReprintMode = false;
     
+    const arqueoPanel = document.getElementById('payment-arqueo-panel');
+    if (arqueoPanel) arqueoPanel.style.display = 'none';
+
     const btnCobrar = document.getElementById('btn-modal-cobrar-directo');
     if (btnCobrar) btnCobrar.style.display = 'none';
     const btnPrint = document.getElementById('btn-modal-imprimir');
@@ -1764,6 +1936,10 @@ window.prepararImpresionFinal = function(ticketId) {
     if (!ticket) return;
     isReprintMode = false;
     const total = ticket.items.reduce((sum, item) => sum + (item.product.price * item.qty), 0);
+    const totalAbonado = (ticket.abonos || []).reduce((s, a) => s + a.amount, 0);
+    const saldo = total - totalAbonado;
+    currentPaymentTotal = saldo > 0 ? saldo : total;
+
     const getOrderTitle = (t) => String(t).startsWith('Llevar') || String(t).startsWith('Pedido') ? t : 'Mesa ' + t;
     const preview = buildThermalTicketHtml({
         id: ticket.id,
@@ -1777,7 +1953,14 @@ window.prepararImpresionFinal = function(ticketId) {
     document.getElementById('thermal-ticket-preview').innerHTML = preview;
     currentPrintTicketId = ticketId;
     
-    // Show Cobrar button so waiter/cashier can charge directly without printing
+    // Show Arqueo panel for payment change calculation
+    const arqueoPanel = document.getElementById('payment-arqueo-panel');
+    if (arqueoPanel) arqueoPanel.style.display = 'block';
+    setPaymentMethod('Efectivo');
+    const inputRecibido = document.getElementById('arqueo-monto-recibido');
+    if (inputRecibido) inputRecibido.value = '';
+    calcularCambioCobro();
+
     const btnCobrar = document.getElementById('btn-modal-cobrar-directo');
     if (btnCobrar) btnCobrar.style.display = 'block';
     const btnPrint = document.getElementById('btn-modal-imprimir');
@@ -1829,7 +2012,6 @@ window.ejecutarImpresionTermica = async function() {
                 .row { display: flex; justify-content: space-between; margin-bottom: 2px; }
                 .item-name { flex: 1; word-break: break-word; }
                 .item-price { min-width: 50px; text-align: right; }
-                .notes-line { font-style: italic; color: #555; font-size: 9pt; padding-left: 10px; }
                 .total-row { display: flex; justify-content: space-between; font-weight: bold; font-size: 13pt; margin-top: 3px; }
             </style>
         </head>
@@ -1864,6 +2046,28 @@ async function finalizarTicket(ticketId) {
     if (ticketIdx === -1) return;
     const ticket = activeTickets[ticketIdx];
     const total = ticket.items.reduce((sum, item) => sum + (item.product.price * item.qty), 0);
+    const totalAbonado = (ticket.abonos || []).reduce((s, a) => s + a.amount, 0);
+    const saldo = Math.max(0, total - totalAbonado);
+    const montoPorCobrar = saldo > 0 ? saldo : total;
+
+    // Arqueo / Datos del cobro
+    let recibido = montoPorCobrar;
+    let cambio = 0;
+    if (currentPaymentMethod === 'Efectivo') {
+        const valRecibido = parseFloat(document.getElementById('arqueo-monto-recibido')?.value);
+        if (!isNaN(valRecibido) && valRecibido > 0) {
+            recibido = valRecibido;
+            cambio = Math.max(0, recibido - montoPorCobrar);
+        }
+    }
+
+    const pagoInfo = {
+        metodo: currentPaymentMethod,
+        totalCobrado: montoPorCobrar,
+        recibido: recibido,
+        cambio: cambio
+    };
+
     const getOrderTitle = (t) => String(t).startsWith('Llevar') || String(t).startsWith('Pedido') ? t : 'Mesa ' + t;
     
     dailySales.push({
@@ -1875,7 +2079,8 @@ async function finalizarTicket(ticketId) {
         dateObj: new Date().toISOString(),
         itemsCount: ticket.items.reduce((s, it) => s + it.qty, 0),
         total: total,
-        waiter: ticket.waiter
+        waiter: ticket.waiter,
+        pago: pagoInfo
     });
     
     activeTickets.splice(ticketIdx, 1);
@@ -1889,7 +2094,7 @@ async function finalizarTicket(ticketId) {
     renderCobros();
     renderMesas();
     renderContabilidad();
-    showToast('✅ Ticket cobrado y registrado exitosamente', 'success');
+    showToast(`✅ Cobro registrado: $${montoPorCobrar.toFixed(2)} (${currentPaymentMethod})`, 'success');
 }
 
 // Reprint ticket from Daily Sales / Contabilidad
@@ -1911,9 +2116,13 @@ window.reimprimirTicketContabilidad = function(ticketId) {
         items: items,
         total: sale.total,
         abonos: sale.abonos || [],
-        isBillPreview: false
+        isBillPreview: false,
+        pagoInfo: sale.pago
     });
     
+    const arqueoPanel = document.getElementById('payment-arqueo-panel');
+    if (arqueoPanel) arqueoPanel.style.display = 'none';
+
     document.getElementById('thermal-ticket-preview').innerHTML = 
         `<div style="text-align:center; font-weight:bold; margin-bottom:8px; color:#EF4444; border:1px solid #EF4444; padding:4px; font-size:11px;">*** COPIA REIMPRESIÓN ***</div>` + preview;
     
@@ -1925,22 +2134,18 @@ window.reimprimirTicketContabilidad = function(ticketId) {
     document.getElementById('ticket-print-modal').classList.add('active');
 };
 
-function buildThermalTicketHtml({ id, table, waiter, items, total, abonos, isBillPreview }) {
+function buildThermalTicketHtml({ id, table, waiter, items, total, abonos, isBillPreview, pagoInfo }) {
     const totalAbonado = (abonos || []).reduce((s, a) => s + a.amount, 0);
     const saldo = total - totalAbonado;
     const now = new Date();
     
+    // REQUISITO 2: Solo conceptos (cantidades, nombres, precios), SIN notas de cocina (it.notes omitido)
     let itemsHtml = items.map(it => {
-        const modsLine = it.modifiers && it.modifiers.length > 0
-            ? `<div class="notes-line">▶ ${it.modifiers.join(' | ')}</div>` : '';
-        const notesLine = it.notes
-            ? `<div class="notes-line">💬 ${it.notes}</div>` : '';
         return `
             <div class="row">
                 <span class="item-name">${it.qty}x ${it.product.name}</span>
                 <span class="item-price">$${(it.qty * it.product.price).toFixed(2)}</span>
-            </div>
-            ${modsLine}${notesLine}`;
+            </div>`;
     }).join('');
 
     let totalsHtml = `<div class="total-row"><span>TOTAL:</span><span>$${total.toFixed(2)}</span></div>`;
@@ -1949,11 +2154,30 @@ function buildThermalTicketHtml({ id, table, waiter, items, total, abonos, isBil
             <div class="row t-small"><span>Abonado:</span><span>-$${totalAbonado.toFixed(2)}</span></div>
             <div class="total-row"><span>SALDO:</span><span>$${saldo.toFixed(2)}</span></div>`;
     }
+
+    if (pagoInfo && !isBillPreview) {
+        totalsHtml += `
+            <div class="divider"></div>
+            <div class="row t-small"><span>Método:</span><span>${pagoInfo.metodo || 'Efectivo'}</span></div>`;
+        if (pagoInfo.metodo === 'Efectivo' && typeof pagoInfo.recibido === 'number' && pagoInfo.recibido > 0) {
+            totalsHtml += `
+                <div class="row t-small"><span>Efectivo Recibido:</span><span>$${pagoInfo.recibido.toFixed(2)}</span></div>
+                <div class="row t-small" style="font-weight:bold;"><span>Cambio Entregado:</span><span>$${(pagoInfo.cambio || 0).toFixed(2)}</span></div>`;
+        }
+    }
     
+    // REQUISITO 3: Datos configurables del restaurante desde restaurantInfo
+    const restName = (restaurantInfo && restaurantInfo.name) ? restaurantInfo.name : 'RELY';
+    const restSub = (restaurantInfo && restaurantInfo.subtitle) ? `<div class="t-center t-small">${restaurantInfo.subtitle}</div>` : '';
+    const restAddr = (restaurantInfo && restaurantInfo.address) ? `<div class="t-center t-small">${restaurantInfo.address}</div>` : '';
+    const restTel = (restaurantInfo && restaurantInfo.phone) ? `<div class="t-center t-small">Tel: ${restaurantInfo.phone}</div>` : '';
+    const restFoot = (restaurantInfo && restaurantInfo.footer) ? restaurantInfo.footer : '¡GRACIAS POR SU PREFERENCIA!';
+
     return `
-        <div class="t-center t-bold t-large">RELY</div>
-        <div class="t-center t-small">Pozolería, Tacos y Enchiladas</div>
-        <div class="t-center t-small">Tel: 123-456-7890</div>
+        <div class="t-center t-bold t-large">${restName}</div>
+        ${restSub}
+        ${restAddr}
+        ${restTel}
         <div class="divider-solid"></div>
         <div class="t-small">Folio: <strong>${id}</strong></div>
         <div class="t-small">Fecha: ${now.toLocaleDateString('es-MX')} ${now.toLocaleTimeString('es-MX', {hour:'2-digit', minute:'2-digit'})}</div>
@@ -1965,9 +2189,36 @@ function buildThermalTicketHtml({ id, table, waiter, items, total, abonos, isBil
         <div class="divider"></div>
         ${totalsHtml}
         <div class="divider-solid"></div>
-        <div class="t-center t-small" style="margin-top: 6px;">¡GRACIAS POR SU PREFERENCIA!</div>
+        <div class="t-center t-small" style="margin-top: 6px;">${restFoot}</div>
     `;
 }
+
+// --- RESTAURANT SETTINGS FUNCTIONS ---
+window.openRestaurantSettingsModal = function() {
+    document.getElementById('setting-rest-name').value = restaurantInfo.name || 'RELY';
+    document.getElementById('setting-rest-subtitle').value = restaurantInfo.subtitle || '';
+    document.getElementById('setting-rest-address').value = restaurantInfo.address || '';
+    document.getElementById('setting-rest-phone').value = restaurantInfo.phone || '';
+    document.getElementById('setting-rest-footer').value = restaurantInfo.footer || '¡GRACIAS POR SU PREFERENCIA!';
+    document.getElementById('restaurant-settings-modal').classList.add('active');
+};
+
+window.closeRestaurantSettingsModal = function() {
+    document.getElementById('restaurant-settings-modal').classList.remove('active');
+};
+
+window.saveRestaurantSettings = async function() {
+    restaurantInfo = {
+        name: document.getElementById('setting-rest-name').value.trim() || 'RELY',
+        subtitle: document.getElementById('setting-rest-subtitle').value.trim(),
+        address: document.getElementById('setting-rest-address').value.trim(),
+        phone: document.getElementById('setting-rest-phone').value.trim(),
+        footer: document.getElementById('setting-rest-footer').value.trim() || '¡GRACIAS POR SU PREFERENCIA!'
+    };
+    await saveDb();
+    closeRestaurantSettingsModal();
+    showToast('✅ Datos del restaurante guardados correctamente', 'success');
+};
 
 // Toast notification helper
 window.showToast = function(msg, type = 'info') {
@@ -2091,7 +2342,37 @@ function renderMenu() {
 
 let tempModifiers = [];
 
+window.openNewProductModal = function() {
+    if(!currentUser || currentUser.role !== 'administrador') {
+        alert("Solo el administrador puede agregar productos.");
+        return;
+    }
+    const titleEl = document.getElementById('edit-product-modal-title');
+    if (titleEl) titleEl.textContent = 'Nuevo Platillo o Bebida';
+    
+    document.getElementById('edit-product-id').value = '';
+    document.getElementById('edit-product-name').value = '';
+    document.getElementById('edit-product-price').value = '';
+    document.getElementById('edit-product-category').value = 'POZOLE';
+    
+    const imgObj = document.getElementById('edit-modal-uploaded-image');
+    if (imgObj) {
+        imgObj.src = '';
+        imgObj.style.display = 'none';
+    }
+    
+    const btnDel = document.getElementById('btn-delete-product');
+    if (btnDel) btnDel.style.display = 'none';
+    
+    tempModifiers = [];
+    renderEditModifiers();
+    document.getElementById('menu-edit-modal').classList.add('active');
+};
+
 window.openMenuEditModal = function(product) {
+    const titleEl = document.getElementById('edit-product-modal-title');
+    if (titleEl) titleEl.textContent = 'Editar Platillo o Bebida';
+    
     document.getElementById('edit-product-id').value = product.id;
     document.getElementById('edit-product-name').value = product.name;
     document.getElementById('edit-product-price').value = product.price;
@@ -2104,6 +2385,9 @@ window.openMenuEditModal = function(product) {
     } else {
         imgObj.style.display = 'none';
     }
+    
+    const btnDel = document.getElementById('btn-delete-product');
+    if (btnDel) btnDel.style.display = 'inline-flex';
     
     tempModifiers = JSON.parse(JSON.stringify(product.modifiers || []));
     renderEditModifiers();
@@ -2180,11 +2464,34 @@ window.saveProductChanges = async function() {
     const name = document.getElementById('edit-product-name').value.trim();
     const price = parseFloat(document.getElementById('edit-product-price').value);
     const category = document.getElementById('edit-product-category').value;
-    const image = document.getElementById('edit-modal-uploaded-image').src;
+    const imgElement = document.getElementById('edit-modal-uploaded-image');
+    const image = (imgElement && imgElement.src && imgElement.src.startsWith('data:')) ? imgElement.src : null;
     
-    if(!name || isNaN(price)) return alert("Datos incompletos");
+    if(!name || isNaN(price)) return alert("Por favor completa el nombre y un precio válido.");
     
     await loadDb();
+    
+    if(!id) {
+        // REQUISITO 5: Crear nuevo producto
+        const numericIds = products.map(p => Number(p.id)).filter(n => !isNaN(n));
+        const newId = (numericIds.length > 0 ? Math.max(...numericIds) : 0) + 1;
+        const newProduct = {
+            id: newId,
+            name,
+            price,
+            category,
+            image: image,
+            modifiers: tempModifiers
+        };
+        products.push(newProduct);
+        await saveDb();
+        showToast(`✅ Producto "${name}" creado exitosamente`, 'success');
+        document.getElementById('menu-edit-modal').classList.remove('active');
+        renderMenu();
+        renderGrid();
+        return;
+    }
+    
     const idx = products.findIndex(p => p.id == id);
     if(idx !== -1) {
         products[idx] = {
@@ -2192,14 +2499,31 @@ window.saveProductChanges = async function() {
             name,
             price,
             category,
-            image: image.startsWith('data:') ? image : products[idx].image,
+            image: image || products[idx].image,
             modifiers: tempModifiers
         };
         await saveDb();
-        alert("Cambios guardados con éxito.");
+        showToast("✅ Cambios guardados con éxito", 'success');
         document.getElementById('menu-edit-modal').classList.remove('active');
         renderMenu();
         renderGrid(); // Update POS view too
+    }
+};
+
+window.deleteCurrentProduct = async function() {
+    const id = document.getElementById('edit-product-id').value;
+    if (!id) return;
+    const prod = products.find(p => p.id == id);
+    if (!prod) return;
+    
+    if (confirm(`¿Estás seguro de que deseas eliminar "${prod.name}" del menú?`)) {
+        await loadDb();
+        products = products.filter(p => p.id != id);
+        await saveDb();
+        document.getElementById('menu-edit-modal').classList.remove('active');
+        renderMenu();
+        renderGrid();
+        showToast(`🗑️ Producto "${prod.name}" eliminado`, 'info');
     }
 };
 

@@ -39,13 +39,21 @@ def init_db():
         row = cursor.fetchone()
         if not row:
             initial_state = {
-                "cocinaQueue": [], 
+                "cocinaQueue": [],
+                "barQueue": [],
                 "dailySales": [], 
                 "notifications": [], 
                 "users": [],
                 "clients": [],
                 "activeTickets": [],
-                "products": []
+                "products": [],
+                "restaurantInfo": {
+                    "name": "RELY",
+                    "subtitle": "Pozolería, Tacos y Enchiladas",
+                    "address": "",
+                    "phone": "123-456-7890",
+                    "footer": "¡GRACIAS POR SU PREFERENCIA!"
+                }
             }
             conn.execute("INSERT INTO app_state (id, state_json) VALUES (1, ?)", (json.dumps(initial_state),))
         conn.commit()
@@ -130,6 +138,15 @@ async def get_state():
         row = cursor.fetchone()
         if row:
             state = json.loads(row['state_json'])
+            # Ensure keys exist
+            state.setdefault('barQueue', [])
+            state.setdefault('restaurantInfo', {
+                "name": "RELY",
+                "subtitle": "Pozolería, Tacos y Enchiladas",
+                "address": "",
+                "phone": "123-456-7890",
+                "footer": "¡GRACIAS POR SU PREFERENCIA!"
+            })
             # Remove PINs entirely before sending to frontend for security
             for u in state.get('users', []):
                 u.pop('pin', None)
@@ -156,6 +173,10 @@ async def post_state(request: Request):
                 if 'pin' in u and u['pin'] and '$' not in str(u['pin']):
                     u['pin'] = hash_pin(u['pin'])
         
+        # Preserve restaurantInfo if not sent in data
+        if 'restaurantInfo' not in data and 'restaurantInfo' in old_state:
+            data['restaurantInfo'] = old_state['restaurantInfo']
+
         conn.execute("""
             INSERT INTO app_state (id, state_json, updated_at) 
             VALUES (1, ?, CURRENT_TIMESTAMP)

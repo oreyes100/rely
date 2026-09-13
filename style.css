@@ -2122,3 +2122,75 @@ button {
     border: 1px solid #E2E8F0;
     border-radius: 6px;
 }
+
+/* --- BAR (DRINKS) MODULE STYLES --- */
+.bar-top-bar {
+    background: linear-gradient(135deg, #0284C7 0%, #0369A1 100%) !important;
+}
+
+.bar-ticket {
+    border-top: 4px solid #0284C7;
+}
+
+.bar-ticket .kds-header {
+    background: linear-gradient(135deg, #0284C7 0%, #0369A1 100%) !important;
+}
+
+/* --- PAYMENT ARQUEO & CHANGE STYLES --- */
+.pay-method-btn {
+    padding: 6px 12px;
+    border-radius: 6px;
+    border: 1px solid #CBD5E1;
+    background: white;
+    color: var(--text-main);
+    font-size: 0.8rem;
+    font-weight: 700;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    transition: all 0.2s ease;
+}
+
+.pay-method-btn:hover {
+    border-color: var(--primary);
+    background: #EFF6FF;
+}
+
+.pay-method-btn.active {
+    background: var(--primary);
+    color: white;
+    border-color: var(--primary);
+    box-shadow: 0 2px 6px rgba(37, 99, 235, 0.25);
+}
+
+.btn-fast-cash {
+    padding: 5px 10px;
+    border-radius: 6px;
+    border: 1px solid #CBD5E1;
+    background: white;
+    color: #1E293B;
+    font-size: 0.8rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.btn-fast-cash:hover {
+    background: #DCFCE7;
+    border-color: #86EFAC;
+    color: #15803D;
+    transform: translateY(-1px);
+}
+
+.btn-fast-cash:active {
+    transform: translateY(0);
+}
+
+/* --- PRODUCT EDIT & DELETE BUTTONS --- */
+#btn-delete-product:hover {
+    background: #F87171 !important;
+    color: white !important;
+    border-color: #EF4444 !important;
+}
+

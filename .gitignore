@@ -47,3 +47,6 @@ Thumbs.db
 # Temporary files
 *.tmp
 .cache/
+
+# Subcarpeta clon de produccion VPS
+produccion-vps/
