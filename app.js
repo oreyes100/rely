@@ -308,15 +308,18 @@ function login(user) {
     };
 
     if (user.role === 'administrador') {
-        showNavItems(['pos','mesas','llevar','pedidos','clientes','cobros','kds','contabilidad','menu','usuarios']);
+        showNavItems(['pos','mesas','llevar','pedidos','clientes','cobros','kds','bar','contabilidad','menu','usuarios']);
     } else if (user.role === 'mesero') {
-        showNavItems(['mesas','pos','llevar','pedidos','clientes','cobros']);
+        showNavItems(['mesas','pos','llevar','pedidos','clientes','cobros','kds','bar']);
     } else if (user.role === 'cajera') {
-        showNavItems(['pos','llevar','pedidos','cobros','contabilidad']);
+        showNavItems(['pos','llevar','pedidos','cobros','contabilidad','kds','bar']);
         defaultView = 'cobros';
     } else if (user.role === 'cocinero') {
         showNavItems(['kds']);
         defaultView = 'kds';
+    } else if (user.role === 'bartender' || user.role === 'bar' || user.role === 'barman') {
+        showNavItems(['bar']);
+        defaultView = 'bar';
     }
 
     // Set role on body — CSS uses this to show/hide #mobile-nav items (no JS inline-style needed)
@@ -999,8 +1002,13 @@ window.comandarCocina = async function() {
     const waiterName = currentUser ? currentUser.name : 'Mesa ' + currentTable;
     
     // Separar comida para cocina y bebidas para bar
-    const drinkItems = cart.filter(i => i.product && i.product.category === 'BEBIDAS');
-    const foodItems = cart.filter(i => !i.product || i.product.category !== 'BEBIDAS');
+    const isDrink = (p) => {
+        if (!p) return false;
+        const cat = String(p.category || '').toUpperCase().trim();
+        return cat === 'BEBIDAS' || cat === 'BEBIDA' || cat === 'BAR';
+    };
+    const drinkItems = cart.filter(i => isDrink(i.product));
+    const foodItems = cart.filter(i => !isDrink(i.product));
 
     if (foodItems.length > 0) {
         const kdsOrder = {

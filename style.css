@@ -145,6 +145,11 @@ button {
     /* Cocinero */
     body[data-role="cocinero"] .mnav-btn[data-view="kds"] { display: flex; }
 
+    /* Bartender / Bar */
+    body[data-role="bartender"] .mnav-btn[data-view="bar"],
+    body[data-role="bar"] .mnav-btn[data-view="bar"],
+    body[data-role="barman"] .mnav-btn[data-view="bar"] { display: flex; }
+
     /* Add bottom padding to content so it doesn't hide behind the nav bar */
     .main-wrapper,
     .content-wrapper { padding-bottom: 62px; }
