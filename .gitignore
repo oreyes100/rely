@@ -50,3 +50,6 @@ Thumbs.db
 
 # Subcarpeta clon de produccion VPS
 produccion-vps/
+
+# Temporary agent files
+gemini-code-*.md
