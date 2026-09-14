@@ -234,9 +234,10 @@
                     <div class="products-area">
                         <div class="products-header">
                             <h2 id="pos-table-title">Menú Principal (Sin Mesa)</h2>
-                            <div class="search-bar">
-                                <i class="fa-solid fa-search"></i>
-                                <input type="text" placeholder="Buscar artículo...">
+                            <div class="search-bar" id="pos-search-bar">
+                                <i class="fa-solid fa-search" id="pos-search-icon" style="cursor:pointer;" title="Buscar"></i>
+                                <input type="text" id="pos-search-input" placeholder="Buscar platillo o bebida..." autocomplete="off">
+                                <button type="button" id="pos-search-clear" style="display:none; background:none; border:none; color:var(--text-muted); cursor:pointer; font-size:0.9rem; padding:2px 6px;" title="Limpiar búsqueda"><i class="fa-solid fa-xmark"></i></button>
                             </div>
                         </div>
                         <div class="products-grid" id="products-grid">
@@ -256,8 +257,8 @@
                     <aside class="cart-sidebar" id="cart-sidebar">
                         <div class="cart-header">
                             <div class="cart-tabs">
-                                <button class="cart-tab active">Por Comandar</button>
-                                <button class="cart-tab">Comandados <i class="fa-solid fa-check"></i></button>
+                                <button class="cart-tab active" id="tab-cart-pending" onclick="switchCartTab('pending')">Por Comandar</button>
+                                <button class="cart-tab" id="tab-cart-sent" onclick="switchCartTab('sent')">Comandados <i class="fa-solid fa-check"></i></button>
                             </div>
                             <button class="cart-close-btn mobile-only" onclick="toggleCart(false)" title="Cerrar comanda">
                                 <i class="fa-solid fa-xmark"></i>
@@ -270,8 +271,11 @@
                                 <p>No hay nueva orden</p>
                             </div>
                         </div>
-                        <div style="padding:10px 15px; border-top:1px solid var(--border); background:#F8FAFC;">
-                            <p style="font-size:0.8rem; font-weight:700; color:var(--text-muted); margin-bottom:5px;">PREVIAMENTE ENVIADO:</p>
+                        <div id="cart-sent-summary-box" style="padding:10px 15px; border-top:1px solid var(--border); background:#F8FAFC;">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">
+                                <p style="font-size:0.8rem; font-weight:700; color:var(--text-muted); margin:0;">PREVIAMENTE ENVIADO:</p>
+                                <button type="button" onclick="switchCartTab('sent')" style="background:none; border:none; color:var(--primary); font-size:0.75rem; font-weight:700; cursor:pointer; padding:0;"><i class="fa-solid fa-pen-to-square"></i> Modificar</button>
+                            </div>
                             <div id="cart-sent-items" style="font-size:0.85rem; color:var(--text-main);"></div>
                         </div>
                         <div class="cart-footer">

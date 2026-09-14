@@ -462,7 +462,7 @@ function rebuildNotificationDropdown() {
                 const mesaNum = parseInt(n.table.replace('Mesa ', ''), 10);
                 if(mesaNum) {
                     currentTable = mesaNum;
-                    document.querySelector('.nav-item[data-view="pos"]').click();
+                    window.switchView('pos');
                     document.getElementById('notification-dropdown').style.display = 'none';
                 }
             } else if(n.orderId) {
@@ -549,6 +549,16 @@ setInterval(updateClock, 1000);
 updateClock();
 
 window.switchView = function(viewName) {
+    currentView = viewName;
+
+    // Close mobile cart & dismiss backdrop if navigating away from POS
+    if (viewName !== 'pos') {
+        const sidebar = document.getElementById('cart-sidebar');
+        if (sidebar) sidebar.classList.remove('open');
+        const backdrop = document.getElementById('cart-backdrop');
+        if (backdrop) backdrop.classList.remove('active');
+    }
+
     // Update active state on desktop sidebar nav items
     document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
     const btn = document.querySelector(`.nav-item[data-view="${viewName}"]`);
@@ -583,28 +593,127 @@ document.querySelectorAll('.nav-item[data-view]').forEach(btn => {
     });
 });
 
-document.querySelectorAll('.category-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-        document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
+let searchQuery = '';
+
+function normalizeStr(str) {
+    return (str || '').toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+}
+
+window.clearPosSearch = function() {
+    searchQuery = '';
+    const input = document.getElementById('pos-search-input');
+    if (input) input.value = '';
+    const clearBtn = document.getElementById('pos-search-clear');
+    if (clearBtn) clearBtn.style.display = 'none';
+    renderGrid();
+};
+
+function selectCategory(cat, btn) {
+    if (currentView !== 'pos') {
+        window.switchView('pos');
+    }
+    document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
+    if (btn) {
         btn.classList.add('active');
-        currentCategory = btn.dataset.cat;
+    } else {
+        const matchingBtn = document.querySelector(`.category-btn[data-cat="${cat}"]`);
+        if (matchingBtn) matchingBtn.classList.add('active');
+    }
+    currentCategory = cat;
+    if (searchQuery) {
+        window.clearPosSearch();
+    } else {
         renderGrid();
+    }
+}
+
+// Event delegation for category buttons (handles touch & clicks reliably on tablets & mobile)
+const catScrollContainer = document.getElementById('categories-scroll');
+if (catScrollContainer) {
+    catScrollContainer.addEventListener('click', (e) => {
+        const btn = e.target.closest('.category-btn');
+        if (!btn) return;
+        selectCategory(btn.dataset.cat, btn);
     });
-});
+}
+
+function setupPosSearch() {
+    const searchInput = document.getElementById('pos-search-input');
+    const searchClear = document.getElementById('pos-search-clear');
+    const searchIcon = document.getElementById('pos-search-icon');
+    
+    if (searchInput) {
+        searchInput.addEventListener('input', (e) => {
+            searchQuery = e.target.value.trim();
+            if (searchClear) searchClear.style.display = searchQuery ? 'inline-block' : 'none';
+            renderGrid();
+        });
+        searchInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                window.clearPosSearch();
+            }
+        });
+    }
+    if (searchClear) {
+        searchClear.addEventListener('click', (e) => {
+            e.stopPropagation();
+            window.clearPosSearch();
+            if (searchInput) searchInput.focus();
+        });
+    }
+    if (searchIcon) {
+        searchIcon.addEventListener('click', () => {
+            if (searchInput) searchInput.focus();
+        });
+    }
+}
+setupPosSearch();
 
 function renderGrid() {
     const grid = document.getElementById('products-grid');
     if(!grid) return;
     grid.innerHTML = '';
     
-    let filteredProducts = products.filter(p => p.category === currentCategory);
+    let filteredProducts = [];
+    const normQuery = normalizeStr(searchQuery);
+    
+    if (normQuery) {
+        filteredProducts = products.filter(p => 
+            normalizeStr(p.name).includes(normQuery) || 
+            normalizeStr(p.category).includes(normQuery)
+        );
+    } else {
+        filteredProducts = products.filter(p => p.category === currentCategory);
+    }
+    
+    if (filteredProducts.length === 0) {
+        if (normQuery) {
+            grid.innerHTML = `
+                <div style="grid-column: 1 / -1; text-align: center; padding: 50px 20px; color: var(--text-muted);">
+                    <i class="fa-solid fa-magnifying-glass" style="font-size: 2.8rem; margin-bottom: 14px; display: block; opacity: 0.35;"></i>
+                    <h3 style="margin-bottom: 8px; font-size:1.15rem; color:var(--text-main);">No se encontraron platillos</h3>
+                    <p style="font-size: 0.95rem; margin-bottom: 16px;">No hay resultados que coincidan con "<strong>${searchQuery}</strong>"</p>
+                    <button class="action-btn secondary" style="width: auto; display: inline-flex; align-items: center; gap: 8px; margin: 0 auto;" onclick="clearPosSearch()">
+                        <i class="fa-solid fa-arrow-rotate-left"></i> Limpiar búsqueda
+                    </button>
+                </div>
+            `;
+        } else {
+            grid.innerHTML = `
+                <div style="grid-column: 1 / -1; text-align: center; padding: 40px 20px; color: var(--text-muted);">
+                    <p>No hay platillos en la categoría ${currentCategory}</p>
+                </div>
+            `;
+        }
+        return;
+    }
     
     filteredProducts.forEach(p => {
         const card = document.createElement('div');
         card.className = 'product-card';
         const imageContent = p.image 
             ? `<img src="${p.image}" alt="${p.name}" style="width:100%; height:100%; object-fit:cover;">`
-            : `<div class="product-logo"><span class="logo-rely">RELY</span><span class="logo-sub">Pozoleria, Tacos<br>y Enchiladas</span></div>`;
+            : `<div class="product-logo"><span class="logo-rely">RELY</span><span class="logo-sub">${p.category || 'RELY'}</span></div>`;
 
         card.innerHTML = `
             <div class="product-price-badge">$${p.price.toFixed(2)}</div>
@@ -883,14 +992,30 @@ window.addToCart = function() {
     const notesInput = document.getElementById('product-notes-input');
     const notes = notesInput ? notesInput.value.trim() : '';
 
-    cart.push({ id: Date.now(), product: currentProduct, qty: currentQty, modifiers: selectedMods, notes: notes });
+    cart.push({ id: Date.now() + '-' + Math.random().toString(36).substr(2, 5), product: currentProduct, qty: currentQty, modifiers: selectedMods, notes: notes });
     
     renderCart();
     window.closeModal();
 };
 
 window.removeFromCart = function(cartId) {
-    cart = cart.filter(item => item.id !== cartId);
+    cart = cart.filter(item => String(item.id) !== String(cartId));
+    renderCart();
+};
+
+let currentCartTab = 'pending'; // 'pending' | 'sent'
+
+window.switchCartTab = function(tab) {
+    currentCartTab = tab;
+    const tabPending = document.getElementById('tab-cart-pending');
+    const tabSent = document.getElementById('tab-cart-sent');
+    if (tabPending) tabPending.classList.toggle('active', tab === 'pending');
+    if (tabSent) tabSent.classList.toggle('active', tab === 'sent');
+    
+    const sentSummaryBox = document.getElementById('cart-sent-summary-box');
+    if (sentSummaryBox) {
+        sentSummaryBox.style.display = tab === 'sent' ? 'none' : 'block';
+    }
     renderCart();
 };
 
@@ -906,7 +1031,7 @@ function renderCart(isPaymentMode = false) {
     
     let total = 0;
     let newItemsHtml = '';
-    let sentItemsHtml = '';
+    let sentItemsSummaryHtml = '';
     let sentTotalQty = 0;
     
     cart.forEach(item => {
@@ -919,27 +1044,27 @@ function renderCart(isPaymentMode = false) {
                     <div class="cart-item-title"><span class="qty-badge" style="background:var(--primary)">${item.qty}</span>${item.product.name}</div>
                     <div class="cart-item-price">$${itemTotal.toFixed(2)}</div>
                 </div>
-                <div class="cart-item-modifiers">${item.modifiers.join(', ')}</div>
+                <div class="cart-item-modifiers">${(item.modifiers || []).join(', ')}</div>
                 ${notesHtml}
-                <div class="cart-item-actions"><button onclick="removeFromCart(${item.id})"><i class="fa-solid fa-trash"></i></button></div>
+                <div class="cart-item-actions"><button type="button" onclick="removeFromCart('${item.id}')" title="Eliminar"><i class="fa-solid fa-trash"></i></button></div>
             </div>`;
     });
 
     let abonoTotal = 0;
-    if (currentTable) {
-        const ticket = activeTickets.find(t => t.table === currentTable);
-        if (ticket) {
-            if (ticket.items) {
-                ticket.items.forEach(item => {
-                    const itemTotal = item.product.price * item.qty;
-                    total += itemTotal;
-                    sentTotalQty += item.qty;
-                    sentItemsHtml += `<div style="display:flex; justify-content:space-between; margin-bottom:4px;"><span>${item.qty}x ${item.product.name}</span><span>$${itemTotal.toFixed(2)}</span></div>`;
-                });
-            }
-            if (ticket.abonos) {
-                abonoTotal = ticket.abonos.reduce((sum, a) => sum + a.amount, 0);
-            }
+    const ticket = currentTable ? activeTickets.find(t => t.table === currentTable) : null;
+    const orderTitle = currentTable ? getOrderTitle(currentTable) : '';
+
+    if (ticket) {
+        if (ticket.items) {
+            ticket.items.forEach(item => {
+                const itemTotal = item.product.price * item.qty;
+                total += itemTotal;
+                sentTotalQty += item.qty;
+                sentItemsSummaryHtml += `<div style="display:flex; justify-content:space-between; margin-bottom:4px;"><span>${item.qty}x ${item.product.name}</span><span>$${itemTotal.toFixed(2)}</span></div>`;
+            });
+        }
+        if (ticket.abonos) {
+            abonoTotal = ticket.abonos.reduce((sum, a) => sum + a.amount, 0);
         }
     }
 
@@ -947,14 +1072,91 @@ function renderCart(isPaymentMode = false) {
 
     if (mobileBadge) mobileBadge.textContent = cart.length + sentTotalQty;
     
-    if(cart.length === 0 && newItemsHtml === '') {
-        container.innerHTML = `<div class="empty-cart"><i class="fa-solid fa-basket-shopping"></i><p>Sin nueva orden</p></div>`;
+    // RENDER MAIN CONTAINER BASED ON TAB
+    if (currentCartTab === 'sent') {
+        if (!ticket || !ticket.items || ticket.items.length === 0) {
+            container.innerHTML = `
+                <div class="empty-cart">
+                    <i class="fa-solid fa-clipboard-check"></i>
+                    <p>Sin platillos comandados aún</p>
+                    <button class="action-btn secondary" style="margin-top:12px; width:auto; font-size:0.85rem;" onclick="switchCartTab('pending')">
+                        <i class="fa-solid fa-plus"></i> Ir a Por Comandar
+                    </button>
+                </div>`;
+        } else {
+            let sentHtml = '';
+            ticket.items.forEach(item => {
+                const itemTotal = item.product.price * item.qty;
+                const notesHtml = item.notes ? `<div class="cart-item-notes"><i class="fa-solid fa-comment-dots"></i> ${item.notes}</div>` : '';
+                
+                // Check if item is currently in cocinaQueue or barQueue
+                let inQueueOrder = null;
+                let queueType = 'none';
+                
+                for (const kOrder of cocinaQueue) {
+                    if (kOrder.table === orderTitle) {
+                        const found = kOrder.items.some(it => String(it.id) === String(item.id) || (it.product && item.product && it.product.id === item.product.id && JSON.stringify(it.modifiers) === JSON.stringify(item.modifiers)));
+                        if (found) {
+                            inQueueOrder = kOrder;
+                            queueType = 'cocina';
+                            break;
+                        }
+                    }
+                }
+                
+                if (!inQueueOrder) {
+                    for (const bOrder of barQueue) {
+                        if (bOrder.table === orderTitle) {
+                            const found = bOrder.items.some(it => String(it.id) === String(item.id) || (it.product && item.product && it.product.id === item.product.id && JSON.stringify(it.modifiers) === JSON.stringify(item.modifiers)));
+                            if (found) {
+                                inQueueOrder = bOrder;
+                                queueType = 'bar';
+                                break;
+                            }
+                        }
+                    }
+                }
+                
+                const statusBadge = inQueueOrder
+                    ? `<span class="item-status-badge in-kitchen"><i class="fa-solid ${queueType === 'bar' ? 'fa-martini-glass-citrus' : 'fa-fire-burner'}"></i> En ${queueType === 'bar' ? 'Bar' : 'Cocina'} (${inQueueOrder.id})</span>`
+                    : `<span class="item-status-badge cooked"><i class="fa-solid fa-check-double"></i> Cocinado / Listo</span>`;
+                
+                const reduceBtn = item.qty > 1
+                    ? `<button type="button" class="btn-item-ctrl" onclick="modificarItemComandado('${ticket.id}', '${item.id}', 'reduce')" title="Reducir 1 unidad"><i class="fa-solid fa-minus"></i></button>`
+                    : '';
+                
+                sentHtml += `
+                    <div class="cart-item commanded-item ${inQueueOrder ? '' : 'item-cooked'}">
+                        <div class="cart-item-header">
+                            <div class="cart-item-title">
+                                <span class="qty-badge" style="background:${inQueueOrder ? '#3B82F6' : 'var(--secondary)'}">${item.qty}</span>
+                                ${item.product.name}
+                            </div>
+                            <div class="cart-item-price">$${itemTotal.toFixed(2)}</div>
+                        </div>
+                        <div class="cart-item-modifiers">${(item.modifiers || []).join(', ')}</div>
+                        ${notesHtml}
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px; padding-top:6px; border-top:1px dashed var(--border);">
+                            <div>${statusBadge}</div>
+                            <div class="commanded-controls">
+                                ${reduceBtn}
+                                <button type="button" class="btn-item-ctrl delete-btn" onclick="modificarItemComandado('${ticket.id}', '${item.id}', 'delete')" title="Eliminar platillo"><i class="fa-solid fa-trash"></i></button>
+                            </div>
+                        </div>
+                    </div>`;
+            });
+            container.innerHTML = sentHtml;
+        }
     } else {
-        container.innerHTML = newItemsHtml;
+        if(cart.length === 0 && newItemsHtml === '') {
+            container.innerHTML = `<div class="empty-cart"><i class="fa-solid fa-basket-shopping"></i><p>Sin nueva orden</p></div>`;
+        } else {
+            container.innerHTML = newItemsHtml;
+        }
     }
     
     if (sentContainer) {
-        sentContainer.innerHTML = sentItemsHtml || '<span style="color:var(--text-muted); font-size:0.75rem;">Nada enviado aún</span>';
+        sentContainer.innerHTML = sentItemsSummaryHtml || '<span style="color:var(--text-muted); font-size:0.75rem;">Nada enviado aún</span>';
         if(abonoTotal > 0) {
             sentContainer.innerHTML += `
                 <div style="display:flex; justify-content:space-between; margin-top:8px; padding-top:4px; border-top:1px dashed var(--border); font-weight:bold; color:var(--success);">
@@ -968,6 +1170,107 @@ function renderCart(isPaymentMode = false) {
     if(totalEl) totalEl.textContent = totalStr;
     if(btnTotalEl) btnTotalEl.textContent = totalStr;
 }
+
+window.modificarItemComandado = async function(ticketId, itemId, action) {
+    await loadDb();
+    const ticket = activeTickets.find(t => t.id === ticketId || t.table === currentTable);
+    if (!ticket || !ticket.items) return;
+    
+    const itemIdx = ticket.items.findIndex(it => String(it.id) === String(itemId));
+    if (itemIdx === -1) return;
+    
+    const item = ticket.items[itemIdx];
+    const getOrderTitle = (t) => String(t).startsWith('Llevar') || String(t).startsWith('Pedido') ? t : 'Mesa ' + t;
+    const orderTitle = getOrderTitle(ticket.table);
+    
+    // Check if item is in kitchen or bar queue
+    let inQueueOrder = null;
+    let inQueueItemIdx = -1;
+    let queueType = 'none';
+    
+    for (const kOrder of cocinaQueue) {
+        if (kOrder.table === orderTitle) {
+            const idx = kOrder.items.findIndex(it => String(it.id) === String(itemId) || (it.product && item.product && it.product.id === item.product.id && JSON.stringify(it.modifiers) === JSON.stringify(item.modifiers)));
+            if (idx !== -1) {
+                inQueueOrder = kOrder;
+                inQueueItemIdx = idx;
+                queueType = 'cocina';
+                break;
+            }
+        }
+    }
+    
+    if (!inQueueOrder) {
+        for (const bOrder of barQueue) {
+            if (bOrder.table === orderTitle) {
+                const idx = bOrder.items.findIndex(it => String(it.id) === String(itemId) || (it.product && item.product && it.product.id === item.product.id && JSON.stringify(it.modifiers) === JSON.stringify(item.modifiers)));
+                if (idx !== -1) {
+                    inQueueOrder = bOrder;
+                    inQueueItemIdx = idx;
+                    queueType = 'bar';
+                    break;
+                }
+            }
+        }
+    }
+    
+    const isInQueue = inQueueOrder !== null && inQueueItemIdx !== -1;
+    
+    let confirmMsg = '';
+    if (action === 'delete') {
+        if (isInQueue) {
+            confirmMsg = `¿Eliminar "${item.product.name}"?\n\n• Se eliminará de la comanda en cocina/bar (${inQueueOrder.id})\n• Se eliminará del ticket de cobro`;
+        } else {
+            confirmMsg = `"${item.product.name}" ya fue cocinado en cocina.\n\n¿Eliminar del ticket de cobro para no cobrarlo al cliente?`;
+        }
+    } else if (action === 'reduce') {
+        if (isInQueue) {
+            confirmMsg = `¿Reducir 1 unidad de "${item.product.name}"?\n\n• Se actualizará la comanda en cocina (${inQueueOrder.id})\n• Se actualizará en el ticket`;
+        } else {
+            confirmMsg = `"${item.product.name}" ya fue cocinado.\n\n¿Reducir 1 unidad del ticket de cobro?`;
+        }
+    }
+    
+    if (!confirm(confirmMsg)) return;
+    
+    if (action === 'reduce' && item.qty > 1) {
+        item.qty -= 1;
+        if (isInQueue) {
+            const qItem = inQueueOrder.items[inQueueItemIdx];
+            qItem.qty -= 1;
+            if (qItem.qty <= 0) {
+                inQueueOrder.items.splice(inQueueItemIdx, 1);
+            }
+        }
+    } else {
+        ticket.items.splice(itemIdx, 1);
+        if (isInQueue) {
+            inQueueOrder.items.splice(inQueueItemIdx, 1);
+        }
+    }
+    
+    // Clean empty orders in cocina/bar
+    if (isInQueue && inQueueOrder.items.length === 0) {
+        if (queueType === 'cocina') {
+            cocinaQueue = cocinaQueue.filter(o => o.id !== inQueueOrder.id);
+        } else if (queueType === 'bar') {
+            barQueue = barQueue.filter(o => o.id !== inQueueOrder.id);
+        }
+    }
+    
+    await saveDb();
+    renderKDS();
+    renderBar();
+    renderCart();
+    renderMesas();
+    renderCobros();
+    
+    if (isInQueue) {
+        showToast(`🗑️ ${item.product.name} eliminado de ${queueType === 'bar' ? 'bar' : 'cocina'} y del ticket`, 'success');
+    } else {
+        showToast(`ℹ️ ${item.product.name} (ya cocinado): eliminado del ticket de cobro`, 'info');
+    }
+};
 
 // Comandar a Cocina (KDS)
 window.comandarCocina = async function() {
@@ -1051,8 +1354,7 @@ window.comandarCocina = async function() {
     if(String(currentTable).startsWith('Pedido')) targetView = 'pedidos';
     currentTable = null;
     
-    const navBtn = document.querySelector(`.nav-item[data-view="${targetView}"]`);
-    if(navBtn) navBtn.click();
+    window.switchView(targetView);
 };
 
 // Cook Screen Rendering
@@ -1233,7 +1535,7 @@ function renderMesas() {
         card.style.cursor = 'pointer';
         card.onclick = () => {
             currentTable = i;
-            document.querySelector('.nav-item[data-view="pos"]').click();
+            window.switchView('pos');
         };
         
         const readyBadgeHtml = hasReadyFood
@@ -1457,7 +1759,7 @@ window.startOrderFromClient = function(clientId, type) {
 
 function startOrderForClientName(clientName, type) {
     currentTable = `${type} - ${clientName}`;
-    document.querySelector('.nav-item[data-view="pos"]').click();
+    window.switchView('pos');
 }
 
 // Override the onclick for "New Client" in Llevar/Pedidos
@@ -1487,7 +1789,7 @@ function renderDynamicOrders(gridId, typePrefix, targetViewId) {
             }
         });
         currentTable = `${typePrefix} - Nuevo ${Date.now().toString().slice(-4)}`;
-        document.querySelector('.nav-item[data-view="pos"]').click();
+        window.switchView('pos');
     };
     
     newCard.innerHTML = `
@@ -1506,7 +1808,7 @@ function renderDynamicOrders(gridId, typePrefix, targetViewId) {
         card.style.cursor = 'pointer';
         card.onclick = () => {
             currentTable = activeTicket.table;
-            document.querySelector('.nav-item[data-view="pos"]').click();
+            window.switchView('pos');
         };
         
         let itemsCount = activeTicket.items.reduce((s, it) => s + it.qty, 0);
@@ -1579,14 +1881,29 @@ function renderCobros() {
                 <div class="info-row"><h2 style="color:var(--text-main); margin-top:10px;">$${saldo.toFixed(2)}</h2></div>
             </div>
             <div class="mesa-card-footer" style="display:flex; flex-direction:column; gap:8px;">
-                <button style="width:100%; padding:10px; border-radius:6px; background:#3B82F6; color:white; font-weight:700; cursor:pointer; border:none;" onclick="prepararImpresionFinal('${ticket.id}')">
-                    <i class="fa-solid fa-print"></i> Ver Cuenta e Imprimir
-                </button>
+                <div style="display:flex; gap:6px;">
+                    <button style="flex:1; padding:10px 6px; border-radius:6px; background:#3B82F6; color:white; font-weight:700; cursor:pointer; border:none; font-size:0.85rem;" onclick="prepararImpresionFinal('${ticket.id}')">
+                        <i class="fa-solid fa-print"></i> Ver Cuenta
+                    </button>
+                    <button style="padding:10px 12px; border-radius:6px; background:var(--surface-hover); color:var(--text-main); font-weight:700; cursor:pointer; border:1px solid var(--border); font-size:0.85rem;" onclick="abrirModificarOrdenDesdeCobros('${ticket.table}')" title="Modificar platillos comandados">
+                        <i class="fa-solid fa-pen-to-square"></i> Modificar
+                    </button>
+                </div>
             </div>
         `;
         grid.appendChild(card);
     });
 }
+
+window.abrirModificarOrdenDesdeCobros = function(table) {
+    currentTable = table;
+    window.switchView('pos');
+    window.switchCartTab('sent');
+    const sidebar = document.getElementById('cart-sidebar');
+    if (sidebar && window.innerWidth <= 991) {
+        window.toggleCart(true);
+    }
+};
 
 // cobrarTicket is now replaced by prepararImpresionFinal + ejecutarImpresionTermica + finalizarTicket
 // Legacy alias for any existing references:
@@ -1654,7 +1971,7 @@ if(printBtn) {
             alert("Primero debes comandar los artículos pendientes.");
             return;
         }
-        document.querySelector('.nav-item[data-view="cobros"]').click();
+        window.switchView('cobros');
     });
 }
 
@@ -2322,7 +2639,7 @@ function renderMenu() {
         // Silently return if no user or non-admin to avoid alerts on load
         if(currentView === 'menu') {
              alert("Solo el administrador puede entrar aquí.");
-             document.querySelector('.nav-item[data-view="pos"]').click();
+             window.switchView('pos');
         }
         return;
     }
@@ -2553,6 +2870,8 @@ window.addEventListener('popstate', (e) => {
     const cartSidebar = document.getElementById('cart-sidebar');
     if (cartSidebar && cartSidebar.classList.contains('open')) {
         cartSidebar.classList.remove('open');
+        const backdrop = document.getElementById('cart-backdrop');
+        if (backdrop) backdrop.classList.remove('active');
         closedSomething = true;
     }
     
