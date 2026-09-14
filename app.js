@@ -35,9 +35,10 @@ let products = [
     { id: 123, name: 'Agua Natural', price: 15.00, category: 'BEBIDAS', image: null, modifiers: [] },
 
     // TAMALES
-    { id: 201, name: 'Tamal', price: 35.00, category: 'TAMALES', image: null, modifiers: [ { name: 'Sabor', type: 'radio', choices: ['Rojo', 'Verde', 'Dulce'] } ] },    // ENCHILADAS
-    { id: 301, name: 'Enchiladas (Orden 3pz)', price: 60.00, category: 'ENCHILADAS', pieces: 3, image: null, modifiers: [ { name: 'Relleno', type: 'radio', choices: FILLINGS }, { name: 'Complementos', type: 'checkbox', choices: ['Crema', 'Queso', 'Salsa'] } ] },
-    { id: 302, name: 'Enchilada (1pz)', price: 20.00, category: 'ENCHILADAS', pieces: 1, image: null, modifiers: [ { name: 'Relleno', type: 'radio', choices: FILLINGS }, { name: 'Complementos', type: 'checkbox', choices: ['Crema', 'Queso', 'Salsa'] } ] },
+    { id: 201, name: 'Tamal', price: 35.00, category: 'TAMALES', image: null, modifiers: [ { name: 'Sabor', type: 'radio', choices: ['Rojo', 'Verde', 'Dulce'] } ] },
+    // ENCHILADAS
+    { id: 301, name: 'Enchiladas (Orden 3pz)', price: 60.00, category: 'ENCHILADAS', pieces: 3, image: null, modifiers: [ { name: 'Relleno', type: 'radio', choices: FILLINGS }, { name: 'Complementos', type: 'checkbox', choices: ['Lechuga', 'Repollo', 'Con Todo', 'Sin Salsa', 'Sin Crema', 'Sin Queso', 'Sin Zanahorias'] } ] },
+    { id: 302, name: 'Enchilada (1pz)', price: 20.00, category: 'ENCHILADAS', pieces: 1, image: null, modifiers: [ { name: 'Relleno', type: 'radio', choices: FILLINGS }, { name: 'Complementos', type: 'checkbox', choices: ['Lechuga', 'Repollo', 'Con Todo', 'Sin Salsa', 'Sin Crema', 'Sin Queso', 'Sin Zanahorias'] } ] },
 
     // SOPES
     { id: 401, name: 'Sopes (Orden 3pz)', price: 70.00, category: 'SOPES', pieces: 3, image: null, modifiers: [ { name: 'Relleno', type: 'radio', choices: FILLINGS } ] },
@@ -780,6 +781,36 @@ window.mixerChange = function(filling, delta) {
     renderMixerFillings();
 };
 
+function renderModifierGroupHtml(mod) {
+    let choicesHtml = '';
+    const safeName = mod.name.replace(/\s/g, '');
+    if(mod.type === 'radio') {
+        (mod.choices || []).forEach((choice, index) => {
+            choicesHtml += `
+            <label class="modifier-item">
+                <input type="radio" name="mod_${safeName}" value="${choice}" ${index === 0 ? 'checked' : ''}>
+                <span>${choice}</span>
+            </label>`;
+        });
+    } else if (mod.type === 'checkbox') {
+        (mod.choices || []).forEach(choice => {
+            choicesHtml += `
+            <label class="modifier-item add-icon">
+                <input type="checkbox" name="mod_${safeName}" value="${choice}">
+                <span>${choice}</span>
+            </label>`;
+        });
+    }
+    return `
+    <div class="modifier-group">
+        <div class="modifier-header">
+            <h3>${mod.name.toUpperCase()}</h3>
+            <span>${mod.type === 'radio' ? 'Selecciona 1' : 'Múltiples Opciones'}</span>
+        </div>
+        <div class="modifier-list">${choicesHtml}</div>
+    </div>`;
+}
+
 function openModal(product) {
     currentProduct = product;
     currentQty = 1;
@@ -803,6 +834,8 @@ function openModal(product) {
     
     // Dynamic Modifiers Rendering
     modalModifiersContainer.innerHTML = '';
+    const extraModifiersContainer = document.getElementById('modal-extra-modifiers');
+    if (extraModifiersContainer) extraModifiersContainer.innerHTML = '';
     
     const isMixable = (product.category === 'TACOS' || product.category === 'ENCHILADAS' || product.category === 'SOPES') && getProductPieces(product) > 1;
     
@@ -830,35 +863,22 @@ function openModal(product) {
             <div class="modifier-header"><h3>RELLENO</h3><span>Selecciona 1</span></div>
             <div class="modifier-list">${singleHtml}</div>
         </div>`;
+
+        // Render additional modifier groups (e.g. Complementos) in modal-extra-modifiers
+        if (extraModifiersContainer && product.modifiers && product.modifiers.length > 0) {
+            let extraHtml = '';
+            product.modifiers.forEach(mod => {
+                if (mod.name.toLowerCase() === 'relleno') return;
+                extraHtml += renderModifierGroupHtml(mod);
+            });
+            extraModifiersContainer.innerHTML = extraHtml;
+        }
     } else if (product.modifiers && product.modifiers.length > 0) {
+        let allHtml = '';
         product.modifiers.forEach(mod => {
-            let choicesHtml = '';
-            if(mod.type === 'radio') {
-                mod.choices.forEach((choice, index) => {
-                    choicesHtml += `
-                    <label class="modifier-item">
-                        <input type="radio" name="mod_${mod.name.replace(/\s/g, '')}" value="${choice}" ${index === 0 ? 'checked' : ''}>
-                        <span>${choice}</span>
-                    </label>`;
-                });
-            } else if (mod.type === 'checkbox') {
-                mod.choices.forEach(choice => {
-                    choicesHtml += `
-                    <label class="modifier-item add-icon">
-                        <input type="checkbox" name="mod_${mod.name.replace(/\s/g, '')}" value="${choice}">
-                        <span>${choice}</span>
-                    </label>`;
-                });
-            }
-            modalModifiersContainer.innerHTML += `
-            <div class="modifier-group">
-                <div class="modifier-header">
-                    <h3>${mod.name.toUpperCase()}</h3>
-                    <span>${mod.type === 'radio' ? 'Selecciona 1' : 'Múltiples Opciones'}</span>
-                </div>
-                <div class="modifier-list">${choicesHtml}</div>
-            </div>`;
+            allHtml += renderModifierGroupHtml(mod);
         });
+        modalModifiersContainer.innerHTML = allHtml;
     } else {
         modalModifiersContainer.innerHTML = `<div style="padding:40px; text-align:center; color:var(--text-muted);">Sin preparación especial.</div>`;
     }
@@ -909,6 +929,8 @@ window.closeModal = () => {
     currentProduct = null;
     mixerSelections = {};
     isMixerMode = false;
+    const extraModifiersContainer = document.getElementById('modal-extra-modifiers');
+    if (extraModifiersContainer) extraModifiersContainer.innerHTML = '';
 };
 
 const photoUpload = document.getElementById('product-image-upload');
@@ -951,6 +973,7 @@ window.addToCart = function() {
     
     let selectedMods = [];
     let fillingsMix = null; // For mixed taco/enchilada orders
+    const isMixable = (currentProduct.category === 'TACOS' || currentProduct.category === 'ENCHILADAS' || currentProduct.category === 'SOPES') && getProductPieces(currentProduct) > 1;
     
     if (isMixerMode) {
         // Build mixed fillings description
@@ -968,24 +991,28 @@ window.addToCart = function() {
             .map(([k, v]) => `${v}x${k}`)
             .join(' + ');
         if (fillingsMix) selectedMods.push(fillingsMix.toUpperCase());
-    } else {
-        // Single modifier mode (radio/checkbox)
-        const isMixable = (currentProduct.category === 'TACOS' || currentProduct.category === 'ENCHILADAS' || currentProduct.category === 'SOPES') && getProductPieces(currentProduct) > 1;
-        if (isMixable) {
-            const checked = document.querySelector(`input[name="mod_Relleno"]:checked`);
-            if(checked) selectedMods.push(checked.value.toUpperCase());
-        } else if (currentProduct.modifiers && currentProduct.modifiers.length > 0) {
-            currentProduct.modifiers.forEach(mod => {
-                const safeName = mod.name.replace(/\s/g, '');
-                if(mod.type === 'radio') {
-                    const checked = document.querySelector(`input[name="mod_${safeName}"]:checked`);
-                    if(checked) selectedMods.push(checked.value.toUpperCase());
-                } else if (mod.type === 'checkbox') {
-                    const checked = document.querySelectorAll(`input[name="mod_${safeName}"]:checked`);
-                    checked.forEach(c => selectedMods.push(c.value.toUpperCase()));
-                }
-            });
-        }
+    } else if (isMixable) {
+        // Single modifier mode for mixable products
+        const checked = document.querySelector(`input[name="mod_Relleno"]:checked`);
+        if(checked) selectedMods.push(checked.value.toUpperCase());
+    }
+
+    // Collect modifier choices from product.modifiers (e.g. Complementos or other groups)
+    if (currentProduct.modifiers && currentProduct.modifiers.length > 0) {
+        currentProduct.modifiers.forEach(mod => {
+            // If it's mixable or mixerMode, we already handled 'Relleno' above
+            if ((isMixable || isMixerMode) && mod.name.toLowerCase() === 'relleno') {
+                return;
+            }
+            const safeName = mod.name.replace(/\s/g, '');
+            if(mod.type === 'radio') {
+                const checked = document.querySelector(`input[name="mod_${safeName}"]:checked`);
+                if(checked) selectedMods.push(checked.value.toUpperCase());
+            } else if (mod.type === 'checkbox') {
+                const checked = document.querySelectorAll(`input[name="mod_${safeName}"]:checked`);
+                checked.forEach(c => selectedMods.push(c.value.toUpperCase()));
+            }
+        });
     }
 
     // Capture notes
