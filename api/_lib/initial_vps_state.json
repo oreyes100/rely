@@ -1,0 +1,5428 @@
+{
+  "cocinaQueue": [],
+  "dailySales": [
+    {
+      "id": "TKT-9529",
+      "table": "Mesa 6",
+      "items": [
+        {
+          "id": 1789180142894,
+          "product": {
+            "id": 502,
+            "name": "Tacos Dorados (1/2 Orden 3pz)",
+            "price": 45,
+            "category": "TACOS",
+            "pieces": 3,
+            "image": null,
+            "modifiers": [
+              {
+                "name": "Relleno",
+                "type": "radio",
+                "choices": [
+                  "Picadillo",
+                  "Pollo",
+                  "Deshebrada",
+                  "Papa",
+                  "Frijol"
+                ]
+              }
+            ]
+          },
+          "qty": 1,
+          "modifiers": [
+            "PICADILLO"
+          ],
+          "notes": "Lechuga con todo"
+        },
+        {
+          "id": 1789180168573,
+          "product": {
+            "id": 802,
+            "name": "Pozole Medio Especial",
+            "price": 55,
+            "category": "POZOLE",
+            "image": null,
+            "modifiers": [
+              {
+                "name": "Preparación",
+                "type": "radio",
+                "choices": [
+                  "Batido",
+                  "De Caldo",
+                  "De Pollo"
+                ]
+              },
+              {
+                "name": "Complementos",
+                "type": "checkbox",
+                "choices": [
+                  "Cebolla",
+                  "Chile",
+                  "Lechuga",
+                  "Rábano"
+                ]
+              }
+            ]
+          },
+          "qty": 1,
+          "modifiers": [
+            "BATIDO",
+            "CEBOLLA",
+            "LECHUGA",
+            "RÁBANO"
+          ],
+          "notes": ""
+        },
+        {
+          "id": 1789180180850,
+          "product": {
+            "id": 101,
+            "name": "Atole (Taza)",
+            "price": 20,
+            "category": "BEBIDAS",
+            "image": null,
+            "modifiers": []
+          },
+          "qty": 1,
+          "modifiers": [],
+          "notes": ""
+        }
+      ],
+      "abonos": [],
+      "time": "09:20 p.m.",
+      "dateObj": "2026-09-12T03:20:26.447Z",
+      "itemsCount": 3,
+      "total": 120,
+      "waiter": "Abner"
+    },
+    {
+      "id": "TKT-1033",
+      "table": "Mesa 1",
+      "items": [
+        {
+          "id": 1788840323647,
+          "product": {
+            "id": 401,
+            "name": "Sopes (Orden 3pz)",
+            "price": 70,
+            "category": "SOPES",
+            "pieces": 3,
+            "image": null,
+            "modifiers": [
+              {
+                "name": "Relleno",
+                "type": "radio",
+                "choices": [
+                  "Picadillo",
+                  "Pollo",
+                  "Deshebrada",
+                  "Papa",
+                  "Frijol"
+                ]
+              }
+            ]
+          },
+          "qty": 1,
+          "modifiers": [
+            "1XPICADILLO + 1XPOLLO + 1XDESHEBRADA"
+          ],
+          "notes": ""
+        }
+      ],
+      "abonos": [],
+      "time": "09:20 p.m.",
+      "dateObj": "2026-09-12T03:20:53.829Z",
+      "itemsCount": 1,
+      "total": 70,
+      "waiter": "Abner"
+    },
+    {
+      "id": "TKT-5698",
+      "table": "Mesa 8",
+      "items": [
+        {
+          "id": 1789180062037,
+          "product": {
+            "id": 803,
+            "name": "Pozole Especial",
+            "price": 60,
+            "category": "POZOLE",
+            "image": null,
+            "modifiers": [
+              {
+                "name": "Preparación",
+                "type": "radio",
+                "choices": [
+                  "Batido",
+                  "De Caldo",
+                  "De Pollo"
+                ]
+              },
+              {
+                "name": "Complementos",
+                "type": "checkbox",
+                "choices": [
+                  "Cebolla",
+                  "Chile",
+                  "Lechuga",
+                  "Rábano"
+                ]
+              }
+            ]
+          },
+          "qty": 2,
+          "modifiers": [
+            "DE CALDO",
+            "CEBOLLA",
+            "CHILE",
+            "LECHUGA",
+            "RÁBANO"
+          ],
+          "notes": "Todo aparte y repollo"
+        },
+        {
+          "id": 1789180109993,
+          "product": {
+            "id": 104,
+            "name": "Coca Cola 600ml",
+            "price": 30,
+            "category": "BEBIDAS",
+            "image": null,
+            "modifiers": []
+          },
+          "qty": 1,
+          "modifiers": [],
+          "notes": ""
+        },
+        {
+          "id": 1789180211707,
+          "product": {
+            "id": 122,
+            "name": "Cerveza",
+            "price": 25,
+            "category": "BEBIDAS",
+            "image": null,
+            "modifiers": []
+          },
+          "qty": 1,
+          "modifiers": [],
+          "notes": ""
+        },
+        {
+          "id": 1789184119188,
+          "product": {
+            "id": 701,
+            "name": "Patitas de Puerco",
+            "price": 55,
+            "category": "PATITAS",
+            "image": null,
+            "modifiers": []
+          },
+          "qty": 1,
+          "modifiers": [],
+          "notes": ""
+        }
+      ],
+      "abonos": [],
+      "time": "09:35 p.m.",
+      "dateObj": "2026-09-12T03:35:46.087Z",
+      "itemsCount": 5,
+      "total": 230,
+      "waiter": "Abner"
+    },
+    {
+      "id": "TKT-2252",
+      "table": "Mesa 6",
+      "items": [
+        {
+          "id": 1789183856108,
+          "product": {
+            "id": 401,
+            "name": "Sopes (Orden 3pz)",
+            "price": 70,
+            "category": "SOPES",
+            "pieces": 3,
+            "image": null,
+            "modifiers": [
+              {
+                "name": "Relleno",
+                "type": "radio",
+                "choices": [
+                  "Picadillo",
+                  "Pollo",
+                  "Deshebrada",
+                  "Papa",
+                  "Frijol"
+                ]
+              },
+              {
+                "name": "Nueva Opción",
+                "type": "checkbox",
+                "choices": [
+                  "Lechuga",
+                  "Con Todo",
+                  "Sin Salsa",
+                  "Sin Queso",
+                  "Repollo",
+                  "Sin Zanahorias",
+                  "SIn Crem"
+                ]
+              }
+            ]
+          },
+          "qty": 1,
+          "modifiers": [
+            "POLLO"
+          ],
+          "notes": "Lechuga con todo bien dorados"
+        },
+        {
+          "id": 1789183874247,
+          "product": {
+            "id": 802,
+            "name": "Pozole Medio Especial",
+            "price": 55,
+            "category": "POZOLE",
+            "image": null,
+            "modifiers": [
+              {
+                "name": "Preparación",
+                "type": "radio",
+                "choices": [
+                  "Batido",
+                  "De Caldo",
+                  "De Pollo"
+                ]
+              },
+              {
+                "name": "Complementos",
+                "type": "checkbox",
+                "choices": [
+                  "Cebolla",
+                  "Chile",
+                  "Lechuga",
+                  "Rábano"
+                ]
+              }
+            ]
+          },
+          "qty": 1,
+          "modifiers": [
+            "DE CALDO",
+            "CEBOLLA",
+            "CHILE",
+            "LECHUGA",
+            "RÁBANO"
+          ],
+          "notes": ""
+        },
+        {
+          "id": 1789183915899,
+          "product": {
+            "id": 805,
+            "name": "Pozole Mini",
+            "price": 20,
+            "category": "POZOLE",
+            "image": null,
+            "modifiers": [
+              {
+                "name": "Preparación",
+                "type": "radio",
+                "choices": [
+                  "Batido",
+                  "De Caldo",
+                  "De Pollo"
+                ]
+              },
+              {
+                "name": "Complementos",
+                "type": "checkbox",
+                "choices": [
+                  "Cebolla",
+                  "Chile",
+                  "Lechuga",
+                  "Rábano"
+                ]
+              }
+            ]
+          },
+          "qty": 1,
+          "modifiers": [
+            "DE CALDO",
+            "LECHUGA"
+          ],
+          "notes": "Básico"
+        },
+        {
+          "id": 1789183999531,
+          "product": {
+            "id": 302,
+            "name": "Enchilada (1pz)",
+            "price": 20,
+            "category": "ENCHILADAS",
+            "pieces": 1,
+            "image": null,
+            "modifiers": [
+              {
+                "name": "Relleno",
+                "type": "radio",
+                "choices": [
+                  "Picadillo",
+                  "Pollo",
+                  "Deshebrada",
+                  "Papa",
+                  "Frijol"
+                ]
+              },
+              {
+                "name": "Complementos",
+                "type": "checkbox",
+                "choices": [
+                  "Lechuga",
+                  "Repollo",
+                  "Con Todo",
+                  "Sin Salsa ",
+                  "SIn Crema",
+                  "Sin Queso",
+                  "Sin Zanahorias"
+                ]
+              }
+            ]
+          },
+          "qty": 1,
+          "modifiers": [
+            "POLLO",
+            "LECHUGA",
+            "CON TODO"
+          ],
+          "notes": ""
+        },
+        {
+          "id": 1789184323637,
+          "product": {
+            "id": 117,
+            "name": "Agua Fresca Horchata (1 Lt)",
+            "price": 30,
+            "category": "BEBIDAS",
+            "image": null,
+            "modifiers": []
+          },
+          "qty": 1,
+          "modifiers": [],
+          "notes": ""
+        },
+        {
+          "id": 1789184384927,
+          "product": {
+            "id": 116,
+            "name": "Agua Fresca Horchata (1/2 Lt)",
+            "price": 20,
+            "category": "BEBIDAS",
+            "image": null,
+            "modifiers": []
+          },
+          "qty": 1,
+          "modifiers": [],
+          "notes": ""
+        },
+        {
+          "id": 1789184441200,
+          "product": {
+            "id": 116,
+            "name": "Agua Fresca Horchata (1/2 Lt)",
+            "price": 20,
+            "category": "BEBIDAS",
+            "image": null,
+            "modifiers": []
+          },
+          "qty": 1,
+          "modifiers": [],
+          "notes": ""
+        },
+        {
+          "id": 1789185304123,
+          "product": {
+            "id": 116,
+            "name": "Agua Fresca Horchata (1/2 Lt)",
+            "price": 20,
+            "category": "BEBIDAS",
+            "image": null,
+            "modifiers": []
+          },
+          "qty": 1,
+          "modifiers": [],
+          "notes": ""
+        },
+        {
+          "id": 1789185311506,
+          "product": {
+            "id": 402,
+            "name": "Sope (1pz)",
+            "price": 25,
+            "category": "SOPES",
+            "pieces": 1,
+            "image": null,
+            "modifiers": [
+              {
+                "name": "Relleno",
+                "type": "radio",
+                "choices": [
+                  "Picadillo",
+                  "Pollo",
+                  "Deshebrada",
+                  "Papa",
+                  "Frijol"
+                ]
+              }
+            ]
+          },
+          "qty": 1,
+          "modifiers": [
+            "POLLO"
+          ],
+          "notes": ""
+        },
+        {
+          "id": 1789185323635,
+          "product": {
+            "id": 402,
+            "name": "Sope (1pz)",
+            "price": 25,
+            "category": "SOPES",
+            "pieces": 1,
+            "image": null,
+            "modifiers": [
+              {
+                "name": "Relleno",
+                "type": "radio",
+                "choices": [
+                  "Picadillo",
+                  "Pollo",
+                  "Deshebrada",
+                  "Papa",
+                  "Frijol"
+                ]
+              }
+            ]
+          },
+          "qty": 1,
+          "modifiers": [
+            "DESHEBRADA"
+          ],
+          "notes": "Lechuga con todo"
+        },
+        {
+          "id": 1789186584478,
+          "product": {
+            "id": 117,
+            "name": "Agua Fresca Horchata (1 Lt)",
+            "price": 30,
+            "category": "BEBIDAS",
+            "image": null,
+            "modifiers": []
+          },
+          "qty": 1,
+          "modifiers": [],
+          "notes": ""
+        }
+      ],
+      "abonos": [],
+      "time": "10:46 p.m.",
+      "dateObj": "2026-09-12T04:46:39.248Z",
+      "itemsCount": 11,
+      "total": 335,
+      "waiter": "Luis"
+    },
+    {
+      "id": "TKT-3589",
+      "table": "Llevar - Cliente Anónimo",
+      "items": [
+        {
+          "id": 1789184682650,
+          "product": {
+            "id": 501,
+            "name": "Tacos Dorados (Orden 5pz)",
+            "price": 60,
+            "category": "TACOS",
+            "pieces": 5,
+            "image": null,
+            "modifiers": [
+              {
+                "name": "Relleno",
+                "type": "radio",
+                "choices": [
+                  "Picadillo",
+                  "Pollo",
+                  "Deshebrada",
+                  "Papa",
+                  "Frijol"
+                ]
+              }
+            ]
+          },
+          "qty": 1,
+          "modifiers": [
+            "1XFRIJOL + 2XDESHEBRADA + 2XPOLLO"
+          ],
+          "notes": "Repollo con todo"
+        },
+        {
+          "id": 1789184732447,
+          "product": {
+            "id": 402,
+            "name": "Sope (1pz)",
+            "price": 25,
+            "category": "SOPES",
+            "pieces": 1,
+            "image": null,
+            "modifiers": [
+              {
+                "name": "Relleno",
+                "type": "radio",
+                "choices": [
+                  "Picadillo",
+                  "Pollo",
+                  "Deshebrada",
+                  "Papa",
+                  "Frijol"
+                ]
+              }
+            ]
+          },
+          "qty": 1,
+          "modifiers": [
+            "DESHEBRADA"
+          ],
+          "notes": "Lechuga con todo"
+        },
+        {
+          "id": 1789185691358,
+          "product": {
+            "id": 801,
+            "name": "Pozole Básico",
+            "price": 50,
+            "category": "POZOLE",
+            "image": null,
+            "modifiers": [
+              {
+                "name": "Preparación",
+                "type": "radio",
+                "choices": [
+                  "Batido",
+                  "De Caldo",
+                  "De Pollo"
+                ]
+              },
+              {
+                "name": "Complementos",
+                "type": "checkbox",
+                "choices": [
+                  "Cebolla",
+                  "Chile",
+                  "Lechuga",
+                  "Rábano"
+                ]
+              }
+            ]
+          },
+          "qty": 1,
+          "modifiers": [
+            "DE POLLO"
+          ],
+          "notes": ""
+        }
+      ],
+      "abonos": [],
+      "time": "10:46 p.m.",
+      "dateObj": "2026-09-12T04:46:55.074Z",
+      "itemsCount": 3,
+      "total": 135,
+      "waiter": "Luis"
+    },
+    {
+      "id": "TKT-0086",
+      "table": "Mesa 2",
+      "items": [
+        {
+          "id": 1789186042656,
+          "product": {
+            "id": 601,
+            "name": "Tostada",
+            "price": 40,
+            "category": "TOSTADAS",
+            "pieces": 1,
+            "image": null,
+            "modifiers": [
+              {
+                "name": "Relleno",
+                "type": "radio",
+                "choices": [
+                  "Picadillo",
+                  "Pollo",
+                  "Deshebrada",
+                  "Papa",
+                  "Frijol"
+                ]
+              }
+            ]
+          },
+          "qty": 1,
+          "modifiers": [
+            "DESHEBRADA"
+          ],
+          "notes": "Sin frijol, Sin verdura"
+        },
+        {
+          "id": 1789186117013,
+          "product": {
+            "id": 301,
+            "name": "Enchiladas (Orden 3pz)",
+            "price": 60,
+            "category": "ENCHILADAS",
+            "pieces": 3,
+            "image": null,
+            "modifiers": [
+              {
+                "name": "Relleno",
+                "type": "radio",
+                "choices": [
+                  "Picadillo",
+                  "Pollo",
+                  "Deshebrada",
+                  "Papa",
+                  "Frijol"
+                ]
+              },
+              {
+                "name": "Complementos",
+                "type": "checkbox",
+                "choices": [
+                  "Lechuga",
+                  "Repollo",
+                  "Sin Crema",
+                  "Sin Queso",
+                  "Sin Salsa",
+                  "Sin Zanahorias"
+                ]
+              }
+            ]
+          },
+          "qty": 1,
+          "modifiers": [
+            "DESHEBRADA"
+          ],
+          "notes": "Sin crema sin salsa"
+        },
+        {
+          "id": 1789186230559,
+          "product": {
+            "id": 502,
+            "name": "Tacos Dorados (1/2 Orden 3pz)",
+            "price": 45,
+            "category": "TACOS",
+            "pieces": 3,
+            "image": null,
+            "modifiers": [
+              {
+                "name": "Relleno",
+                "type": "radio",
+                "choices": [
+                  "Picadillo",
+                  "Pollo",
+                  "Deshebrada",
+                  "Papa",
+                  "Frijol"
+                ]
+              }
+            ]
+          },
+          "qty": 1,
+          "modifiers": [
+            "FRIJOL"
+          ],
+          "notes": "Solitos"
+        },
+        {
+          "id": 1789186278338,
+          "product": {
+            "id": 302,
+            "name": "Enchilada (1pz)",
+            "price": 20,
+            "category": "ENCHILADAS",
+            "pieces": 1,
+            "image": null,
+            "modifiers": [
+              {
+                "name": "Relleno",
+                "type": "radio",
+                "choices": [
+                  "Picadillo",
+                  "Pollo",
+                  "Deshebrada",
+                  "Papa",
+                  "Frijol"
+                ]
+              },
+              {
+                "name": "Complementos",
+                "type": "checkbox",
+                "choices": [
+                  "Lechuga",
+                  "Repollo",
+                  "Con Todo",
+                  "Sin Salsa ",
+                  "SIn Crema",
+                  "Sin Queso",
+                  "Sin Zanahorias"
+                ]
+              }
+            ]
+          },
+          "qty": 1,
+          "modifiers": [
+            "PICADILLO"
+          ],
+          "notes": "2 enchiladas, Sin verdura"
+        }
+      ],
+      "abonos": [],
+      "time": "10:46 p.m.",
+      "dateObj": "2026-09-12T04:46:56.915Z",
+      "itemsCount": 4,
+      "total": 165,
+      "waiter": "Luis"
+    },
+    {
+      "id": "TKT-2481",
+      "table": "Mesa 1",
+      "items": [
+        {
+          "id": 1789231605923,
+          "product": {
+            "id": 301,
+            "name": "Enchiladas (Orden 3pz)",
+            "price": 60,
+            "category": "ENCHILADAS",
+            "pieces": 3,
+            "image": null,
+            "modifiers": [
+              {
+                "name": "Relleno",
+                "type": "radio",
+                "choices": [
+                  "Picadillo",
+                  "Pollo",
+                  "Deshebrada",
+                  "Papa",
+                  "Frijol"
+                ]
+              },
+              {
+                "name": "Complementos",
+                "type": "checkbox",
+                "choices": [
+                  "Lechuga",
+                  "Repollo",
+                  "Sin Crema",
+                  "Sin Queso",
+                  "Sin Salsa",
+                  "Sin Zanahorias"
+                ]
+              }
+            ]
+          },
+          "qty": 1,
+          "modifiers": [
+            "1XPOLLO + 1XPICADILLO + 1XDESHEBRADA"
+          ],
+          "notes": ""
+        }
+      ],
+      "abonos": [],
+      "time": "08:28 p.m.",
+      "dateObj": "2026-09-13T02:28:23.300Z",
+      "itemsCount": 1,
+      "total": 60,
+      "waiter": "Abner"
+    },
+    {
+      "id": "TKT-9597",
+      "table": "Mesa 2",
+      "items": [
+        {
+          "id": 1789268165703,
+          "product": {
+            "id": 201,
+            "name": "Tamal",
+            "price": 35,
+            "category": "TAMALES",
+            "image": null,
+            "modifiers": [
+              {
+                "name": "Sabor",
+                "type": "radio",
+                "choices": [
+                  "Rojo",
+                  "Verde",
+                  "Dulce"
+                ]
+              },
+              {
+                "name": "Nueva Opción",
+                "type": "radio",
+                "choices": [
+                  "Con todo",
+                  "Sin Salsa",
+                  "Sin Queso",
+                  "Sin Crema"
+                ]
+              }
+            ]
+          },
+          "qty": 1,
+          "modifiers": [
+            "DULCE",
+            "CON TODO"
+          ],
+          "notes": ""
+        },
+        {
+          "id": 1789268170480,
+          "product": {
+            "id": 201,
+            "name": "Tamal",
+            "price": 35,
+            "category": "TAMALES",
+            "image": null,
+            "modifiers": [
+              {
+                "name": "Sabor",
+                "type": "radio",
+                "choices": [
+                  "Rojo",
+                  "Verde",
+                  "Dulce"
+                ]
+              },
+              {
+                "name": "Nueva Opción",
+                "type": "radio",
+                "choices": [
+                  "Con todo",
+                  "Sin Salsa",
+                  "Sin Queso",
+                  "Sin Crema"
+                ]
+              }
+            ]
+          },
+          "qty": 1,
+          "modifiers": [
+            "VERDE",
+            "CON TODO"
+          ],
+          "notes": ""
+        },
+        {
+          "id": 1789268182657,
+          "product": {
+            "id": 101,
+            "name": "Atole (Taza)",
+            "price": 20,
+            "category": "BEBIDAS",
+            "image": null,
+            "modifiers": []
+          },
+          "qty": 1,
+          "modifiers": [],
+          "notes": ""
+        },
+        {
+          "id": 1789268220041,
+          "product": {
+            "id": 401,
+            "name": "Sopes (Orden 3pz)",
+            "price": 70,
+            "category": "SOPES",
+            "pieces": 3,
+            "image": null,
+            "modifiers": [
+              {
+                "name": "Relleno",
+                "type": "radio",
+                "choices": [
+                  "Picadillo",
+                  "Pollo",
+                  "Deshebrada",
+                  "Papa",
+                  "Frijol"
+                ]
+              },
+              {
+                "name": "Nueva Opción",
+                "type": "checkbox",
+                "choices": [
+                  "Lechuga",
+                  "Con Todo",
+                  "Sin Salsa",
+                  "Sin Queso",
+                  "Repollo",
+                  "Sin Zanahorias",
+                  "SIn Crem"
+                ]
+              }
+            ]
+          },
+          "qty": 1,
+          "modifiers": [
+            "PICADILLO"
+          ],
+          "notes": ""
+        },
+        {
+          "id": 1789268238316,
+          "product": {
+            "id": 103,
+            "name": "Atole (1 Lt)",
+            "price": 50,
+            "category": "BEBIDAS",
+            "image": null,
+            "modifiers": []
+          },
+          "qty": 1,
+          "modifiers": [],
+          "notes": ""
+        }
+      ],
+      "abonos": [],
+      "time": "21:58",
+      "dateObj": "2026-09-13T02:58:41.953Z",
+      "itemsCount": 5,
+      "total": 210,
+      "waiter": "Abner"
+    },
+    {
+      "id": "TKT-4204",
+      "table": "Mesa 8",
+      "items": [
+        {
+          "id": 1789268754965,
+          "product": {
+            "id": 401,
+            "name": "Sopes (Orden 3pz)",
+            "price": 70,
+            "category": "SOPES",
+            "pieces": 3,
+            "image": null,
+            "modifiers": [
+              {
+                "name": "Relleno",
+                "type": "radio",
+                "choices": [
+                  "Picadillo",
+                  "Pollo",
+                  "Deshebrada",
+                  "Papa",
+                  "Frijol"
+                ]
+              },
+              {
+                "name": "Nueva Opción",
+                "type": "checkbox",
+                "choices": [
+                  "Lechuga",
+                  "Con Todo",
+                  "Sin Salsa",
+                  "Sin Queso",
+                  "Repollo",
+                  "Sin Zanahorias",
+                  "SIn Crem"
+                ]
+              }
+            ]
+          },
+          "qty": 1,
+          "modifiers": [
+            "PICADILLO"
+          ],
+          "notes": ""
+        },
+        {
+          "id": 1789268764467,
+          "product": {
+            "id": 702,
+            "name": "Quesadilla (Maíz)",
+            "price": 40,
+            "category": "QUESADILLAS",
+            "pieces": 1,
+            "image": null,
+            "modifiers": [
+              {
+                "name": "Relleno",
+                "type": "radio",
+                "choices": [
+                  "Picadillo",
+                  "Pollo",
+                  "Deshebrada",
+                  "Papa",
+                  "Frijol"
+                ]
+              }
+            ]
+          },
+          "qty": 2,
+          "modifiers": [
+            "PICADILLO"
+          ],
+          "notes": ""
+        },
+        {
+          "id": 1789268821306,
+          "product": {
+            "id": 106,
+            "name": "Coca Cola 355ml Cristal",
+            "price": 25,
+            "category": "BEBIDAS",
+            "image": null,
+            "modifiers": []
+          },
+          "qty": 1,
+          "modifiers": [],
+          "notes": ""
+        },
+        {
+          "id": 1789268826411,
+          "product": {
+            "id": 201,
+            "name": "Tamal",
+            "price": 35,
+            "category": "TAMALES",
+            "image": null,
+            "modifiers": [
+              {
+                "name": "Sabor",
+                "type": "radio",
+                "choices": [
+                  "Rojo",
+                  "Verde",
+                  "Dulce"
+                ]
+              },
+              {
+                "name": "Nueva Opción",
+                "type": "radio",
+                "choices": [
+                  "Con todo",
+                  "Sin Salsa",
+                  "Sin Queso",
+                  "Sin Crema"
+                ]
+              }
+            ]
+          },
+          "qty": 1,
+          "modifiers": [
+            "ROJO",
+            "CON TODO"
+          ],
+          "notes": ""
+        },
+        {
+          "id": 1789268836123,
+          "product": {
+            "id": 703,
+            "name": "Quesadilla (Harina)",
+            "price": 35,
+            "category": "QUESADILLAS",
+            "pieces": 1,
+            "image": null,
+            "modifiers": [
+              {
+                "name": "Relleno",
+                "type": "radio",
+                "choices": [
+                  "Picadillo",
+                  "Pollo",
+                  "Deshebrada",
+                  "Papa",
+                  "Frijol"
+                ]
+              }
+            ]
+          },
+          "qty": 2,
+          "modifiers": [
+            "PICADILLO"
+          ],
+          "notes": ""
+        }
+      ],
+      "abonos": [],
+      "time": "09:08 p.m.",
+      "dateObj": "2026-09-13T03:08:51.522Z",
+      "itemsCount": 7,
+      "total": 280,
+      "waiter": "Abner"
+    },
+    {
+      "id": "TKT-8919",
+      "table": "Mesa 2",
+      "items": [
+        {
+          "id": 1789269083137,
+          "product": {
+            "id": 702,
+            "name": "Quesadilla (Maíz)",
+            "price": 40,
+            "category": "QUESADILLAS",
+            "pieces": 1,
+            "image": null,
+            "modifiers": [
+              {
+                "name": "Relleno",
+                "type": "radio",
+                "choices": [
+                  "Picadillo",
+                  "Pollo",
+                  "Deshebrada",
+                  "Papa",
+                  "Frijol"
+                ]
+              }
+            ]
+          },
+          "qty": 1,
+          "modifiers": [
+            "PICADILLO"
+          ],
+          "notes": ""
+        },
+        {
+          "id": 1789269088038,
+          "product": {
+            "id": 101,
+            "name": "Atole (Taza)",
+            "price": 20,
+            "category": "BEBIDAS",
+            "image": null,
+            "modifiers": []
+          },
+          "qty": 1,
+          "modifiers": [],
+          "notes": ""
+        },
+        {
+          "id": 1789269122418,
+          "product": {
+            "id": 805,
+            "name": "Pozole Mini",
+            "price": 20,
+            "category": "POZOLE",
+            "image": null,
+            "modifiers": [
+              {
+                "name": "Preparación",
+                "type": "radio",
+                "choices": [
+                  "Batido",
+                  "De Caldo",
+                  "De Pollo"
+                ]
+              },
+              {
+                "name": "Complementos",
+                "type": "checkbox",
+                "choices": [
+                  "Cebolla",
+                  "Chile",
+                  "Lechuga",
+                  "Rábano"
+                ]
+              }
+            ]
+          },
+          "qty": 1,
+          "modifiers": [
+            "BATIDO"
+          ],
+          "notes": ""
+        },
+        {
+          "id": 1789269130168,
+          "product": {
+            "id": 502,
+            "name": "Tacos Dorados (1/2 Orden 3pz)",
+            "price": 45,
+            "category": "TACOS",
+            "pieces": 3,
+            "image": null,
+            "modifiers": [
+              {
+                "name": "Relleno",
+                "type": "radio",
+                "choices": [
+                  "Picadillo",
+                  "Pollo",
+                  "Deshebrada",
+                  "Papa",
+                  "Frijol"
+                ]
+              }
+            ]
+          },
+          "qty": 1,
+          "modifiers": [
+            "PICADILLO"
+          ],
+          "notes": ""
+        },
+        {
+          "id": 1789269137359,
+          "product": {
+            "id": 201,
+            "name": "Tamal",
+            "price": 35,
+            "category": "TAMALES",
+            "image": null,
+            "modifiers": [
+              {
+                "name": "Sabor",
+                "type": "radio",
+                "choices": [
+                  "Rojo",
+                  "Verde",
+                  "Dulce"
+                ]
+              },
+              {
+                "name": "Nueva Opción",
+                "type": "radio",
+                "choices": [
+                  "Con todo",
+                  "Sin Salsa",
+                  "Sin Queso",
+                  "Sin Crema"
+                ]
+              }
+            ]
+          },
+          "qty": 1,
+          "modifiers": [
+            "ROJO",
+            "CON TODO"
+          ],
+          "notes": ""
+        },
+        {
+          "id": 1789269154726,
+          "product": {
+            "id": 121,
+            "name": "Agua Fresca Jamaica (1 Lt)",
+            "price": 30,
+            "category": "BEBIDAS",
+            "image": null,
+            "modifiers": []
+          },
+          "qty": 1,
+          "modifiers": [],
+          "notes": ""
+        },
+        {
+          "id": 1789269161634,
+          "product": {
+            "id": 120,
+            "name": "Agua Fresca Jamaica (1/2 Lt)",
+            "price": 20,
+            "category": "BEBIDAS",
+            "image": null,
+            "modifiers": []
+          },
+          "qty": 1,
+          "modifiers": [],
+          "notes": ""
+        }
+      ],
+      "abonos": [],
+      "time": "09:13 p.m.",
+      "dateObj": "2026-09-13T03:13:39.877Z",
+      "itemsCount": 7,
+      "total": 210,
+      "waiter": "Abner"
+    },
+    {
+      "id": "TKT-6382",
+      "table": "Llevar - Cliente Anónimo",
+      "items": [
+        {
+          "id": 1789271050630,
+          "product": {
+            "id": 701,
+            "name": "Patitas de Puerco",
+            "price": 55,
+            "category": "PATITAS",
+            "image": null,
+            "modifiers": []
+          },
+          "qty": 1,
+          "modifiers": [],
+          "notes": ""
+        },
+        {
+          "id": 1789271057386,
+          "product": {
+            "id": 501,
+            "name": "Tacos Dorados (Orden 5pz)",
+            "price": 60,
+            "category": "TACOS",
+            "pieces": 5,
+            "image": null,
+            "modifiers": [
+              {
+                "name": "Relleno",
+                "type": "radio",
+                "choices": [
+                  "Picadillo",
+                  "Pollo",
+                  "Deshebrada",
+                  "Papa",
+                  "Frijol"
+                ]
+              }
+            ]
+          },
+          "qty": 3,
+          "modifiers": [
+            "PICADILLO"
+          ],
+          "notes": ""
+        },
+        {
+          "id": 1789271070699,
+          "product": {
+            "id": 301,
+            "name": "Enchiladas (Orden 3pz)",
+            "price": 60,
+            "category": "ENCHILADAS",
+            "pieces": 3,
+            "image": null,
+            "modifiers": [
+              {
+                "name": "Relleno",
+                "type": "radio",
+                "choices": [
+                  "Picadillo",
+                  "Pollo",
+                  "Deshebrada",
+                  "Papa",
+                  "Frijol"
+                ]
+              },
+              {
+                "name": "Complementos",
+                "type": "checkbox",
+                "choices": [
+                  "Lechuga",
+                  "Repollo",
+                  "Sin Crema",
+                  "Sin Queso",
+                  "Sin Salsa",
+                  "Sin Zanahorias"
+                ]
+              }
+            ]
+          },
+          "qty": 1,
+          "modifiers": [
+            "PICADILLO"
+          ],
+          "notes": ""
+        },
+        {
+          "id": 1789271079205,
+          "product": {
+            "id": 104,
+            "name": "Coca Cola 600ml",
+            "price": 30,
+            "category": "BEBIDAS",
+            "image": null,
+            "modifiers": [
+              {
+                "name": "Nueva Opción",
+                "type": "radio",
+                "choices": [
+                  "Con Azucar",
+                  "Sin Azucar"
+                ]
+              }
+            ]
+          },
+          "qty": 1,
+          "modifiers": [
+            "CON AZUCAR"
+          ],
+          "notes": ""
+        }
+      ],
+      "abonos": [],
+      "time": "09:45 p.m.",
+      "dateObj": "2026-09-13T03:45:11.862Z",
+      "itemsCount": 6,
+      "total": 325,
+      "waiter": "Abner"
+    },
+    {
+      "id": "TKT-8895",
+      "table": "Mesa 7",
+      "items": [
+        {
+          "id": 1789267787420,
+          "product": {
+            "id": 801,
+            "name": "Pozole Básico",
+            "price": 50,
+            "category": "POZOLE",
+            "image": null,
+            "modifiers": [
+              {
+                "name": "Preparación",
+                "type": "radio",
+                "choices": [
+                  "Batido",
+                  "De Caldo",
+                  "De Pollo"
+                ]
+              },
+              {
+                "name": "Complementos",
+                "type": "checkbox",
+                "choices": [
+                  "Cebolla",
+                  "Chile",
+                  "Lechuga",
+                  "Rábano"
+                ]
+              }
+            ]
+          },
+          "qty": 1,
+          "modifiers": [
+            "DE CALDO",
+            "CEBOLLA",
+            "CHILE",
+            "LECHUGA",
+            "RÁBANO"
+          ],
+          "notes": ""
+        },
+        {
+          "id": 1789267844923,
+          "product": {
+            "id": 401,
+            "name": "Sopes (Orden 3pz)",
+            "price": 70,
+            "category": "SOPES",
+            "pieces": 3,
+            "image": null,
+            "modifiers": [
+              {
+                "name": "Relleno",
+                "type": "radio",
+                "choices": [
+                  "Picadillo",
+                  "Pollo",
+                  "Deshebrada",
+                  "Papa",
+                  "Frijol"
+                ]
+              },
+              {
+                "name": "Nueva Opción",
+                "type": "checkbox",
+                "choices": [
+                  "Lechuga",
+                  "Con Todo",
+                  "Sin Salsa",
+                  "Sin Queso",
+                  "Repollo",
+                  "Sin Zanahorias",
+                  "SIn Crem"
+                ]
+              }
+            ]
+          },
+          "qty": 1,
+          "modifiers": [
+            "PICADILLO"
+          ],
+          "notes": "Pollo desebrada picadillo con todo"
+        },
+        {
+          "id": 1789267867392,
+          "product": {
+            "id": 101,
+            "name": "Atole (Taza)",
+            "price": 20,
+            "category": "BEBIDAS",
+            "image": null,
+            "modifiers": []
+          },
+          "qty": 1,
+          "modifiers": [],
+          "notes": ""
+        },
+        {
+          "id": 1789267876155,
+          "product": {
+            "id": 701,
+            "name": "Patitas de Puerco",
+            "price": 55,
+            "category": "PATITAS",
+            "image": null,
+            "modifiers": []
+          },
+          "qty": 1,
+          "modifiers": [],
+          "notes": ""
+        }
+      ],
+      "abonos": [],
+      "time": "09:45 p.m.",
+      "dateObj": "2026-09-13T03:45:57.834Z",
+      "itemsCount": 4,
+      "total": 195,
+      "waiter": "Abner"
+    },
+    {
+      "id": "TKT-2807",
+      "table": "Mesa 6",
+      "items": [
+        {
+          "id": 1789267348943,
+          "product": {
+            "id": 803,
+            "name": "Pozole Especial",
+            "price": 60,
+            "category": "POZOLE",
+            "image": null,
+            "modifiers": [
+              {
+                "name": "Preparación",
+                "type": "radio",
+                "choices": [
+                  "Batido",
+                  "De Caldo",
+                  "De Pollo"
+                ]
+              },
+              {
+                "name": "Complementos",
+                "type": "checkbox",
+                "choices": [
+                  "Cebolla",
+                  "Chile",
+                  "Lechuga",
+                  "Rábano"
+                ]
+              }
+            ]
+          },
+          "qty": 1,
+          "modifiers": [
+            "DE CALDO"
+          ],
+          "notes": "Repollo para llevar"
+        }
+      ],
+      "abonos": [],
+      "time": "09:46 p.m.",
+      "dateObj": "2026-09-13T03:46:05.219Z",
+      "itemsCount": 1,
+      "total": 60,
+      "waiter": "Abner"
+    },
+    {
+      "id": "TKT-9730",
+      "table": "Mesa 1",
+      "items": [
+        {
+          "id": 1789266928216,
+          "product": {
+            "id": 501,
+            "name": "Tacos Dorados (Orden 5pz)",
+            "price": 60,
+            "category": "TACOS",
+            "pieces": 5,
+            "image": null,
+            "modifiers": [
+              {
+                "name": "Relleno",
+                "type": "radio",
+                "choices": [
+                  "Picadillo",
+                  "Pollo",
+                  "Deshebrada",
+                  "Papa",
+                  "Frijol"
+                ]
+              }
+            ]
+          },
+          "qty": 1,
+          "modifiers": [
+            "1XPICADILLO + 1XPOLLO + 2XPAPA + 1XFRIJOL"
+          ],
+          "notes": "Sin crema, lechuga SI, Salsa aparte"
+        },
+        {
+          "id": 1789267118936,
+          "product": {
+            "id": 121,
+            "name": "Agua Fresca Jamaica (1 Lt)",
+            "price": 30,
+            "category": "BEBIDAS",
+            "image": null,
+            "modifiers": []
+          },
+          "qty": 1,
+          "modifiers": [],
+          "notes": ""
+        },
+        {
+          "id": 1789267447696,
+          "product": {
+            "id": 401,
+            "name": "Sopes (Orden 3pz)",
+            "price": 70,
+            "category": "SOPES",
+            "pieces": 3,
+            "image": null,
+            "modifiers": [
+              {
+                "name": "Relleno",
+                "type": "radio",
+                "choices": [
+                  "Picadillo",
+                  "Pollo",
+                  "Deshebrada",
+                  "Papa",
+                  "Frijol"
+                ]
+              },
+              {
+                "name": "Nueva Opción",
+                "type": "checkbox",
+                "choices": [
+                  "Lechuga",
+                  "Con Todo",
+                  "Sin Salsa",
+                  "Sin Queso",
+                  "Repollo",
+                  "Sin Zanahorias",
+                  "SIn Crem"
+                ]
+              }
+            ]
+          },
+          "qty": 1,
+          "modifiers": [
+            "2XPICADILLO + 1XDESHEBRADA"
+          ],
+          "notes": ""
+        },
+        {
+          "id": 1789267488686,
+          "product": {
+            "id": 201,
+            "name": "Tamal",
+            "price": 35,
+            "category": "TAMALES",
+            "image": null,
+            "modifiers": [
+              {
+                "name": "Sabor",
+                "type": "radio",
+                "choices": [
+                  "Rojo",
+                  "Verde",
+                  "Dulce"
+                ]
+              },
+              {
+                "name": "Nueva Opción",
+                "type": "radio",
+                "choices": [
+                  "Con todo",
+                  "Sin Salsa",
+                  "Sin Queso",
+                  "Sin Crema"
+                ]
+              }
+            ]
+          },
+          "qty": 1,
+          "modifiers": [
+            "ROJO",
+            "CON TODO"
+          ],
+          "notes": ""
+        },
+        {
+          "id": 1789267500581,
+          "product": {
+            "id": 201,
+            "name": "Tamal",
+            "price": 35,
+            "category": "TAMALES",
+            "image": null,
+            "modifiers": [
+              {
+                "name": "Sabor",
+                "type": "radio",
+                "choices": [
+                  "Rojo",
+                  "Verde",
+                  "Dulce"
+                ]
+              },
+              {
+                "name": "Nueva Opción",
+                "type": "radio",
+                "choices": [
+                  "Con todo",
+                  "Sin Salsa",
+                  "Sin Queso",
+                  "Sin Crema"
+                ]
+              }
+            ]
+          },
+          "qty": 1,
+          "modifiers": [
+            "VERDE",
+            "CON TODO"
+          ],
+          "notes": ""
+        },
+        {
+          "id": 1789269049254,
+          "product": {
+            "id": 201,
+            "name": "Tamal",
+            "price": 35,
+            "category": "TAMALES",
+            "image": null,
+            "modifiers": [
+              {
+                "name": "Sabor",
+                "type": "radio",
+                "choices": [
+                  "Rojo",
+                  "Verde",
+                  "Dulce"
+                ]
+              },
+              {
+                "name": "Nueva Opción",
+                "type": "radio",
+                "choices": [
+                  "Con todo",
+                  "Sin Salsa",
+                  "Sin Queso",
+                  "Sin Crema"
+                ]
+              }
+            ]
+          },
+          "qty": 1,
+          "modifiers": [
+            "DULCE",
+            "SIN CREMA"
+          ],
+          "notes": "Sin nada"
+        }
+      ],
+      "abonos": [
+        {
+          "amount": 265,
+          "time": "9:51:52 p.m.",
+          "waiter": "Abner"
+        }
+      ],
+      "time": "09:52 p.m.",
+      "dateObj": "2026-09-13T03:52:02.946Z",
+      "itemsCount": 6,
+      "total": 265,
+      "waiter": "Luis"
+    },
+    {
+      "id": "TKT-4245",
+      "table": "Llevar - Cliente Anónimo",
+      "items": [
+        {
+          "id": 1789271422124,
+          "product": {
+            "id": 502,
+            "name": "Tacos Dorados (1/2 Orden 3pz)",
+            "price": 45,
+            "category": "TACOS",
+            "pieces": 3,
+            "image": null,
+            "modifiers": [
+              {
+                "name": "Relleno",
+                "type": "radio",
+                "choices": [
+                  "Picadillo",
+                  "Pollo",
+                  "Deshebrada",
+                  "Papa",
+                  "Frijol"
+                ]
+              }
+            ]
+          },
+          "qty": 3,
+          "modifiers": [
+            "PICADILLO"
+          ],
+          "notes": ""
+        }
+      ],
+      "abonos": [],
+      "time": "09:58 p.m.",
+      "dateObj": "2026-09-13T03:58:07.743Z",
+      "itemsCount": 3,
+      "total": 135,
+      "waiter": "Abner"
+    },
+    {
+      "id": "TKT-8334",
+      "table": "Mesa 4",
+      "items": [
+        {
+          "id": 1789274300693,
+          "product": {
+            "id": 201,
+            "name": "Tamal",
+            "price": 35,
+            "category": "TAMALES",
+            "image": null,
+            "modifiers": [
+              {
+                "name": "Sabor",
+                "type": "radio",
+                "choices": [
+                  "Rojo",
+                  "Verde",
+                  "Dulce"
+                ]
+              },
+              {
+                "name": "Nueva Opción",
+                "type": "radio",
+                "choices": [
+                  "Con todo",
+                  "Sin Salsa",
+                  "Sin Queso",
+                  "Sin Crema"
+                ]
+              }
+            ]
+          },
+          "qty": 1,
+          "modifiers": [
+            "ROJO",
+            "CON TODO"
+          ],
+          "notes": ""
+        },
+        {
+          "id": 1789274305405,
+          "product": {
+            "id": 101,
+            "name": "Atole (Taza)",
+            "price": 20,
+            "category": "BEBIDAS",
+            "image": null,
+            "modifiers": []
+          },
+          "qty": 1,
+          "modifiers": [],
+          "notes": ""
+        },
+        {
+          "id": 1789274310374,
+          "product": {
+            "id": 601,
+            "name": "Tostada",
+            "price": 40,
+            "category": "TOSTADAS",
+            "pieces": 1,
+            "image": null,
+            "modifiers": [
+              {
+                "name": "Relleno",
+                "type": "radio",
+                "choices": [
+                  "Picadillo",
+                  "Pollo",
+                  "Deshebrada",
+                  "Papa",
+                  "Frijol"
+                ]
+              }
+            ]
+          },
+          "qty": 1,
+          "modifiers": [
+            "PICADILLO"
+          ],
+          "notes": ""
+        },
+        {
+          "id": 1789274314520,
+          "product": {
+            "id": 502,
+            "name": "Tacos Dorados (1/2 Orden 3pz)",
+            "price": 45,
+            "category": "TACOS",
+            "pieces": 3,
+            "image": null,
+            "modifiers": [
+              {
+                "name": "Relleno",
+                "type": "radio",
+                "choices": [
+                  "Picadillo",
+                  "Pollo",
+                  "Deshebrada",
+                  "Papa",
+                  "Frijol"
+                ]
+              }
+            ]
+          },
+          "qty": 1,
+          "modifiers": [
+            "PICADILLO"
+          ],
+          "notes": ""
+        },
+        {
+          "id": 1789274321563,
+          "product": {
+            "id": 701,
+            "name": "Patitas de Puerco",
+            "price": 55,
+            "category": "PATITAS",
+            "image": null,
+            "modifiers": []
+          },
+          "qty": 1,
+          "modifiers": [],
+          "notes": ""
+        },
+        {
+          "id": 1789274341640,
+          "product": {
+            "id": 122,
+            "name": "Cerveza",
+            "price": 25,
+            "category": "BEBIDAS",
+            "image": null,
+            "modifiers": [
+              {
+                "name": "Nueva Opción",
+                "type": "radio",
+                "choices": [
+                  "Corona",
+                  "Victoria"
+                ]
+              }
+            ]
+          },
+          "qty": 2,
+          "modifiers": [
+            "CORONA"
+          ],
+          "notes": ""
+        }
+      ],
+      "abonos": [],
+      "time": "10:56 p.m.",
+      "dateObj": "2026-09-13T04:56:23.208Z",
+      "itemsCount": 7,
+      "total": 245,
+      "waiter": "Abner"
+    },
+    {
+      "id": "TKT-9890",
+      "table": "Mesa 6",
+      "items": [
+        {
+          "id": 1789274613734,
+          "product": {
+            "id": 801,
+            "name": "Pozole Básico",
+            "price": 50,
+            "category": "POZOLE",
+            "image": null,
+            "modifiers": [
+              {
+                "name": "Preparación",
+                "type": "radio",
+                "choices": [
+                  "Batido",
+                  "De Caldo",
+                  "De Pollo"
+                ]
+              },
+              {
+                "name": "Complementos",
+                "type": "checkbox",
+                "choices": [
+                  "Cebolla",
+                  "Chile",
+                  "Lechuga",
+                  "Rábano"
+                ]
+              }
+            ]
+          },
+          "qty": 1,
+          "modifiers": [
+            "BATIDO"
+          ],
+          "notes": ""
+        },
+        {
+          "id": 1789274721121,
+          "product": {
+            "id": 805,
+            "name": "Pozole Mini",
+            "price": 30,
+            "category": "POZOLE",
+            "image": null,
+            "modifiers": [
+              {
+                "name": "Preparación",
+                "type": "radio",
+                "choices": [
+                  "Batido",
+                  "De Caldo",
+                  "De Pollo"
+                ]
+              },
+              {
+                "name": "Complementos",
+                "type": "checkbox",
+                "choices": [
+                  "Cebolla",
+                  "Chile",
+                  "Lechuga",
+                  "Rábano"
+                ]
+              }
+            ]
+          },
+          "qty": 1,
+          "modifiers": [
+            "BATIDO"
+          ],
+          "notes": ""
+        },
+        {
+          "id": 1789275699295,
+          "product": {
+            "id": 701,
+            "name": "Patitas de Puerco",
+            "price": 55,
+            "category": "PATITAS",
+            "image": null,
+            "modifiers": []
+          },
+          "qty": 1,
+          "modifiers": [],
+          "notes": ""
+        }
+      ],
+      "abonos": [],
+      "time": "11:01 p.m.",
+      "dateObj": "2026-09-13T05:01:51.598Z",
+      "itemsCount": 3,
+      "total": 135,
+      "waiter": "Abner"
+    },
+    {
+      "id": "TKT-7668",
+      "table": "Mesa 8",
+      "items": [
+        {
+          "id": 1789274393410,
+          "product": {
+            "id": 302,
+            "name": "Enchilada (1pz)",
+            "price": 20,
+            "category": "ENCHILADAS",
+            "pieces": 1,
+            "image": null,
+            "modifiers": [
+              {
+                "name": "Relleno",
+                "type": "radio",
+                "choices": [
+                  "Picadillo",
+                  "Pollo",
+                  "Deshebrada",
+                  "Papa",
+                  "Frijol"
+                ]
+              },
+              {
+                "name": "Complementos",
+                "type": "checkbox",
+                "choices": [
+                  "Lechuga",
+                  "Repollo",
+                  "Con Todo",
+                  "Sin Salsa ",
+                  "SIn Crema",
+                  "Sin Queso",
+                  "Sin Zanahorias"
+                ]
+              }
+            ]
+          },
+          "qty": 5,
+          "modifiers": [
+            "PICADILLO"
+          ],
+          "notes": ""
+        },
+        {
+          "id": 1789274401500,
+          "product": {
+            "id": 201,
+            "name": "Tamal",
+            "price": 35,
+            "category": "TAMALES",
+            "image": null,
+            "modifiers": [
+              {
+                "name": "Sabor",
+                "type": "radio",
+                "choices": [
+                  "Rojo",
+                  "Verde",
+                  "Dulce"
+                ]
+              },
+              {
+                "name": "Nueva Opción",
+                "type": "radio",
+                "choices": [
+                  "Con todo",
+                  "Sin Salsa",
+                  "Sin Queso",
+                  "Sin Crema"
+                ]
+              }
+            ]
+          },
+          "qty": 1,
+          "modifiers": [
+            "ROJO",
+            "CON TODO"
+          ],
+          "notes": ""
+        }
+      ],
+      "abonos": [],
+      "time": "11:02 p.m.",
+      "dateObj": "2026-09-13T05:02:23.992Z",
+      "itemsCount": 6,
+      "total": 135,
+      "waiter": "Abner"
+    },
+    {
+      "id": "TKT-2939",
+      "table": "Mesa 7",
+      "items": [
+        {
+          "id": 1789274431198,
+          "product": {
+            "id": 801,
+            "name": "Pozole Básico",
+            "price": 50,
+            "category": "POZOLE",
+            "image": null,
+            "modifiers": [
+              {
+                "name": "Preparación",
+                "type": "radio",
+                "choices": [
+                  "Batido",
+                  "De Caldo",
+                  "De Pollo"
+                ]
+              },
+              {
+                "name": "Complementos",
+                "type": "checkbox",
+                "choices": [
+                  "Cebolla",
+                  "Chile",
+                  "Lechuga",
+                  "Rábano"
+                ]
+              }
+            ]
+          },
+          "qty": 2,
+          "modifiers": [
+            "BATIDO"
+          ],
+          "notes": ""
+        },
+        {
+          "id": 1789274810061,
+          "product": {
+            "id": 701,
+            "name": "Patitas de Puerco",
+            "price": 55,
+            "category": "PATITAS",
+            "image": null,
+            "modifiers": []
+          },
+          "qty": 1,
+          "modifiers": [],
+          "notes": ""
+        }
+      ],
+      "abonos": [
+        {
+          "amount": 55,
+          "time": "11:03:59 p.m.",
+          "waiter": "Abner"
+        }
+      ],
+      "time": "11:04 p.m.",
+      "dateObj": "2026-09-13T05:04:14.766Z",
+      "itemsCount": 3,
+      "total": 155,
+      "waiter": "Abner"
+    }
+  ],
+  "activeTickets": [],
+  "notifications": [
+    {
+      "id": 1789275847493,
+      "orderId": "O-594",
+      "table": "Mesa 6",
+      "waiter": "Abner",
+      "items": [
+        {
+          "id": 1789275699295,
+          "product": {
+            "id": 701,
+            "name": "Patitas de Puerco",
+            "price": 55,
+            "category": "PATITAS",
+            "image": null,
+            "modifiers": []
+          },
+          "qty": 1,
+          "modifiers": [],
+          "notes": ""
+        }
+      ],
+      "time": "11:04 p.m.",
+      "msg": "🍽️ <strong>Mesa 6</strong>: ¡Orden O-594 lista para servir!",
+      "status": "delivered"
+    },
+    {
+      "id": 1789275377070,
+      "orderId": "O-917",
+      "table": "",
+      "waiter": "",
+      "items": [],
+      "time": "10:56 p.m.",
+      "msg": "La orden <strong>O-917</strong> ya está preparada y lista.",
+      "status": "ready"
+    },
+    {
+      "id": 1789275375640,
+      "orderId": "O-917",
+      "table": "Mesa 7",
+      "waiter": "Abner",
+      "items": [
+        {
+          "id": 1789274810061,
+          "product": {
+            "id": 701,
+            "name": "Patitas de Puerco",
+            "price": 55,
+            "category": "PATITAS",
+            "image": null,
+            "modifiers": []
+          },
+          "qty": 1,
+          "modifiers": [],
+          "notes": ""
+        }
+      ],
+      "time": "10:56 p.m.",
+      "msg": "🍽️ <strong>Mesa 7</strong>: ¡Orden O-917 lista para servir!",
+      "status": "delivered"
+    },
+    {
+      "id": 1789275373800,
+      "orderId": "O-459",
+      "table": "Mesa 6",
+      "waiter": "Abner",
+      "items": [
+        {
+          "id": 1789274721121,
+          "product": {
+            "id": 805,
+            "name": "Pozole Mini",
+            "price": 30,
+            "category": "POZOLE",
+            "image": null,
+            "modifiers": [
+              {
+                "name": "Preparación",
+                "type": "radio",
+                "choices": [
+                  "Batido",
+                  "De Caldo",
+                  "De Pollo"
+                ]
+              },
+              {
+                "name": "Complementos",
+                "type": "checkbox",
+                "choices": [
+                  "Cebolla",
+                  "Chile",
+                  "Lechuga",
+                  "Rábano"
+                ]
+              }
+            ]
+          },
+          "qty": 1,
+          "modifiers": [
+            "BATIDO"
+          ],
+          "notes": ""
+        }
+      ],
+      "time": "10:56 p.m.",
+      "msg": "🍽️ <strong>Mesa 6</strong>: ¡Orden O-459 lista para servir!",
+      "status": "delivered"
+    },
+    {
+      "id": 1789275372050,
+      "orderId": "O-946",
+      "table": "Mesa 6",
+      "waiter": "Abner",
+      "items": [
+        {
+          "id": 1789274613734,
+          "product": {
+            "id": 801,
+            "name": "Pozole Básico",
+            "price": 50,
+            "category": "POZOLE",
+            "image": null,
+            "modifiers": [
+              {
+                "name": "Preparación",
+                "type": "radio",
+                "choices": [
+                  "Batido",
+                  "De Caldo",
+                  "De Pollo"
+                ]
+              },
+              {
+                "name": "Complementos",
+                "type": "checkbox",
+                "choices": [
+                  "Cebolla",
+                  "Chile",
+                  "Lechuga",
+                  "Rábano"
+                ]
+              }
+            ]
+          },
+          "qty": 1,
+          "modifiers": [
+            "BATIDO"
+          ],
+          "notes": ""
+        }
+      ],
+      "time": "10:56 p.m.",
+      "msg": "🍽️ <strong>Mesa 6</strong>: ¡Orden O-946 lista para servir!",
+      "status": "delivered"
+    },
+    {
+      "id": 1789274453740,
+      "orderId": "O-905",
+      "table": "Mesa 7",
+      "waiter": "Abner",
+      "items": [
+        {
+          "id": 1789274431198,
+          "product": {
+            "id": 801,
+            "name": "Pozole Básico",
+            "price": 50,
+            "category": "POZOLE",
+            "image": null,
+            "modifiers": [
+              {
+                "name": "Preparación",
+                "type": "radio",
+                "choices": [
+                  "Batido",
+                  "De Caldo",
+                  "De Pollo"
+                ]
+              },
+              {
+                "name": "Complementos",
+                "type": "checkbox",
+                "choices": [
+                  "Cebolla",
+                  "Chile",
+                  "Lechuga",
+                  "Rábano"
+                ]
+              }
+            ]
+          },
+          "qty": 2,
+          "modifiers": [
+            "BATIDO"
+          ],
+          "notes": ""
+        }
+      ],
+      "time": "10:40 p.m.",
+      "msg": "🍽️ <strong>Mesa 7</strong>: ¡Orden O-905 lista para servir!",
+      "status": "delivered"
+    },
+    {
+      "id": 1789274449849,
+      "orderId": "O-239",
+      "table": "Mesa 8",
+      "waiter": "Abner",
+      "items": [
+        {
+          "id": 1789274393410,
+          "product": {
+            "id": 302,
+            "name": "Enchilada (1pz)",
+            "price": 20,
+            "category": "ENCHILADAS",
+            "pieces": 1,
+            "image": null,
+            "modifiers": [
+              {
+                "name": "Relleno",
+                "type": "radio",
+                "choices": [
+                  "Picadillo",
+                  "Pollo",
+                  "Deshebrada",
+                  "Papa",
+                  "Frijol"
+                ]
+              },
+              {
+                "name": "Complementos",
+                "type": "checkbox",
+                "choices": [
+                  "Lechuga",
+                  "Repollo",
+                  "Con Todo",
+                  "Sin Salsa ",
+                  "SIn Crema",
+                  "Sin Queso",
+                  "Sin Zanahorias"
+                ]
+              }
+            ]
+          },
+          "qty": 5,
+          "modifiers": [
+            "PICADILLO"
+          ],
+          "notes": ""
+        },
+        {
+          "id": 1789274401500,
+          "product": {
+            "id": 201,
+            "name": "Tamal",
+            "price": 35,
+            "category": "TAMALES",
+            "image": null,
+            "modifiers": [
+              {
+                "name": "Sabor",
+                "type": "radio",
+                "choices": [
+                  "Rojo",
+                  "Verde",
+                  "Dulce"
+                ]
+              },
+              {
+                "name": "Nueva Opción",
+                "type": "radio",
+                "choices": [
+                  "Con todo",
+                  "Sin Salsa",
+                  "Sin Queso",
+                  "Sin Crema"
+                ]
+              }
+            ]
+          },
+          "qty": 1,
+          "modifiers": [
+            "ROJO",
+            "CON TODO"
+          ],
+          "notes": ""
+        }
+      ],
+      "time": "10:40 p.m.",
+      "msg": "🍽️ <strong>Mesa 8</strong>: ¡Orden O-239 lista para servir!",
+      "status": "delivered"
+    },
+    {
+      "id": 1789274447085,
+      "orderId": "O-277",
+      "table": "Mesa 4",
+      "waiter": "Abner",
+      "items": [
+        {
+          "id": 1789274300693,
+          "product": {
+            "id": 201,
+            "name": "Tamal",
+            "price": 35,
+            "category": "TAMALES",
+            "image": null,
+            "modifiers": [
+              {
+                "name": "Sabor",
+                "type": "radio",
+                "choices": [
+                  "Rojo",
+                  "Verde",
+                  "Dulce"
+                ]
+              },
+              {
+                "name": "Nueva Opción",
+                "type": "radio",
+                "choices": [
+                  "Con todo",
+                  "Sin Salsa",
+                  "Sin Queso",
+                  "Sin Crema"
+                ]
+              }
+            ]
+          },
+          "qty": 1,
+          "modifiers": [
+            "ROJO",
+            "CON TODO"
+          ],
+          "notes": ""
+        },
+        {
+          "id": 1789274305405,
+          "product": {
+            "id": 101,
+            "name": "Atole (Taza)",
+            "price": 20,
+            "category": "BEBIDAS",
+            "image": null,
+            "modifiers": []
+          },
+          "qty": 1,
+          "modifiers": [],
+          "notes": ""
+        },
+        {
+          "id": 1789274310374,
+          "product": {
+            "id": 601,
+            "name": "Tostada",
+            "price": 40,
+            "category": "TOSTADAS",
+            "pieces": 1,
+            "image": null,
+            "modifiers": [
+              {
+                "name": "Relleno",
+                "type": "radio",
+                "choices": [
+                  "Picadillo",
+                  "Pollo",
+                  "Deshebrada",
+                  "Papa",
+                  "Frijol"
+                ]
+              }
+            ]
+          },
+          "qty": 1,
+          "modifiers": [
+            "PICADILLO"
+          ],
+          "notes": ""
+        },
+        {
+          "id": 1789274314520,
+          "product": {
+            "id": 502,
+            "name": "Tacos Dorados (1/2 Orden 3pz)",
+            "price": 45,
+            "category": "TACOS",
+            "pieces": 3,
+            "image": null,
+            "modifiers": [
+              {
+                "name": "Relleno",
+                "type": "radio",
+                "choices": [
+                  "Picadillo",
+                  "Pollo",
+                  "Deshebrada",
+                  "Papa",
+                  "Frijol"
+                ]
+              }
+            ]
+          },
+          "qty": 1,
+          "modifiers": [
+            "PICADILLO"
+          ],
+          "notes": ""
+        },
+        {
+          "id": 1789274321563,
+          "product": {
+            "id": 701,
+            "name": "Patitas de Puerco",
+            "price": 55,
+            "category": "PATITAS",
+            "image": null,
+            "modifiers": []
+          },
+          "qty": 1,
+          "modifiers": [],
+          "notes": ""
+        },
+        {
+          "id": 1789274341640,
+          "product": {
+            "id": 122,
+            "name": "Cerveza",
+            "price": 25,
+            "category": "BEBIDAS",
+            "image": null,
+            "modifiers": [
+              {
+                "name": "Nueva Opción",
+                "type": "radio",
+                "choices": [
+                  "Corona",
+                  "Victoria"
+                ]
+              }
+            ]
+          },
+          "qty": 2,
+          "modifiers": [
+            "CORONA"
+          ],
+          "notes": ""
+        }
+      ],
+      "time": "10:40 p.m.",
+      "msg": "🍽️ <strong>Mesa 4</strong>: ¡Orden O-277 lista para servir!",
+      "status": "delivered"
+    },
+    {
+      "id": 1789271633385,
+      "orderId": "O-636",
+      "table": "Llevar - Cliente Anónimo",
+      "waiter": "Abner",
+      "items": [
+        {
+          "id": 1789271422124,
+          "product": {
+            "id": 502,
+            "name": "Tacos Dorados (1/2 Orden 3pz)",
+            "price": 45,
+            "category": "TACOS",
+            "pieces": 3,
+            "image": null,
+            "modifiers": [
+              {
+                "name": "Relleno",
+                "type": "radio",
+                "choices": [
+                  "Picadillo",
+                  "Pollo",
+                  "Deshebrada",
+                  "Papa",
+                  "Frijol"
+                ]
+              }
+            ]
+          },
+          "qty": 3,
+          "modifiers": [
+            "PICADILLO"
+          ],
+          "notes": ""
+        }
+      ],
+      "time": "22:53",
+      "msg": "🍽️ <strong>Llevar - Cliente Anónimo</strong>: ¡Orden O-636 lista para servir!",
+      "status": "ready"
+    },
+    {
+      "id": 1789271099372,
+      "orderId": "O-118",
+      "table": "Llevar - Cliente Anónimo",
+      "waiter": "Abner",
+      "items": [
+        {
+          "id": 1789271050630,
+          "product": {
+            "id": 701,
+            "name": "Patitas de Puerco",
+            "price": 55,
+            "category": "PATITAS",
+            "image": null,
+            "modifiers": []
+          },
+          "qty": 1,
+          "modifiers": [],
+          "notes": ""
+        },
+        {
+          "id": 1789271057386,
+          "product": {
+            "id": 501,
+            "name": "Tacos Dorados (Orden 5pz)",
+            "price": 60,
+            "category": "TACOS",
+            "pieces": 5,
+            "image": null,
+            "modifiers": [
+              {
+                "name": "Relleno",
+                "type": "radio",
+                "choices": [
+                  "Picadillo",
+                  "Pollo",
+                  "Deshebrada",
+                  "Papa",
+                  "Frijol"
+                ]
+              }
+            ]
+          },
+          "qty": 3,
+          "modifiers": [
+            "PICADILLO"
+          ],
+          "notes": ""
+        },
+        {
+          "id": 1789271070699,
+          "product": {
+            "id": 301,
+            "name": "Enchiladas (Orden 3pz)",
+            "price": 60,
+            "category": "ENCHILADAS",
+            "pieces": 3,
+            "image": null,
+            "modifiers": [
+              {
+                "name": "Relleno",
+                "type": "radio",
+                "choices": [
+                  "Picadillo",
+                  "Pollo",
+                  "Deshebrada",
+                  "Papa",
+                  "Frijol"
+                ]
+              },
+              {
+                "name": "Complementos",
+                "type": "checkbox",
+                "choices": [
+                  "Lechuga",
+                  "Repollo",
+                  "Sin Crema",
+                  "Sin Queso",
+                  "Sin Salsa",
+                  "Sin Zanahorias"
+                ]
+              }
+            ]
+          },
+          "qty": 1,
+          "modifiers": [
+            "PICADILLO"
+          ],
+          "notes": ""
+        },
+        {
+          "id": 1789271079205,
+          "product": {
+            "id": 104,
+            "name": "Coca Cola 600ml",
+            "price": 30,
+            "category": "BEBIDAS",
+            "image": null,
+            "modifiers": [
+              {
+                "name": "Nueva Opción",
+                "type": "radio",
+                "choices": [
+                  "Con Azucar",
+                  "Sin Azucar"
+                ]
+              }
+            ]
+          },
+          "qty": 1,
+          "modifiers": [
+            "CON AZUCAR"
+          ],
+          "notes": ""
+        }
+      ],
+      "time": "09:44 p.m.",
+      "msg": "🍽️ <strong>Llevar - Cliente Anónimo</strong>: ¡Orden O-118 lista para servir!",
+      "status": "ready"
+    },
+    {
+      "id": 1789269203809,
+      "orderId": "O-060",
+      "table": "Mesa 2",
+      "waiter": "Abner",
+      "items": [
+        {
+          "id": 1789269083137,
+          "product": {
+            "id": 702,
+            "name": "Quesadilla (Maíz)",
+            "price": 40,
+            "category": "QUESADILLAS",
+            "pieces": 1,
+            "image": null,
+            "modifiers": [
+              {
+                "name": "Relleno",
+                "type": "radio",
+                "choices": [
+                  "Picadillo",
+                  "Pollo",
+                  "Deshebrada",
+                  "Papa",
+                  "Frijol"
+                ]
+              }
+            ]
+          },
+          "qty": 1,
+          "modifiers": [
+            "PICADILLO"
+          ],
+          "notes": ""
+        },
+        {
+          "id": 1789269088038,
+          "product": {
+            "id": 101,
+            "name": "Atole (Taza)",
+            "price": 20,
+            "category": "BEBIDAS",
+            "image": null,
+            "modifiers": []
+          },
+          "qty": 1,
+          "modifiers": [],
+          "notes": ""
+        },
+        {
+          "id": 1789269122418,
+          "product": {
+            "id": 805,
+            "name": "Pozole Mini",
+            "price": 20,
+            "category": "POZOLE",
+            "image": null,
+            "modifiers": [
+              {
+                "name": "Preparación",
+                "type": "radio",
+                "choices": [
+                  "Batido",
+                  "De Caldo",
+                  "De Pollo"
+                ]
+              },
+              {
+                "name": "Complementos",
+                "type": "checkbox",
+                "choices": [
+                  "Cebolla",
+                  "Chile",
+                  "Lechuga",
+                  "Rábano"
+                ]
+              }
+            ]
+          },
+          "qty": 1,
+          "modifiers": [
+            "BATIDO"
+          ],
+          "notes": ""
+        },
+        {
+          "id": 1789269130168,
+          "product": {
+            "id": 502,
+            "name": "Tacos Dorados (1/2 Orden 3pz)",
+            "price": 45,
+            "category": "TACOS",
+            "pieces": 3,
+            "image": null,
+            "modifiers": [
+              {
+                "name": "Relleno",
+                "type": "radio",
+                "choices": [
+                  "Picadillo",
+                  "Pollo",
+                  "Deshebrada",
+                  "Papa",
+                  "Frijol"
+                ]
+              }
+            ]
+          },
+          "qty": 1,
+          "modifiers": [
+            "PICADILLO"
+          ],
+          "notes": ""
+        },
+        {
+          "id": 1789269137359,
+          "product": {
+            "id": 201,
+            "name": "Tamal",
+            "price": 35,
+            "category": "TAMALES",
+            "image": null,
+            "modifiers": [
+              {
+                "name": "Sabor",
+                "type": "radio",
+                "choices": [
+                  "Rojo",
+                  "Verde",
+                  "Dulce"
+                ]
+              },
+              {
+                "name": "Nueva Opción",
+                "type": "radio",
+                "choices": [
+                  "Con todo",
+                  "Sin Salsa",
+                  "Sin Queso",
+                  "Sin Crema"
+                ]
+              }
+            ]
+          },
+          "qty": 1,
+          "modifiers": [
+            "ROJO",
+            "CON TODO"
+          ],
+          "notes": ""
+        },
+        {
+          "id": 1789269154726,
+          "product": {
+            "id": 121,
+            "name": "Agua Fresca Jamaica (1 Lt)",
+            "price": 30,
+            "category": "BEBIDAS",
+            "image": null,
+            "modifiers": []
+          },
+          "qty": 1,
+          "modifiers": [],
+          "notes": ""
+        },
+        {
+          "id": 1789269161634,
+          "product": {
+            "id": 120,
+            "name": "Agua Fresca Jamaica (1/2 Lt)",
+            "price": 20,
+            "category": "BEBIDAS",
+            "image": null,
+            "modifiers": []
+          },
+          "qty": 1,
+          "modifiers": [],
+          "notes": ""
+        }
+      ],
+      "time": "09:13 p.m.",
+      "msg": "🍽️ <strong>Mesa 2</strong>: ¡Orden O-060 lista para servir!",
+      "status": "delivered"
+    },
+    {
+      "id": 1789269202377,
+      "orderId": "O-021",
+      "table": "Mesa 1",
+      "waiter": "Jorge",
+      "items": [
+        {
+          "id": 1789269049254,
+          "product": {
+            "id": 201,
+            "name": "Tamal",
+            "price": 35,
+            "category": "TAMALES",
+            "image": null,
+            "modifiers": [
+              {
+                "name": "Sabor",
+                "type": "radio",
+                "choices": [
+                  "Rojo",
+                  "Verde",
+                  "Dulce"
+                ]
+              },
+              {
+                "name": "Nueva Opción",
+                "type": "radio",
+                "choices": [
+                  "Con todo",
+                  "Sin Salsa",
+                  "Sin Queso",
+                  "Sin Crema"
+                ]
+              }
+            ]
+          },
+          "qty": 1,
+          "modifiers": [
+            "DULCE",
+            "SIN CREMA"
+          ],
+          "notes": "Sin nada"
+        }
+      ],
+      "time": "09:13 p.m.",
+      "msg": "🍽️ <strong>Mesa 1</strong>: ¡Orden O-021 lista para servir!",
+      "status": "delivered"
+    },
+    {
+      "id": 1789268865295,
+      "orderId": "O-194",
+      "table": "Mesa 8",
+      "waiter": "Abner",
+      "items": [
+        {
+          "id": 1789268754965,
+          "product": {
+            "id": 401,
+            "name": "Sopes (Orden 3pz)",
+            "price": 70,
+            "category": "SOPES",
+            "pieces": 3,
+            "image": null,
+            "modifiers": [
+              {
+                "name": "Relleno",
+                "type": "radio",
+                "choices": [
+                  "Picadillo",
+                  "Pollo",
+                  "Deshebrada",
+                  "Papa",
+                  "Frijol"
+                ]
+              },
+              {
+                "name": "Nueva Opción",
+                "type": "checkbox",
+                "choices": [
+                  "Lechuga",
+                  "Con Todo",
+                  "Sin Salsa",
+                  "Sin Queso",
+                  "Repollo",
+                  "Sin Zanahorias",
+                  "SIn Crem"
+                ]
+              }
+            ]
+          },
+          "qty": 1,
+          "modifiers": [
+            "PICADILLO"
+          ],
+          "notes": ""
+        },
+        {
+          "id": 1789268764467,
+          "product": {
+            "id": 702,
+            "name": "Quesadilla (Maíz)",
+            "price": 40,
+            "category": "QUESADILLAS",
+            "pieces": 1,
+            "image": null,
+            "modifiers": [
+              {
+                "name": "Relleno",
+                "type": "radio",
+                "choices": [
+                  "Picadillo",
+                  "Pollo",
+                  "Deshebrada",
+                  "Papa",
+                  "Frijol"
+                ]
+              }
+            ]
+          },
+          "qty": 2,
+          "modifiers": [
+            "PICADILLO"
+          ],
+          "notes": ""
+        },
+        {
+          "id": 1789268821306,
+          "product": {
+            "id": 106,
+            "name": "Coca Cola 355ml Cristal",
+            "price": 25,
+            "category": "BEBIDAS",
+            "image": null,
+            "modifiers": []
+          },
+          "qty": 1,
+          "modifiers": [],
+          "notes": ""
+        },
+        {
+          "id": 1789268826411,
+          "product": {
+            "id": 201,
+            "name": "Tamal",
+            "price": 35,
+            "category": "TAMALES",
+            "image": null,
+            "modifiers": [
+              {
+                "name": "Sabor",
+                "type": "radio",
+                "choices": [
+                  "Rojo",
+                  "Verde",
+                  "Dulce"
+                ]
+              },
+              {
+                "name": "Nueva Opción",
+                "type": "radio",
+                "choices": [
+                  "Con todo",
+                  "Sin Salsa",
+                  "Sin Queso",
+                  "Sin Crema"
+                ]
+              }
+            ]
+          },
+          "qty": 1,
+          "modifiers": [
+            "ROJO",
+            "CON TODO"
+          ],
+          "notes": ""
+        },
+        {
+          "id": 1789268836123,
+          "product": {
+            "id": 703,
+            "name": "Quesadilla (Harina)",
+            "price": 35,
+            "category": "QUESADILLAS",
+            "pieces": 1,
+            "image": null,
+            "modifiers": [
+              {
+                "name": "Relleno",
+                "type": "radio",
+                "choices": [
+                  "Picadillo",
+                  "Pollo",
+                  "Deshebrada",
+                  "Papa",
+                  "Frijol"
+                ]
+              }
+            ]
+          },
+          "qty": 2,
+          "modifiers": [
+            "PICADILLO"
+          ],
+          "notes": ""
+        }
+      ],
+      "time": "22:07",
+      "msg": "🍽️ <strong>Mesa 8</strong>: ¡Orden O-194 lista para servir!",
+      "status": "delivered"
+    },
+    {
+      "id": 1789268264019,
+      "orderId": "O-484",
+      "table": "Mesa 1",
+      "waiter": "Jorge",
+      "items": [
+        {
+          "id": 1789267447696,
+          "product": {
+            "id": 401,
+            "name": "Sopes (Orden 3pz)",
+            "price": 70,
+            "category": "SOPES",
+            "pieces": 3,
+            "image": null,
+            "modifiers": [
+              {
+                "name": "Relleno",
+                "type": "radio",
+                "choices": [
+                  "Picadillo",
+                  "Pollo",
+                  "Deshebrada",
+                  "Papa",
+                  "Frijol"
+                ]
+              },
+              {
+                "name": "Nueva Opción",
+                "type": "checkbox",
+                "choices": [
+                  "Lechuga",
+                  "Con Todo",
+                  "Sin Salsa",
+                  "Sin Queso",
+                  "Repollo",
+                  "Sin Zanahorias",
+                  "SIn Crem"
+                ]
+              }
+            ]
+          },
+          "qty": 1,
+          "modifiers": [
+            "2XPICADILLO + 1XDESHEBRADA"
+          ],
+          "notes": ""
+        },
+        {
+          "id": 1789267488686,
+          "product": {
+            "id": 201,
+            "name": "Tamal",
+            "price": 35,
+            "category": "TAMALES",
+            "image": null,
+            "modifiers": [
+              {
+                "name": "Sabor",
+                "type": "radio",
+                "choices": [
+                  "Rojo",
+                  "Verde",
+                  "Dulce"
+                ]
+              },
+              {
+                "name": "Nueva Opción",
+                "type": "radio",
+                "choices": [
+                  "Con todo",
+                  "Sin Salsa",
+                  "Sin Queso",
+                  "Sin Crema"
+                ]
+              }
+            ]
+          },
+          "qty": 1,
+          "modifiers": [
+            "ROJO",
+            "CON TODO"
+          ],
+          "notes": ""
+        },
+        {
+          "id": 1789267500581,
+          "product": {
+            "id": 201,
+            "name": "Tamal",
+            "price": 35,
+            "category": "TAMALES",
+            "image": null,
+            "modifiers": [
+              {
+                "name": "Sabor",
+                "type": "radio",
+                "choices": [
+                  "Rojo",
+                  "Verde",
+                  "Dulce"
+                ]
+              },
+              {
+                "name": "Nueva Opción",
+                "type": "radio",
+                "choices": [
+                  "Con todo",
+                  "Sin Salsa",
+                  "Sin Queso",
+                  "Sin Crema"
+                ]
+              }
+            ]
+          },
+          "qty": 1,
+          "modifiers": [
+            "VERDE",
+            "CON TODO"
+          ],
+          "notes": ""
+        }
+      ],
+      "time": "08:57 p.m.",
+      "msg": "🍽️ <strong>Mesa 1</strong>: ¡Orden O-484 lista para servir!",
+      "status": "delivered"
+    },
+    {
+      "id": 1789268262667,
+      "orderId": "O-131",
+      "table": "Mesa 7",
+      "waiter": "Abner",
+      "items": [
+        {
+          "id": 1789267787420,
+          "product": {
+            "id": 801,
+            "name": "Pozole Básico",
+            "price": 50,
+            "category": "POZOLE",
+            "image": null,
+            "modifiers": [
+              {
+                "name": "Preparación",
+                "type": "radio",
+                "choices": [
+                  "Batido",
+                  "De Caldo",
+                  "De Pollo"
+                ]
+              },
+              {
+                "name": "Complementos",
+                "type": "checkbox",
+                "choices": [
+                  "Cebolla",
+                  "Chile",
+                  "Lechuga",
+                  "Rábano"
+                ]
+              }
+            ]
+          },
+          "qty": 1,
+          "modifiers": [
+            "DE CALDO",
+            "CEBOLLA",
+            "CHILE",
+            "LECHUGA",
+            "RÁBANO"
+          ],
+          "notes": ""
+        },
+        {
+          "id": 1789267844923,
+          "product": {
+            "id": 401,
+            "name": "Sopes (Orden 3pz)",
+            "price": 70,
+            "category": "SOPES",
+            "pieces": 3,
+            "image": null,
+            "modifiers": [
+              {
+                "name": "Relleno",
+                "type": "radio",
+                "choices": [
+                  "Picadillo",
+                  "Pollo",
+                  "Deshebrada",
+                  "Papa",
+                  "Frijol"
+                ]
+              },
+              {
+                "name": "Nueva Opción",
+                "type": "checkbox",
+                "choices": [
+                  "Lechuga",
+                  "Con Todo",
+                  "Sin Salsa",
+                  "Sin Queso",
+                  "Repollo",
+                  "Sin Zanahorias",
+                  "SIn Crem"
+                ]
+              }
+            ]
+          },
+          "qty": 1,
+          "modifiers": [
+            "PICADILLO"
+          ],
+          "notes": "Pollo desebrada picadillo con todo"
+        },
+        {
+          "id": 1789267867392,
+          "product": {
+            "id": 101,
+            "name": "Atole (Taza)",
+            "price": 20,
+            "category": "BEBIDAS",
+            "image": null,
+            "modifiers": []
+          },
+          "qty": 1,
+          "modifiers": [],
+          "notes": ""
+        },
+        {
+          "id": 1789267876155,
+          "product": {
+            "id": 701,
+            "name": "Patitas de Puerco",
+            "price": 55,
+            "category": "PATITAS",
+            "image": null,
+            "modifiers": []
+          },
+          "qty": 1,
+          "modifiers": [],
+          "notes": ""
+        }
+      ],
+      "time": "08:57 p.m.",
+      "msg": "🍽️ <strong>Mesa 7</strong>: ¡Orden O-131 lista para servir!",
+      "status": "delivered"
+    },
+    {
+      "id": 1789268259564,
+      "orderId": "O-969",
+      "table": "Mesa 2",
+      "waiter": "Abner",
+      "items": [
+        {
+          "id": 1789268165703,
+          "product": {
+            "id": 201,
+            "name": "Tamal",
+            "price": 35,
+            "category": "TAMALES",
+            "image": null,
+            "modifiers": [
+              {
+                "name": "Sabor",
+                "type": "radio",
+                "choices": [
+                  "Rojo",
+                  "Verde",
+                  "Dulce"
+                ]
+              },
+              {
+                "name": "Nueva Opción",
+                "type": "radio",
+                "choices": [
+                  "Con todo",
+                  "Sin Salsa",
+                  "Sin Queso",
+                  "Sin Crema"
+                ]
+              }
+            ]
+          },
+          "qty": 1,
+          "modifiers": [
+            "DULCE",
+            "CON TODO"
+          ],
+          "notes": ""
+        },
+        {
+          "id": 1789268170480,
+          "product": {
+            "id": 201,
+            "name": "Tamal",
+            "price": 35,
+            "category": "TAMALES",
+            "image": null,
+            "modifiers": [
+              {
+                "name": "Sabor",
+                "type": "radio",
+                "choices": [
+                  "Rojo",
+                  "Verde",
+                  "Dulce"
+                ]
+              },
+              {
+                "name": "Nueva Opción",
+                "type": "radio",
+                "choices": [
+                  "Con todo",
+                  "Sin Salsa",
+                  "Sin Queso",
+                  "Sin Crema"
+                ]
+              }
+            ]
+          },
+          "qty": 1,
+          "modifiers": [
+            "VERDE",
+            "CON TODO"
+          ],
+          "notes": ""
+        },
+        {
+          "id": 1789268182657,
+          "product": {
+            "id": 101,
+            "name": "Atole (Taza)",
+            "price": 20,
+            "category": "BEBIDAS",
+            "image": null,
+            "modifiers": []
+          },
+          "qty": 1,
+          "modifiers": [],
+          "notes": ""
+        },
+        {
+          "id": 1789268220041,
+          "product": {
+            "id": 401,
+            "name": "Sopes (Orden 3pz)",
+            "price": 70,
+            "category": "SOPES",
+            "pieces": 3,
+            "image": null,
+            "modifiers": [
+              {
+                "name": "Relleno",
+                "type": "radio",
+                "choices": [
+                  "Picadillo",
+                  "Pollo",
+                  "Deshebrada",
+                  "Papa",
+                  "Frijol"
+                ]
+              },
+              {
+                "name": "Nueva Opción",
+                "type": "checkbox",
+                "choices": [
+                  "Lechuga",
+                  "Con Todo",
+                  "Sin Salsa",
+                  "Sin Queso",
+                  "Repollo",
+                  "Sin Zanahorias",
+                  "SIn Crem"
+                ]
+              }
+            ]
+          },
+          "qty": 1,
+          "modifiers": [
+            "PICADILLO"
+          ],
+          "notes": ""
+        },
+        {
+          "id": 1789268238316,
+          "product": {
+            "id": 103,
+            "name": "Atole (1 Lt)",
+            "price": 50,
+            "category": "BEBIDAS",
+            "image": null,
+            "modifiers": []
+          },
+          "qty": 1,
+          "modifiers": [],
+          "notes": ""
+        }
+      ],
+      "time": "08:57 p.m.",
+      "msg": "🍽️ <strong>Mesa 2</strong>: ¡Orden O-969 lista para servir!",
+      "status": "delivered"
+    },
+    {
+      "id": 1789267555154,
+      "orderId": "O-482",
+      "table": "Mesa 6",
+      "waiter": "Abner",
+      "items": [
+        {
+          "id": 1789267348943,
+          "product": {
+            "id": 803,
+            "name": "Pozole Especial",
+            "price": 60,
+            "category": "POZOLE",
+            "image": null,
+            "modifiers": [
+              {
+                "name": "Preparación",
+                "type": "radio",
+                "choices": [
+                  "Batido",
+                  "De Caldo",
+                  "De Pollo"
+                ]
+              },
+              {
+                "name": "Complementos",
+                "type": "checkbox",
+                "choices": [
+                  "Cebolla",
+                  "Chile",
+                  "Lechuga",
+                  "Rábano"
+                ]
+              }
+            ]
+          },
+          "qty": 1,
+          "modifiers": [
+            "DE CALDO"
+          ],
+          "notes": "Repollo para llevar"
+        }
+      ],
+      "time": "08:45 p.m.",
+      "msg": "🍽️ <strong>Mesa 6</strong>: ¡Orden O-482 lista para servir!",
+      "status": "delivered"
+    },
+    {
+      "id": 1789267470178,
+      "orderId": "O-473",
+      "table": "Mesa 1",
+      "waiter": "Luis",
+      "items": [
+        {
+          "id": 1789266928216,
+          "product": {
+            "id": 501,
+            "name": "Tacos Dorados (Orden 5pz)",
+            "price": 60,
+            "category": "TACOS",
+            "pieces": 5,
+            "image": null,
+            "modifiers": [
+              {
+                "name": "Relleno",
+                "type": "radio",
+                "choices": [
+                  "Picadillo",
+                  "Pollo",
+                  "Deshebrada",
+                  "Papa",
+                  "Frijol"
+                ]
+              }
+            ]
+          },
+          "qty": 1,
+          "modifiers": [
+            "1XPICADILLO + 1XPOLLO + 2XPAPA + 1XFRIJOL"
+          ],
+          "notes": "Sin crema, lechuga SI, Salsa aparte"
+        }
+      ],
+      "time": "08:44 p.m.",
+      "msg": "🍽️ <strong>Mesa 1</strong>: ¡Orden O-473 lista para servir!",
+      "status": "delivered"
+    },
+    {
+      "id": 1789267434548,
+      "orderId": "O-165",
+      "table": "Mesa 1",
+      "waiter": "Luis",
+      "items": [
+        {
+          "id": 1789267118936,
+          "product": {
+            "id": 121,
+            "name": "Agua Fresca Jamaica (1 Lt)",
+            "price": 30,
+            "category": "BEBIDAS",
+            "image": null,
+            "modifiers": []
+          },
+          "qty": 1,
+          "modifiers": [],
+          "notes": ""
+        }
+      ],
+      "time": "08:43 p.m.",
+      "msg": "🍽️ <strong>Mesa 1</strong>: ¡Orden O-165 lista para servir!",
+      "status": "delivered"
+    },
+    {
+      "id": 1789231681503,
+      "orderId": "O-592",
+      "table": "Mesa 1",
+      "waiter": "Abner",
+      "items": [
+        {
+          "id": 1789231605923,
+          "product": {
+            "id": 301,
+            "name": "Enchiladas (Orden 3pz)",
+            "price": 60,
+            "category": "ENCHILADAS",
+            "pieces": 3,
+            "image": null,
+            "modifiers": [
+              {
+                "name": "Relleno",
+                "type": "radio",
+                "choices": [
+                  "Picadillo",
+                  "Pollo",
+                  "Deshebrada",
+                  "Papa",
+                  "Frijol"
+                ]
+              },
+              {
+                "name": "Complementos",
+                "type": "checkbox",
+                "choices": [
+                  "Lechuga",
+                  "Repollo",
+                  "Sin Crema",
+                  "Sin Queso",
+                  "Sin Salsa",
+                  "Sin Zanahorias"
+                ]
+              }
+            ]
+          },
+          "qty": 1,
+          "modifiers": [
+            "1XPOLLO + 1XPICADILLO + 1XDESHEBRADA"
+          ],
+          "notes": ""
+        }
+      ],
+      "time": "10:48 AM",
+      "msg": "🍽️ <strong>Mesa 1</strong>: ¡Orden O-592 lista para servir!",
+      "status": "delivered"
+    },
+    {
+      "id": 1789186663268,
+      "orderId": "O-083",
+      "table": "Mesa 2",
+      "waiter": "Luis",
+      "items": [
+        {
+          "id": 1789186042656,
+          "product": {
+            "id": 601,
+            "name": "Tostada",
+            "price": 40,
+            "category": "TOSTADAS",
+            "pieces": 1,
+            "image": null,
+            "modifiers": [
+              {
+                "name": "Relleno",
+                "type": "radio",
+                "choices": [
+                  "Picadillo",
+                  "Pollo",
+                  "Deshebrada",
+                  "Papa",
+                  "Frijol"
+                ]
+              }
+            ]
+          },
+          "qty": 1,
+          "modifiers": [
+            "DESHEBRADA"
+          ],
+          "notes": "Sin frijol, Sin verdura"
+        }
+      ],
+      "time": "10:17 p.m.",
+      "msg": "🍽️ <strong>Mesa 2</strong>: ¡Orden O-083 lista para servir!",
+      "status": "delivered"
+    },
+    {
+      "id": 1789186661349,
+      "orderId": "O-643",
+      "table": "Mesa 6",
+      "waiter": "Luis",
+      "items": [
+        {
+          "id": 1789186584478,
+          "product": {
+            "id": 117,
+            "name": "Agua Fresca Horchata (1 Lt)",
+            "price": 30,
+            "category": "BEBIDAS",
+            "image": null,
+            "modifiers": []
+          },
+          "qty": 1,
+          "modifiers": [],
+          "notes": ""
+        }
+      ],
+      "time": "10:17 p.m.",
+      "msg": "🍽️ <strong>Mesa 6</strong>: ¡Orden O-643 lista para servir!",
+      "status": "delivered"
+    },
+    {
+      "id": 1789186659917,
+      "orderId": "O-340",
+      "table": "Mesa 2",
+      "waiter": "Luis",
+      "items": [
+        {
+          "id": 1789186230559,
+          "product": {
+            "id": 502,
+            "name": "Tacos Dorados (1/2 Orden 3pz)",
+            "price": 45,
+            "category": "TACOS",
+            "pieces": 3,
+            "image": null,
+            "modifiers": [
+              {
+                "name": "Relleno",
+                "type": "radio",
+                "choices": [
+                  "Picadillo",
+                  "Pollo",
+                  "Deshebrada",
+                  "Papa",
+                  "Frijol"
+                ]
+              }
+            ]
+          },
+          "qty": 1,
+          "modifiers": [
+            "FRIJOL"
+          ],
+          "notes": "Solitos"
+        },
+        {
+          "id": 1789186278338,
+          "product": {
+            "id": 302,
+            "name": "Enchilada (1pz)",
+            "price": 20,
+            "category": "ENCHILADAS",
+            "pieces": 1,
+            "image": null,
+            "modifiers": [
+              {
+                "name": "Relleno",
+                "type": "radio",
+                "choices": [
+                  "Picadillo",
+                  "Pollo",
+                  "Deshebrada",
+                  "Papa",
+                  "Frijol"
+                ]
+              },
+              {
+                "name": "Complementos",
+                "type": "checkbox",
+                "choices": [
+                  "Lechuga",
+                  "Repollo",
+                  "Con Todo",
+                  "Sin Salsa ",
+                  "SIn Crema",
+                  "Sin Queso",
+                  "Sin Zanahorias"
+                ]
+              }
+            ]
+          },
+          "qty": 1,
+          "modifiers": [
+            "PICADILLO"
+          ],
+          "notes": "2 enchiladas, Sin verdura"
+        }
+      ],
+      "time": "10:17 p.m.",
+      "msg": "🍽️ <strong>Mesa 2</strong>: ¡Orden O-340 lista para servir!",
+      "status": "delivered"
+    },
+    {
+      "id": 1789186655931,
+      "orderId": "O-248",
+      "table": "Mesa 2",
+      "waiter": "Luis",
+      "items": [
+        {
+          "id": 1789186117013,
+          "product": {
+            "id": 301,
+            "name": "Enchiladas (Orden 3pz)",
+            "price": 60,
+            "category": "ENCHILADAS",
+            "pieces": 3,
+            "image": null,
+            "modifiers": [
+              {
+                "name": "Relleno",
+                "type": "radio",
+                "choices": [
+                  "Picadillo",
+                  "Pollo",
+                  "Deshebrada",
+                  "Papa",
+                  "Frijol"
+                ]
+              },
+              {
+                "name": "Complementos",
+                "type": "checkbox",
+                "choices": [
+                  "Lechuga",
+                  "Repollo",
+                  "Sin Crema",
+                  "Sin Queso",
+                  "Sin Salsa",
+                  "Sin Zanahorias"
+                ]
+              }
+            ]
+          },
+          "qty": 1,
+          "modifiers": [
+            "DESHEBRADA"
+          ],
+          "notes": "Sin crema sin salsa"
+        }
+      ],
+      "time": "10:17 p.m.",
+      "msg": "🍽️ <strong>Mesa 2</strong>: ¡Orden O-248 lista para servir!",
+      "status": "delivered"
+    },
+    {
+      "id": 1789186653707,
+      "orderId": "O-822",
+      "table": "Llevar - Cliente Anónimo",
+      "waiter": "Luis",
+      "items": [
+        {
+          "id": 1789185691358,
+          "product": {
+            "id": 801,
+            "name": "Pozole Básico",
+            "price": 50,
+            "category": "POZOLE",
+            "image": null,
+            "modifiers": [
+              {
+                "name": "Preparación",
+                "type": "radio",
+                "choices": [
+                  "Batido",
+                  "De Caldo",
+                  "De Pollo"
+                ]
+              },
+              {
+                "name": "Complementos",
+                "type": "checkbox",
+                "choices": [
+                  "Cebolla",
+                  "Chile",
+                  "Lechuga",
+                  "Rábano"
+                ]
+              }
+            ]
+          },
+          "qty": 1,
+          "modifiers": [
+            "DE POLLO"
+          ],
+          "notes": ""
+        }
+      ],
+      "time": "10:17 p.m.",
+      "msg": "🍽️ <strong>Llevar - Cliente Anónimo</strong>: ¡Orden O-822 lista para servir!",
+      "status": "ready"
+    },
+    {
+      "id": 1789185716667,
+      "orderId": "O-344",
+      "table": "Mesa 6",
+      "waiter": "Luis",
+      "items": [
+        {
+          "id": 1789185304123,
+          "product": {
+            "id": 116,
+            "name": "Agua Fresca Horchata (1/2 Lt)",
+            "price": 20,
+            "category": "BEBIDAS",
+            "image": null,
+            "modifiers": []
+          },
+          "qty": 1,
+          "modifiers": [],
+          "notes": ""
+        },
+        {
+          "id": 1789185311506,
+          "product": {
+            "id": 402,
+            "name": "Sope (1pz)",
+            "price": 25,
+            "category": "SOPES",
+            "pieces": 1,
+            "image": null,
+            "modifiers": [
+              {
+                "name": "Relleno",
+                "type": "radio",
+                "choices": [
+                  "Picadillo",
+                  "Pollo",
+                  "Deshebrada",
+                  "Papa",
+                  "Frijol"
+                ]
+              }
+            ]
+          },
+          "qty": 1,
+          "modifiers": [
+            "POLLO"
+          ],
+          "notes": ""
+        },
+        {
+          "id": 1789185323635,
+          "product": {
+            "id": 402,
+            "name": "Sope (1pz)",
+            "price": 25,
+            "category": "SOPES",
+            "pieces": 1,
+            "image": null,
+            "modifiers": [
+              {
+                "name": "Relleno",
+                "type": "radio",
+                "choices": [
+                  "Picadillo",
+                  "Pollo",
+                  "Deshebrada",
+                  "Papa",
+                  "Frijol"
+                ]
+              }
+            ]
+          },
+          "qty": 1,
+          "modifiers": [
+            "DESHEBRADA"
+          ],
+          "notes": "Lechuga con todo"
+        }
+      ],
+      "time": "10:01 p.m.",
+      "msg": "🍽️ <strong>Mesa 6</strong>: ¡Orden O-344 lista para servir!",
+      "status": "delivered"
+    },
+    {
+      "id": 1789185429712,
+      "orderId": "O-210",
+      "table": "Llevar - Cliente Anónimo",
+      "waiter": "Luis",
+      "items": [
+        {
+          "id": 1789184682650,
+          "product": {
+            "id": 501,
+            "name": "Tacos Dorados (Orden 5pz)",
+            "price": 60,
+            "category": "TACOS",
+            "pieces": 5,
+            "image": null,
+            "modifiers": [
+              {
+                "name": "Relleno",
+                "type": "radio",
+                "choices": [
+                  "Picadillo",
+                  "Pollo",
+                  "Deshebrada",
+                  "Papa",
+                  "Frijol"
+                ]
+              }
+            ]
+          },
+          "qty": 1,
+          "modifiers": [
+            "1XFRIJOL + 2XDESHEBRADA + 2XPOLLO"
+          ],
+          "notes": "Repollo con todo"
+        },
+        {
+          "id": 1789184732447,
+          "product": {
+            "id": 402,
+            "name": "Sope (1pz)",
+            "price": 25,
+            "category": "SOPES",
+            "pieces": 1,
+            "image": null,
+            "modifiers": [
+              {
+                "name": "Relleno",
+                "type": "radio",
+                "choices": [
+                  "Picadillo",
+                  "Pollo",
+                  "Deshebrada",
+                  "Papa",
+                  "Frijol"
+                ]
+              }
+            ]
+          },
+          "qty": 1,
+          "modifiers": [
+            "DESHEBRADA"
+          ],
+          "notes": "Lechuga con todo"
+        }
+      ],
+      "time": "09:57 p.m.",
+      "msg": "🍽️ <strong>Llevar - Cliente Anónimo</strong>: ¡Orden O-210 lista para servir!",
+      "status": "ready"
+    },
+    {
+      "id": 1789185045120,
+      "orderId": "O-277",
+      "table": "Mesa 6",
+      "waiter": "Luis",
+      "items": [
+        {
+          "id": 1789184384927,
+          "product": {
+            "id": 116,
+            "name": "Agua Fresca Horchata (1/2 Lt)",
+            "price": 20,
+            "category": "BEBIDAS",
+            "image": null,
+            "modifiers": []
+          },
+          "qty": 1,
+          "modifiers": [],
+          "notes": ""
+        }
+      ],
+      "time": "09:50 p.m.",
+      "msg": "🍽️ <strong>Mesa 6</strong>: ¡Orden O-277 lista para servir!",
+      "status": "delivered"
+    },
+    {
+      "id": 1789185042808,
+      "orderId": "O-041",
+      "table": "Mesa 6",
+      "waiter": "Luis",
+      "items": [
+        {
+          "id": 1789184323637,
+          "product": {
+            "id": 117,
+            "name": "Agua Fresca Horchata (1 Lt)",
+            "price": 30,
+            "category": "BEBIDAS",
+            "image": null,
+            "modifiers": []
+          },
+          "qty": 1,
+          "modifiers": [],
+          "notes": ""
+        }
+      ],
+      "time": "09:50 p.m.",
+      "msg": "🍽️ <strong>Mesa 6</strong>: ¡Orden O-041 lista para servir!",
+      "status": "delivered"
+    },
+    {
+      "id": 1789185042427,
+      "orderId": "O-912",
+      "table": "Mesa 8",
+      "waiter": "Luis",
+      "items": [
+        {
+          "id": 1789184119188,
+          "product": {
+            "id": 701,
+            "name": "Patitas de Puerco",
+            "price": 55,
+            "category": "PATITAS",
+            "image": null,
+            "modifiers": []
+          },
+          "qty": 1,
+          "modifiers": [],
+          "notes": ""
+        }
+      ],
+      "time": "09:50 p.m.",
+      "msg": "🍽️ <strong>Mesa 8</strong>: ¡Orden O-912 lista para servir!",
+      "status": "delivered"
+    },
+    {
+      "id": 1789184010313,
+      "orderId": "O-676",
+      "table": "Mesa 6",
+      "waiter": "Luis",
+      "items": [
+        {
+          "id": 1789183999531,
+          "product": {
+            "id": 302,
+            "name": "Enchilada (1pz)",
+            "price": 20,
+            "category": "ENCHILADAS",
+            "pieces": 1,
+            "image": null,
+            "modifiers": [
+              {
+                "name": "Relleno",
+                "type": "radio",
+                "choices": [
+                  "Picadillo",
+                  "Pollo",
+                  "Deshebrada",
+                  "Papa",
+                  "Frijol"
+                ]
+              },
+              {
+                "name": "Complementos",
+                "type": "checkbox",
+                "choices": [
+                  "Lechuga",
+                  "Repollo",
+                  "Con Todo",
+                  "Sin Salsa ",
+                  "SIn Crema",
+                  "Sin Queso",
+                  "Sin Zanahorias"
+                ]
+              }
+            ]
+          },
+          "qty": 1,
+          "modifiers": [
+            "POLLO",
+            "LECHUGA",
+            "CON TODO"
+          ],
+          "notes": ""
+        }
+      ],
+      "time": "09:33 p.m.",
+      "msg": "🍽️ <strong>Mesa 6</strong>: ¡Orden O-676 lista para servir!",
+      "status": "delivered"
+    },
+    {
+      "id": 1789183998376,
+      "orderId": "O-390",
+      "table": "Mesa 6",
+      "waiter": "Luis",
+      "items": [
+        {
+          "id": 1789183856108,
+          "product": {
+            "id": 401,
+            "name": "Sopes (Orden 3pz)",
+            "price": 70,
+            "category": "SOPES",
+            "pieces": 3,
+            "image": null,
+            "modifiers": [
+              {
+                "name": "Relleno",
+                "type": "radio",
+                "choices": [
+                  "Picadillo",
+                  "Pollo",
+                  "Deshebrada",
+                  "Papa",
+                  "Frijol"
+                ]
+              },
+              {
+                "name": "Nueva Opción",
+                "type": "checkbox",
+                "choices": [
+                  "Lechuga",
+                  "Con Todo",
+                  "Sin Salsa",
+                  "Sin Queso",
+                  "Repollo",
+                  "Sin Zanahorias",
+                  "SIn Crem"
+                ]
+              }
+            ]
+          },
+          "qty": 1,
+          "modifiers": [
+            "POLLO"
+          ],
+          "notes": "Lechuga con todo bien dorados"
+        },
+        {
+          "id": 1789183874247,
+          "product": {
+            "id": 802,
+            "name": "Pozole Medio Especial",
+            "price": 55,
+            "category": "POZOLE",
+            "image": null,
+            "modifiers": [
+              {
+                "name": "Preparación",
+                "type": "radio",
+                "choices": [
+                  "Batido",
+                  "De Caldo",
+                  "De Pollo"
+                ]
+              },
+              {
+                "name": "Complementos",
+                "type": "checkbox",
+                "choices": [
+                  "Cebolla",
+                  "Chile",
+                  "Lechuga",
+                  "Rábano"
+                ]
+              }
+            ]
+          },
+          "qty": 1,
+          "modifiers": [
+            "DE CALDO",
+            "CEBOLLA",
+            "CHILE",
+            "LECHUGA",
+            "RÁBANO"
+          ],
+          "notes": ""
+        },
+        {
+          "id": 1789183915899,
+          "product": {
+            "id": 805,
+            "name": "Pozole Mini",
+            "price": 20,
+            "category": "POZOLE",
+            "image": null,
+            "modifiers": [
+              {
+                "name": "Preparación",
+                "type": "radio",
+                "choices": [
+                  "Batido",
+                  "De Caldo",
+                  "De Pollo"
+                ]
+              },
+              {
+                "name": "Complementos",
+                "type": "checkbox",
+                "choices": [
+                  "Cebolla",
+                  "Chile",
+                  "Lechuga",
+                  "Rábano"
+                ]
+              }
+            ]
+          },
+          "qty": 1,
+          "modifiers": [
+            "DE CALDO",
+            "LECHUGA"
+          ],
+          "notes": "Básico"
+        }
+      ],
+      "time": "09:33 p.m.",
+      "msg": "🍽️ <strong>Mesa 6</strong>: ¡Orden O-390 lista para servir!",
+      "status": "delivered"
+    },
+    {
+      "id": 1789180842218,
+      "orderId": "O-966",
+      "table": "Mesa 6",
+      "waiter": "Abner",
+      "items": [
+        {
+          "id": 1789180142894,
+          "product": {
+            "id": 502,
+            "name": "Tacos Dorados (1/2 Orden 3pz)",
+            "price": 45,
+            "category": "TACOS",
+            "pieces": 3,
+            "image": null,
+            "modifiers": [
+              {
+                "name": "Relleno",
+                "type": "radio",
+                "choices": [
+                  "Picadillo",
+                  "Pollo",
+                  "Deshebrada",
+                  "Papa",
+                  "Frijol"
+                ]
+              }
+            ]
+          },
+          "qty": 1,
+          "modifiers": [
+            "PICADILLO"
+          ],
+          "notes": "Lechuga con todo"
+        },
+        {
+          "id": 1789180168573,
+          "product": {
+            "id": 802,
+            "name": "Pozole Medio Especial",
+            "price": 55,
+            "category": "POZOLE",
+            "image": null,
+            "modifiers": [
+              {
+                "name": "Preparación",
+                "type": "radio",
+                "choices": [
+                  "Batido",
+                  "De Caldo",
+                  "De Pollo"
+                ]
+              },
+              {
+                "name": "Complementos",
+                "type": "checkbox",
+                "choices": [
+                  "Cebolla",
+                  "Chile",
+                  "Lechuga",
+                  "Rábano"
+                ]
+              }
+            ]
+          },
+          "qty": 1,
+          "modifiers": [
+            "BATIDO",
+            "CEBOLLA",
+            "LECHUGA",
+            "RÁBANO"
+          ],
+          "notes": ""
+        },
+        {
+          "id": 1789180180850,
+          "product": {
+            "id": 101,
+            "name": "Atole (Taza)",
+            "price": 20,
+            "category": "BEBIDAS",
+            "image": null,
+            "modifiers": []
+          },
+          "qty": 1,
+          "modifiers": [],
+          "notes": ""
+        }
+      ],
+      "time": "08:40 p.m.",
+      "msg": "🍽️ <strong>Mesa 6</strong>: ¡Orden O-966 lista para servir!",
+      "status": "delivered"
+    },
+    {
+      "id": 1789180802873,
+      "orderId": "O-787",
+      "table": "Mesa 8",
+      "waiter": "Abner",
+      "items": [
+        {
+          "id": 1789180062037,
+          "product": {
+            "id": 803,
+            "name": "Pozole Especial",
+            "price": 60,
+            "category": "POZOLE",
+            "image": null,
+            "modifiers": [
+              {
+                "name": "Preparación",
+                "type": "radio",
+                "choices": [
+                  "Batido",
+                  "De Caldo",
+                  "De Pollo"
+                ]
+              },
+              {
+                "name": "Complementos",
+                "type": "checkbox",
+                "choices": [
+                  "Cebolla",
+                  "Chile",
+                  "Lechuga",
+                  "Rábano"
+                ]
+              }
+            ]
+          },
+          "qty": 2,
+          "modifiers": [
+            "DE CALDO",
+            "CEBOLLA",
+            "CHILE",
+            "LECHUGA",
+            "RÁBANO"
+          ],
+          "notes": "Todo aparte y repollo"
+        },
+        {
+          "id": 1789180109993,
+          "product": {
+            "id": 104,
+            "name": "Coca Cola 600ml",
+            "price": 30,
+            "category": "BEBIDAS",
+            "image": null,
+            "modifiers": []
+          },
+          "qty": 1,
+          "modifiers": [],
+          "notes": ""
+        }
+      ],
+      "time": "08:40 p.m.",
+      "msg": "🍽️ <strong>Mesa 8</strong>: ¡Orden O-787 lista para servir!",
+      "status": "delivered"
+    },
+    {
+      "id": 1789180645469,
+      "orderId": "O-798",
+      "table": "Mesa 8",
+      "waiter": "Abner",
+      "items": [
+        {
+          "id": 1789180211707,
+          "product": {
+            "id": 122,
+            "name": "Cerveza",
+            "price": 25,
+            "category": "BEBIDAS",
+            "image": null,
+            "modifiers": []
+          },
+          "qty": 1,
+          "modifiers": [],
+          "notes": ""
+        }
+      ],
+      "time": "08:37 p.m.",
+      "msg": "🍽️ <strong>Mesa 8</strong>: ¡Orden O-798 lista para servir!",
+      "status": "delivered"
+    },
+    {
+      "id": 1788840496647,
+      "orderId": "O-049",
+      "table": "Mesa 1",
+      "waiter": "Abner",
+      "items": [
+        {
+          "id": 1788840323647,
+          "product": {
+            "id": 401,
+            "name": "Sopes (Orden 3pz)",
+            "price": 70,
+            "category": "SOPES",
+            "pieces": 3,
+            "image": null,
+            "modifiers": [
+              {
+                "name": "Relleno",
+                "type": "radio",
+                "choices": [
+                  "Picadillo",
+                  "Pollo",
+                  "Deshebrada",
+                  "Papa",
+                  "Frijol"
+                ]
+              }
+            ]
+          },
+          "qty": 1,
+          "modifiers": [
+            "1XPICADILLO + 1XPOLLO + 1XDESHEBRADA"
+          ],
+          "notes": ""
+        }
+      ],
+      "time": "10:08 PM",
+      "msg": "🍽️ <strong>Mesa 1</strong>: ¡Orden O-049 lista para servir!",
+      "status": "delivered"
+    }
+  ],
+  "products": [
+    {
+      "id": 101,
+      "name": "Atole (Taza)",
+      "price": 20,
+      "category": "BEBIDAS",
+      "image": null,
+      "modifiers": []
+    },
+    {
+      "id": 102,
+      "name": "Atole (1/2 Lt) Para Llevar",
+      "price": 25,
+      "category": "BEBIDAS",
+      "image": null,
+      "modifiers": []
+    },
+    {
+      "id": 103,
+      "name": "Atole (1 Lt)",
+      "price": 50,
+      "category": "BEBIDAS",
+      "image": null,
+      "modifiers": []
+    },
+    {
+      "id": 104,
+      "name": "Coca Cola 600ml",
+      "price": 30,
+      "category": "BEBIDAS",
+      "image": null,
+      "modifiers": [
+        {
+          "name": "Nueva Opción",
+          "type": "radio",
+          "choices": [
+            "Con Azucar",
+            "Sin Azucar"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 105,
+      "name": "Coca Cola 400ml",
+      "price": 25,
+      "category": "BEBIDAS",
+      "image": null,
+      "modifiers": []
+    },
+    {
+      "id": 106,
+      "name": "Coca Cola 355ml Cristal",
+      "price": 25,
+      "category": "BEBIDAS",
+      "image": null,
+      "modifiers": []
+    },
+    {
+      "id": 107,
+      "name": "Squirt 600ml",
+      "price": 30,
+      "category": "BEBIDAS",
+      "image": null,
+      "modifiers": []
+    },
+    {
+      "id": 108,
+      "name": "Squirt 400ml",
+      "price": 25,
+      "category": "BEBIDAS",
+      "image": null,
+      "modifiers": []
+    },
+    {
+      "id": 109,
+      "name": "Squirt 355ml",
+      "price": 25,
+      "category": "BEBIDAS",
+      "image": null,
+      "modifiers": []
+    },
+    {
+      "id": 110,
+      "name": "Sprite 600ml",
+      "price": 30,
+      "category": "BEBIDAS",
+      "image": null,
+      "modifiers": []
+    },
+    {
+      "id": 111,
+      "name": "Sprite 400ml",
+      "price": 25,
+      "category": "BEBIDAS",
+      "image": null,
+      "modifiers": []
+    },
+    {
+      "id": 112,
+      "name": "Sprite 355ml",
+      "price": 25,
+      "category": "BEBIDAS",
+      "image": null,
+      "modifiers": []
+    },
+    {
+      "id": 113,
+      "name": "Fanta 600ml",
+      "price": 30,
+      "category": "BEBIDAS",
+      "image": null,
+      "modifiers": []
+    },
+    {
+      "id": 114,
+      "name": "Fanta 400ml",
+      "price": 25,
+      "category": "BEBIDAS",
+      "image": null,
+      "modifiers": []
+    },
+    {
+      "id": 115,
+      "name": "Fanta 355ml",
+      "price": 25,
+      "category": "BEBIDAS",
+      "image": null,
+      "modifiers": []
+    },
+    {
+      "id": 116,
+      "name": "Agua Fresca Horchata (1/2 Lt)",
+      "price": 20,
+      "category": "BEBIDAS",
+      "image": null,
+      "modifiers": []
+    },
+    {
+      "id": 117,
+      "name": "Agua Fresca Horchata (1 Lt)",
+      "price": 30,
+      "category": "BEBIDAS",
+      "image": null,
+      "modifiers": []
+    },
+    {
+      "id": 118,
+      "name": "Agua Fresca Chía (1/2 Lt)",
+      "price": 20,
+      "category": "BEBIDAS",
+      "image": null,
+      "modifiers": []
+    },
+    {
+      "id": 119,
+      "name": "Agua Fresca Chía (1 Lt)",
+      "price": 30,
+      "category": "BEBIDAS",
+      "image": null,
+      "modifiers": []
+    },
+    {
+      "id": 120,
+      "name": "Agua Fresca Jamaica (1/2 Lt)",
+      "price": 20,
+      "category": "BEBIDAS",
+      "image": null,
+      "modifiers": []
+    },
+    {
+      "id": 121,
+      "name": "Agua Fresca Jamaica (1 Lt)",
+      "price": 30,
+      "category": "BEBIDAS",
+      "image": null,
+      "modifiers": []
+    },
+    {
+      "id": 122,
+      "name": "Cerveza",
+      "price": 25,
+      "category": "BEBIDAS",
+      "image": null,
+      "modifiers": [
+        {
+          "name": "Nueva Opción",
+          "type": "radio",
+          "choices": [
+            "Corona",
+            "Victoria"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 123,
+      "name": "Agua Natural",
+      "price": 15,
+      "category": "BEBIDAS",
+      "image": null,
+      "modifiers": []
+    },
+    {
+      "id": 201,
+      "name": "Tamal",
+      "price": 35,
+      "category": "TAMALES",
+      "image": null,
+      "modifiers": [
+        {
+          "name": "Sabor",
+          "type": "radio",
+          "choices": [
+            "Rojo",
+            "Verde",
+            "Dulce"
+          ]
+        },
+        {
+          "name": "Nueva Opción",
+          "type": "radio",
+          "choices": [
+            "Con todo",
+            "Sin Salsa",
+            "Sin Queso",
+            "Sin Crema"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 301,
+      "name": "Enchiladas (Orden 3pz)",
+      "price": 60,
+      "category": "ENCHILADAS",
+      "pieces": 3,
+      "image": null,
+      "modifiers": [
+        {
+          "name": "Relleno",
+          "type": "radio",
+          "choices": [
+            "Picadillo",
+            "Pollo",
+            "Deshebrada",
+            "Papa",
+            "Frijol"
+          ]
+        },
+        {
+          "name": "Complementos",
+          "type": "checkbox",
+          "choices": [
+            "Lechuga",
+            "Repollo",
+            "Con Todo",
+            "Sin Salsa",
+            "Sin Crema",
+            "Sin Queso",
+            "Sin Zanahorias"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 302,
+      "name": "Enchilada (1pz)",
+      "price": 20,
+      "category": "ENCHILADAS",
+      "pieces": 1,
+      "image": null,
+      "modifiers": [
+        {
+          "name": "Relleno",
+          "type": "radio",
+          "choices": [
+            "Picadillo",
+            "Pollo",
+            "Deshebrada",
+            "Papa",
+            "Frijol"
+          ]
+        },
+        {
+          "name": "Complementos",
+          "type": "checkbox",
+          "choices": [
+            "Lechuga",
+            "Repollo",
+            "Con Todo",
+            "Sin Salsa",
+            "Sin Crema",
+            "Sin Queso",
+            "Sin Zanahorias"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 401,
+      "name": "Sopes (Orden 3pz)",
+      "price": 70,
+      "category": "SOPES",
+      "pieces": 3,
+      "image": null,
+      "modifiers": [
+        {
+          "name": "Relleno",
+          "type": "radio",
+          "choices": [
+            "Picadillo",
+            "Pollo",
+            "Deshebrada",
+            "Papa",
+            "Frijol"
+          ]
+        },
+        {
+          "name": "Nueva Opción",
+          "type": "checkbox",
+          "choices": [
+            "Lechuga",
+            "Con Todo",
+            "Sin Salsa",
+            "Sin Queso",
+            "Repollo",
+            "Sin Zanahorias",
+            "SIn Crem"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 402,
+      "name": "Sope (1pz)",
+      "price": 25,
+      "category": "SOPES",
+      "pieces": 1,
+      "image": null,
+      "modifiers": [
+        {
+          "name": "Relleno",
+          "type": "radio",
+          "choices": [
+            "Picadillo",
+            "Pollo",
+            "Deshebrada",
+            "Papa",
+            "Frijol"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 501,
+      "name": "Tacos Dorados (Orden 5pz)",
+      "price": 60,
+      "category": "TACOS",
+      "pieces": 5,
+      "image": null,
+      "modifiers": [
+        {
+          "name": "Relleno",
+          "type": "radio",
+          "choices": [
+            "Picadillo",
+            "Pollo",
+            "Deshebrada",
+            "Papa",
+            "Frijol"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 502,
+      "name": "Tacos Dorados (1/2 Orden 3pz)",
+      "price": 45,
+      "category": "TACOS",
+      "pieces": 3,
+      "image": null,
+      "modifiers": [
+        {
+          "name": "Relleno",
+          "type": "radio",
+          "choices": [
+            "Picadillo",
+            "Pollo",
+            "Deshebrada",
+            "Papa",
+            "Frijol"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 503,
+      "name": "Taco Dorado (1pz)",
+      "price": 15,
+      "category": "TACOS",
+      "pieces": 1,
+      "image": null,
+      "modifiers": [
+        {
+          "name": "Relleno",
+          "type": "radio",
+          "choices": [
+            "Picadillo",
+            "Pollo",
+            "Deshebrada",
+            "Papa",
+            "Frijol"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 601,
+      "name": "Tostada",
+      "price": 40,
+      "category": "TOSTADAS",
+      "pieces": 1,
+      "image": null,
+      "modifiers": [
+        {
+          "name": "Relleno",
+          "type": "radio",
+          "choices": [
+            "Picadillo",
+            "Pollo",
+            "Deshebrada",
+            "Papa",
+            "Frijol"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 701,
+      "name": "Patitas de Puerco",
+      "price": 55,
+      "category": "PATITAS",
+      "image": null,
+      "modifiers": []
+    },
+    {
+      "id": 702,
+      "name": "Quesadilla (Maíz)",
+      "price": 40,
+      "category": "QUESADILLAS",
+      "pieces": 1,
+      "image": null,
+      "modifiers": [
+        {
+          "name": "Relleno",
+          "type": "radio",
+          "choices": [
+            "Picadillo",
+            "Pollo",
+            "Deshebrada",
+            "Papa",
+            "Frijol"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 703,
+      "name": "Quesadilla (Harina)",
+      "price": 35,
+      "category": "QUESADILLAS",
+      "pieces": 1,
+      "image": null,
+      "modifiers": [
+        {
+          "name": "Relleno",
+          "type": "radio",
+          "choices": [
+            "Picadillo",
+            "Pollo",
+            "Deshebrada",
+            "Papa",
+            "Frijol"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 801,
+      "name": "Pozole Básico",
+      "price": 50,
+      "category": "POZOLE",
+      "image": null,
+      "modifiers": [
+        {
+          "name": "Preparación",
+          "type": "radio",
+          "choices": [
+            "Batido",
+            "De Caldo",
+            "De Pollo"
+          ]
+        },
+        {
+          "name": "Complementos",
+          "type": "checkbox",
+          "choices": [
+            "Cebolla",
+            "Chile",
+            "Lechuga",
+            "Rábano"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 802,
+      "name": "Pozole Medio Especial",
+      "price": 55,
+      "category": "POZOLE",
+      "image": null,
+      "modifiers": [
+        {
+          "name": "Preparación",
+          "type": "radio",
+          "choices": [
+            "Batido",
+            "De Caldo",
+            "De Pollo"
+          ]
+        },
+        {
+          "name": "Complementos",
+          "type": "checkbox",
+          "choices": [
+            "Cebolla",
+            "Chile",
+            "Lechuga",
+            "Rábano"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 803,
+      "name": "Pozole Especial",
+      "price": 60,
+      "category": "POZOLE",
+      "image": null,
+      "modifiers": [
+        {
+          "name": "Preparación",
+          "type": "radio",
+          "choices": [
+            "Batido",
+            "De Caldo",
+            "De Pollo"
+          ]
+        },
+        {
+          "name": "Complementos",
+          "type": "checkbox",
+          "choices": [
+            "Cebolla",
+            "Chile",
+            "Lechuga",
+            "Rábano"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 804,
+      "name": "Pozole Súper Especial",
+      "price": 70,
+      "category": "POZOLE",
+      "image": null,
+      "modifiers": [
+        {
+          "name": "Preparación",
+          "type": "radio",
+          "choices": [
+            "Batido",
+            "De Caldo",
+            "De Pollo"
+          ]
+        },
+        {
+          "name": "Complementos",
+          "type": "checkbox",
+          "choices": [
+            "Cebolla",
+            "Chile",
+            "Lechuga",
+            "Rábano"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 805,
+      "name": "Pozole Mini",
+      "price": 30,
+      "category": "POZOLE",
+      "image": null,
+      "modifiers": [
+        {
+          "name": "Preparación",
+          "type": "radio",
+          "choices": [
+            "Batido",
+            "De Caldo",
+            "De Pollo"
+          ]
+        },
+        {
+          "name": "Complementos",
+          "type": "checkbox",
+          "choices": [
+            "Cebolla",
+            "Chile",
+            "Lechuga",
+            "Rábano"
+          ]
+        }
+      ]
+    }
+  ],
+  "clients": [],
+  "users": [
+    {
+      "id": 1,
+      "name": "Abner",
+      "role": "administrador"
+    },
+    {
+      "id": 2,
+      "name": "Marta",
+      "role": "cajera"
+    },
+    {
+      "id": 3,
+      "name": "Luis",
+      "role": "mesero"
+    },
+    {
+      "id": 4,
+      "name": "Jazz",
+      "role": "cocinero"
+    },
+    {
+      "id": 5,
+      "name": "Jorge",
+      "role": "mesero"
+    }
+  ]
+}
